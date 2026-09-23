@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="DealerManager.Tests/DealerManager.Tests.csproj" />
   <Project Path="DealerManager.WebAPI/DealerManager.WebAPI.csproj" />
   <Project Path="DealerManager.Common/DealerManager.Common.csproj" Id="b6d2abda-5596-4b7b-a3b1-6eb175f39647" />
   <Project Path="DealerManager.Domain/DealerManager.Domain.csproj" />
