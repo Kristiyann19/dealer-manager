@@ -25,7 +25,22 @@
       },
       "publishAllPorts": true,
       "useSSL": true
+    },
+    "Profile 1": {
+      "commandName": "IIS",
+      "launchUrl": "IIS",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   },
-  "$schema": "https://json.schemastore.org/launchsettings.json"
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost:1507",
+      "sslPort": 0
+    }
+  }
 }
