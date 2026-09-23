@@ -1,6 +1,12 @@
+using DealerManager.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<DealerManagerDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("MainDbConnectionString")
+    ));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
