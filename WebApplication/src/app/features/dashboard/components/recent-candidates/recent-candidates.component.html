@@ -1,0 +1,135 @@
+<section class="panel overflow-hidden" aria-labelledby="candidates-title">
+  <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+    <div class="flex items-center gap-2.5">
+      <h2 id="candidates-title">Recent Candidates</h2>
+      <span class="count-pill">{{ candidates().length }}</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <p-select
+        [options]="statuses"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        ariaLabel="Filter candidates by status"
+        appendTo="body"
+        size="small"
+      />
+      <a routerLink="/candidates" class="text-link"
+        >View all <svg lucideIcon="arrow-up-right" [size]="14" aria-hidden="true"></svg
+      ></a>
+    </div>
+  </div>
+  <p-table
+    [value]="filtered()"
+    dataKey="id"
+    [tableStyle]="{ 'min-width': '1080px' }"
+    size="small"
+    [rowHover]="true"
+  >
+    <ng-template #header
+      ><tr>
+        <th scope="col">Vehicle</th>
+        <th scope="col">Year</th>
+        <th scope="col">Mileage / Specs</th>
+        <th scope="col" class="text-right">Estimated Total Cost</th>
+        <th scope="col" class="text-right">Expected Sale</th>
+        <th scope="col" class="text-right">Expected Profit</th>
+        <th scope="col" class="text-right">Expected ROI</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="sr-only">Action</span></th>
+      </tr></ng-template
+    >
+    <ng-template #body let-item>
+      @let candidate = row(item);
+      <tr>
+        <td>
+          <span class="font-semibold text-slate-800 whitespace-nowrap">{{ candidate.vehicle }}</span
+          ><span class="block text-[10px] mt-1 text-slate-400"
+            >CND-{{ candidate.id.toString().padStart(4, '0') }}</span
+          >
+        </td>
+        <td class="text-slate-500">{{ candidate.year }}</td>
+        <td>
+          <span class="whitespace-nowrap">{{ candidate.mileage | number }} km</span
+          ><span class="block text-[10px] mt-1 text-slate-400">{{ candidate.specs }}</span>
+        </td>
+        <td class="text-right"><app-money-display [amount]="candidate.estimatedTotalCost" /></td>
+        <td class="text-right"><app-money-display [amount]="candidate.expectedSale" /></td>
+        <td class="text-right font-semibold text-emerald-700">
+          <app-money-display [amount]="candidate.expectedProfit" />
+        </td>
+        <td class="text-right text-emerald-700 tabular-nums">
+          {{ candidate.expectedRoi | number: '1.1-1' }}%
+        </td>
+        <td><app-status-badge [status]="candidate.status" /></td>
+        <td>
+          <button
+            type="button"
+            class="review-button"
+            [attr.aria-label]="'Review ' + candidate.vehicle"
+            (click)="selectedCandidate.set(candidate)"
+          >
+            Review<svg lucideIcon="arrow-up-right" [size]="13" aria-hidden="true"></svg>
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage
+      ><tr>
+        <td colspan="9" class="!py-10 text-center text-slate-500">
+          No candidates match your search or status filter.
+        </td>
+      </tr></ng-template
+    >
+  </p-table>
+  <div class="px-5 py-3 border-t border-slate-100 text-[10px] text-slate-400 flex justify-between">
+    <span>Showing {{ filtered().length }} of {{ candidates().length }} recent candidates</span
+    ><span>Pre-purchase estimates</span>
+  </div>
+</section>
+<p-dialog
+  closeAriaLabel="Close dialog"
+  header="Candidate overview"
+  [visible]="selectedCandidate() !== null"
+  (visibleChange)="selectedCandidate.set(null)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '560px', maxWidth: '94vw' }"
+>
+  @if (selectedCandidate(); as candidate) {
+    <h3 class="text-xl font-semibold">{{ candidate.vehicle }}</h3>
+    <p class="mt-2 mb-4 text-sm text-slate-500">
+      {{ candidate.year }} · {{ candidate.mileage | number }} km · {{ candidate.specs }}
+    </p>
+    <app-status-badge [status]="candidate.status" />
+    <p class="mt-4 text-xs text-slate-500">VIN: {{ candidate.vin }}</p>
+    <dl class="mt-6 grid grid-cols-2 gap-5">
+      <div>
+        <dt class="text-xs text-slate-500">Estimated total cost</dt>
+        <dd class="mt-1 font-semibold">
+          <app-money-display [amount]="candidate.estimatedTotalCost" />
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-slate-500">Expected sale</dt>
+        <dd class="mt-1 font-semibold"><app-money-display [amount]="candidate.expectedSale" /></dd>
+      </div>
+      <div>
+        <dt class="text-xs text-slate-500">Expected profit</dt>
+        <dd class="mt-1 font-semibold text-emerald-700">
+          <app-money-display [amount]="candidate.expectedProfit" />
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-slate-500">Expected ROI</dt>
+        <dd class="mt-1 font-semibold text-emerald-700">
+          {{ candidate.expectedRoi | number: '1.1-1' }}%
+        </dd>
+      </div>
+    </dl>
+    <p class="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500">
+      Read-only preview. Estimates do not represent actual capital movements.
+    </p>
+  }
+</p-dialog>

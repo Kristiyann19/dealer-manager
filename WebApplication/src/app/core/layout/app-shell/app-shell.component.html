@@ -1,0 +1,17 @@
+<a class="skip-link" href="#main-content">Skip to content</a>
+@if (menuOpen()) {
+  <button
+    class="fixed inset-0 z-30 bg-slate-900/30 lg:hidden"
+    aria-label="Close navigation"
+    (click)="menuOpen.set(false)"
+  ></button>
+}
+<div class="sidebar" [class.sidebar-open]="menuOpen()">
+  <app-sidebar (navigate)="menuOpen.set(false)" />
+</div>
+<div class="workspace">
+  <app-topbar (toggleMenu)="menuOpen.set(!menuOpen())" />
+  <main id="main-content" tabindex="-1" class="px-4 py-6 md:px-7 lg:px-8 lg:py-7">
+    <router-outlet />
+  </main>
+</div>
