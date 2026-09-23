@@ -1,0 +1,25 @@
+/* Global application styles. */
+:root {
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+  background: #f9fafb;
+}
+
+body {
+  margin: 0;
+}
+
+header,
+main {
+  padding: 1rem 2rem;
+}
+
+header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
