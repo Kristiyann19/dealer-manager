@@ -1,0 +1,6 @@
+@DealerManager_HostAddress = http://localhost:5296
+
+GET {{DealerManager_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

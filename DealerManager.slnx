@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DealerManager.WebAPI/DealerManager.WebAPI.csproj" />
+  <Project Path="DealerManager.Domain/DealerManager.Domain.csproj" />
+  <Project Path="DealerManager.Application/DealerManager.Application.csproj" />
+  <Project Path="DealerManager.Infrastructure/DealerManager.Infrastructure.csproj" />
+</Solution>

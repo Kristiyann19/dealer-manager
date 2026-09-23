@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DealerManager.Application/DealerManager.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="AutoMapperProfiles/" />
+    <Folder Include="Extensions/" />
+    <Folder Include="Helpers/" />
+    <Folder Include="Repository/" />
+    <Folder Include="Service/" />
+  </ItemGroup>
+</Project>
