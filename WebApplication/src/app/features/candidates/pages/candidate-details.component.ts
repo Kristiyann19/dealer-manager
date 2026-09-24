@@ -49,6 +49,7 @@ import { apiError, optionalText } from '../components/candidate-form-utils';
     EstimateFormComponent,
   ],
   templateUrl: './candidate-details.component.html',
+  styleUrl: './candidate-details.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CandidateDetailsComponent {

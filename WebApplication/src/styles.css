@@ -470,6 +470,50 @@
 .p-dialog-title {
   font-size: 16px !important;
 }
+/* Details-only overrides for nested PrimeNG and estimate form components. */
+app-candidate-details app-candidate-status .p-tag {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  --p-tag-info-background: #e0efff;
+  --p-tag-info-color: #1e40af;
+  --p-tag-success-background: #dcfce7;
+  --p-tag-success-color: #166534;
+  --p-tag-danger-background: #fee2e2;
+  --p-tag-danger-color: #991b1b;
+  --p-tag-secondary-background: #e2e8f0;
+  --p-tag-secondary-color: #334155;
+}
+app-candidate-details app-estimate-form .panel {
+  padding: 24px;
+  border-color: #dce3ec;
+  border-radius: 12px;
+}
+app-candidate-details app-estimate-form h2 {
+  font-size: 22px;
+}
+app-candidate-details
+  app-estimate-form
+  :is(.field-label, .text-xs, .info-banner, .error-banner, .field-error) {
+  font-size: 14px;
+}
+app-candidate-details app-estimate-form :is(.field-label, .text-slate-500) {
+  color: #475569;
+}
+app-candidate-details app-estimate-form .form-input {
+  font-size: 16px;
+  min-height: 44px;
+  border-color: #cbd5e1;
+  border-radius: 8px;
+}
+app-candidate-details app-estimate-form :is(.primary-button, .secondary-button) {
+  font-size: 14px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  white-space: normal;
+}
 @media (max-width: 1279px) {
   .pipeline-stage {
     padding: 5px 10px;
