@@ -13,6 +13,9 @@ public class Candidate : Entity
     public string? Vin { get; set; }
     public string? Source { get; set; }
     public string? Location { get; set; }
+    // Seller/intermediary asking price; null for records created before this field existed.
+    public decimal? AskingPrice { get; set; }
+    // Legacy cache. The latest CandidateEstimate is the source of the expected selling price.
     public decimal ExpectedSellingPrice { get; set; }
     public string? Notes { get; set; }
     public DateTimeOffset CreatedAt { get; set; }

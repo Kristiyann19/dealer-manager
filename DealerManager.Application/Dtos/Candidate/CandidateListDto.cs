@@ -11,7 +11,8 @@ namespace DealerManager.Application.Dtos.Candidate
         public int? Year { get; init; }
         public int? Mileage { get; init; }
         public CandidateStatus Status { get; init; }
-        public decimal ExpectedSellingPrice { get; init; }
+        public decimal? AskingPrice { get; init; }
+        public decimal? ExpectedSellingPrice { get; init; }
         public DateTimeOffset CreatedAt { get; init; }
         // Null means no estimate exists; zero is a valid calculated result.
         public decimal? EstimatedTotalCost { get; init; }

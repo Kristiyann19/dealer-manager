@@ -17,7 +17,7 @@ public class CandidateApiTests
         {
             id = 900, status = CandidateStatus.Purchased,
             createdAt = "1999-01-01T00:00:00Z", rejectedAt = "1999-01-01T00:00:00Z",
-            purchasedAt = "1999-01-01T00:00:00Z", make = "BMW", model = "X1", expectedSellingPrice = 7000
+            purchasedAt = "1999-01-01T00:00:00Z", make = "BMW", model = "X1", askingPrice = 3000, expectedSellingPrice = 7000
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -27,6 +27,8 @@ public class CandidateApiTests
         Assert.Equal(new FixedTimeProvider().Now, created.CreatedAt);
         Assert.Null(created.RejectedAt);
         Assert.Null(created.PurchasedAt);
+        Assert.Equal(3000m, created.AskingPrice);
+        Assert.Null(created.ExpectedSellingPrice);
         Assert.NotNull(response.Headers.Location);
         var details = await client.GetFromJsonAsync<CandidateDetailsDto>(response.Headers.Location);
         Assert.Equal(created.Id, details!.Id);
@@ -40,8 +42,10 @@ public class CandidateApiTests
     {
         using var factory = new CandidateApiFactory();
         using var client = factory.CreateInitializedClient();
-        var create = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", expectedSellingPrice = 7000 });
+        var create = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", askingPrice = 5000 });
         var candidate = (await create.Content.ReadFromJsonAsync<CandidateDetailsDto>())!;
+        Assert.Null(candidate.ExpectedSellingPrice);
+        Assert.Null(candidate.ExpectedProfit);
 
         var prematureApproval = await client.PostAsync($"/api/candidates/{candidate.Id}/approve", null);
         Assert.Equal(HttpStatusCode.Conflict, prematureApproval.StatusCode);
@@ -68,6 +72,8 @@ public class CandidateApiTests
         Assert.Equal(estimate.Id, Assert.Single(history!).Id);
         var list = await client.GetFromJsonAsync<CandidateListResultDto>("/api/candidates?Limit=1");
         Assert.Equal(5000m, Assert.Single(list!.Items).EstimatedTotalCost);
+        Assert.Equal(5000m, Assert.Single(list.Items).AskingPrice);
+        Assert.Equal(7000m, Assert.Single(list.Items).ExpectedSellingPrice);
 
         var rejection = await client.PostAsJsonAsync($"/api/candidates/{candidate.Id}/reject", new { reason = "Review failed" });
         Assert.Equal(HttpStatusCode.OK, rejection.StatusCode);
@@ -92,10 +98,14 @@ public class CandidateApiTests
     {
         using var factory = new CandidateApiFactory();
         using var client = factory.CreateInitializedClient();
-        var invalidName = await client.PostAsJsonAsync("/api/candidates", new { make = " ", model = "X1" });
+        var invalidName = await client.PostAsJsonAsync("/api/candidates", new { make = " ", model = "X1", askingPrice = 3000 });
         Assert.Equal(HttpStatusCode.BadRequest, invalidName.StatusCode);
-        var invalidYear = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", year = 9999 });
+        var invalidYear = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", year = 9999, askingPrice = 3000 });
         Assert.Equal(HttpStatusCode.BadRequest, invalidYear.StatusCode);
+        var missingPrice = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", expectedSellingPrice = 7000 });
+        Assert.Equal(HttpStatusCode.BadRequest, missingPrice.StatusCode);
+        var negativePrice = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", askingPrice = -1 });
+        Assert.Equal(HttpStatusCode.BadRequest, negativePrice.StatusCode);
         var list = await client.GetFromJsonAsync<CandidateListResultDto>("/api/candidates");
         Assert.Equal(0, list!.TotalCount);
     }

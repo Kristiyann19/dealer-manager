@@ -83,46 +83,25 @@
             [message]="'ui.mileage_must_be_a_whole_number_between_0_and_2_147_483_647' | translate"
           />
         </div>
-        <div class="sm:col-span-2">
-          <label class="field-label" for="vin">{{ 'ui.vin' | translate }}</label
-          ><input id="vin" class="form-input" formControlName="vin" />
-        </div>
         <div>
-          <label class="field-label" for="source">{{ 'ui.source' | translate }}</label
-          ><input
-            id="source"
-            class="form-input"
-            formControlName="source"
-            [placeholder]="'ui.auction_listing_or_seller' | translate"
-          />
-        </div>
-        <div>
-          <label class="field-label" for="location">{{ 'ui.location' | translate }}</label
-          ><input
-            id="location"
-            class="form-input"
-            formControlName="location"
-            [placeholder]="'ui.city_country' | translate"
-          />
-        </div>
-        <div>
-          <label class="field-label" for="selling-price">{{
-            'ui.expected_selling_price_eur' | translate
+          <label class="field-label" for="asking-price">{{
+            'candidate.askingPriceRequired' | translate
           }}</label
           ><input
-            id="selling-price"
+            id="asking-price"
             class="form-input"
             type="number"
             min="0"
             step="0.01"
-            formControlName="expectedSellingPrice"
+            formControlName="askingPrice"
             aria-required="true"
             aria-describedby="price-error"
           /><app-field-error
             id="price-error"
-            [control]="fields.expectedSellingPrice"
-            [message]="'ui.enter_an_expected_selling_price_of_zero_or_more' | translate"
+            [control]="fields.askingPrice"
+            [message]="'candidate.askingPriceValidation' | translate"
           />
+          <p class="text-xs text-slate-500 mt-2">{{ 'candidate.askingPriceHelp' | translate }}</p>
         </div>
         <div class="sm:col-span-2">
           <label class="field-label" for="notes">{{ 'ui.notes' | translate }}</label

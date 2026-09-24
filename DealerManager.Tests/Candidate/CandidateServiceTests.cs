@@ -17,7 +17,7 @@ public class CandidateServiceTests
     private static CreateCandidateRequest NewCandidate() => new()
     {
         Make = " BMW ", Model = " X1 ", Year = 2013, Mileage = 142000,
-        ExpectedSellingPrice = 7000, Notes = "Original evaluation"
+        AskingPrice = 3000, Notes = "Original evaluation"
     };
 
     private static CreateCandidateEstimateRequest Estimate(int candidateId) => new()
@@ -48,8 +48,23 @@ public class CandidateServiceTests
         Assert.Null(candidate.PurchasedAt);
         Assert.Null(candidate.LatestEstimate);
         Assert.Null(candidate.EstimatedTotalCost);
+        Assert.Equal(3000m, candidate.AskingPrice);
+        Assert.Null(candidate.ExpectedSellingPrice);
         Assert.Empty(candidate.EstimateHistory);
         Assert.Equal(1, await store.Context.Candidates.CountAsync());
+    }
+
+    [Fact]
+    public async Task LegacyCandidatesDoNotInventAnAskingPriceFromTheSellingPrice()
+    {
+        using var store = new CandidateTestStore();
+        var legacy = new DealerManager.Domain.Entities.Candidate { Make = "BMW", Model = "Legacy", ExpectedSellingPrice = 7000 };
+        store.Context.Candidates.Add(legacy);
+        await store.Context.SaveChangesAsync();
+        var details = await store.Service.GetCandidateDetails(legacy.Id, Token);
+        Assert.Null(details.AskingPrice);
+        Assert.Null(details.ExpectedSellingPrice);
+        Assert.Null(Assert.Single((await store.Service.GetCandidates(new(), Token)).Items).AskingPrice);
     }
 
     [Theory]
@@ -59,6 +74,7 @@ public class CandidateServiceTests
     [InlineData("futureYear")]
     [InlineData("mileage")]
     [InlineData("price")]
+    [InlineData("missingPrice")]
     public async Task CreateRejectsInvalidInputBeforeWriting(string field)
     {
         using var store = new CandidateTestStore();
@@ -70,7 +86,8 @@ public class CandidateServiceTests
             case "oldYear": request.Year = 1885; break;
             case "futureYear": request.Year = 2028; break;
             case "mileage": request.Mileage = -1; break;
-            case "price": request.ExpectedSellingPrice = -0.01m; break;
+            case "price": request.AskingPrice = -0.01m; break;
+            case "missingPrice": request.AskingPrice = null; break;
         }
 
         await Assert.ThrowsAsync<ValidationException>(() => store.Service.CreateCandidate(request, Token));
@@ -102,6 +119,7 @@ public class CandidateServiceTests
         var details = await store.Service.GetCandidateDetails(candidate.Id, Token);
         Assert.Equal(second.Id, details.LatestEstimate!.Id);
         Assert.Equal(7500m, details.ExpectedSellingPrice);
+        Assert.Equal(3000m, details.AskingPrice);
         Assert.Equal(5580m, details.EstimatedTotalCost);
         Assert.Equal(1920m, details.ExpectedProfit);
         Assert.Equal(new[] { 2, 1 }, details.EstimateHistory.Select(estimate => estimate.Version));
@@ -228,7 +246,7 @@ public class CandidateServiceTests
     {
         using var store = new CandidateTestStore();
         await store.Service.CreateCandidate(NewCandidate(), Token);
-        await store.Service.CreateCandidate(new() { Make = "Audi", Model = "Q3" }, Token);
+        await store.Service.CreateCandidate(new() { Make = "Audi", Model = "Q3", AskingPrice = 5000 }, Token);
         var page = await store.Service.GetCandidates(new() { Limit = 1, Offset = 1 }, Token);
         Assert.Equal(2, page.TotalCount);
         Assert.Equal("BMW", Assert.Single(page.Items).Make);

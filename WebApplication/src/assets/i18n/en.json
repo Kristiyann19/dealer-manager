@@ -39,7 +39,7 @@
     "all_candidates": "← All candidates",
     "a_new_opportunity": "A NEW OPPORTUNITY",
     "new_candidate_2": "New candidate",
-    "capture_the_vehicle_details_you_can_add_a_cost_estimate_after_saving": "Capture the vehicle details. You can add a cost estimate after saving.",
+    "capture_the_vehicle_details_you_can_add_a_cost_estimate_after_saving": "Enter the vehicle details and asking price. After creating the candidate, add the expected selling price and costs in an estimate.",
     "vehicle_details": "Vehicle details",
     "fields_marked_are_required": "Fields marked * are required.",
     "make": "Make *",
@@ -236,7 +236,13 @@
     "removeItem": "Remove cost item {{index}}",
     "versionSaved": "Estimate version {{version}} saved. Previous versions remain unchanged.",
     "approved": "Candidate approved. It has not been purchased.",
-    "rejected": "Candidate rejected. The evaluation history has been preserved."
+    "rejected": "Candidate rejected. The evaluation history has been preserved.",
+    "askingPrice": "Candidate price (EUR)",
+    "askingPriceRequired": "Candidate price (EUR) *",
+    "askingPriceHelp": "The price quoted by the seller or intermediary for this vehicle.",
+    "askingPriceValidation": "Enter a candidate price of zero or more.",
+    "sellingPricePending": "Enter in an estimate",
+    "estimatePurchaseHelp": "The asking price is prefilled as a Purchase cost. Enter the expected selling price and add other costs. The purchase price is counted only through this cost item."
   },
   "form": {
     "year": "Enter a whole year between 1886 and {{maxYear}}.",

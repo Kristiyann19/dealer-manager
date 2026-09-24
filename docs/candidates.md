@@ -36,12 +36,16 @@ Create candidate example:
   "model": "X1 2.0d",
   "year": 2013,
   "mileage": 142000,
-  "expectedSellingPrice": 7000,
+  "askingPrice": 3000,
   "notes": "Inspect the fuel system"
 }
 ```
 
-The backend assigns Id, UnderReview status and CreatedAt. Requests cannot assign system timestamps or status. Make/Model are required; Year must be 1886 through the current UTC year plus one. Mileage and selling price must be non-negative. Optional empty strings are normalized to null.
+The create contract contains make, model, year, mileage, notes and askingPrice (the seller/intermediary's quote). Make, model and askingPrice are required. The backend assigns Id, UnderReview status and CreatedAt. Requests cannot assign system timestamps, status or an expected selling price. Year must be 1886 through the current UTC year plus one; mileage and askingPrice must be non-negative. Notes are normalized to null when empty.
+
+AskingPrice is stored independently from estimates and never moves capital. The list/details expectedSellingPrice is null until an estimate exists, then comes from its latest version. The Angular estimate form prefills one Purchase item from askingPrice and requires a separate selling-price entry; the calculator sums the submitted items, so the offer is not counted a second time. Later estimate versions do not overwrite the original asking price.
+
+Apply migration `AddCandidateAskingPrice` to existing databases. It adds a nullable numeric column; legacy records retain null because their former selling price cannot safely be interpreted as a seller quote. The legacy Candidate.ExpectedSellingPrice cache is retained for data compatibility; read models use the latest estimate as the source of the selling price.
 
 Create estimate example (replace candidateId with the created candidate's ID):
 
@@ -70,7 +74,7 @@ An empty object `{}` rejects without a reason. Approval does not require a body.
 
 ## Versioning and financial analysis
 
-Within one serializable transaction, the service verifies the candidate, reads the highest estimate version, and inserts a new estimate with `max + 1` (or 1 initially), including its items. Existing estimates and decision snapshots are never updated. All current estimate writers must use this transaction path. No schema change or migration is needed for this feature.
+Within one serializable transaction, the service verifies the candidate, reads the highest estimate version, and inserts a new estimate with `max + 1` (or 1 initially), including its items. Existing estimates and decision snapshots are never updated. All current estimate writers must use this transaction path.
 
 PostgreSQL serialization failures/deadlocks roll back the entire operation and return HTTP 409. The caller can retry the complete request; there is no automatic retry. This prevents two conflicting requests from committing the same new version through this service. This behavior follows [PostgreSQL transaction isolation](https://www.postgresql.org/docs/current/transaction-iso.html).
 
@@ -92,7 +96,7 @@ Decimal results are not rounded or persisted. An absent estimate produces null c
 - Validation uses DataAnnotations at the API boundary and in service methods, with the dynamic year and aggregate arithmetic checks in the service/calculator.
 - There was no pre-existing error/result convention; expected errors use HTTP ProblemDetails (400/404/409). Unexpected exceptions use the standard ASP.NET Core handler.
 
-No Vehicle, FinancialTransaction, capital operation, purchase action, photo storage, authentication or Angular integration is implemented.
+The Angular Candidate module integrates these endpoints. No Vehicle, FinancialTransaction, capital operation, purchase action, photo storage or authentication is implemented by this feature.
 
 ## Verification
 

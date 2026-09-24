@@ -59,6 +59,7 @@
                 <tr>
                   <th>{{ 'ui.vehicle' | translate }}</th>
                   <th>{{ 'ui.status' | translate }}</th>
+                  <th>{{ 'candidate.askingPrice' | translate }}</th>
                   <th>{{ 'ui.expected_sale' | translate }}</th>
                   <th>{{ 'ui.estimated_cost' | translate }}</th>
                   <th>{{ 'ui.expected_profit' | translate }}</th>
@@ -90,8 +91,17 @@
                     <td><app-candidate-status [status]="candidate.status" /></td>
                     <td>
                       {{
-                        candidate.expectedSellingPrice
-                          | localizedCurrency: 'EUR' : 'symbol' : '1.2-2'
+                        candidate.askingPrice === null
+                          ? ('common.notProvided' | translate)
+                          : (candidate.askingPrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
+                      }}
+                    </td>
+                    <td>
+                      {{
+                        candidate.expectedSellingPrice === null
+                          ? ('common.noEstimate' | translate)
+                          : (candidate.expectedSellingPrice
+                            | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
                       }}
                     </td>
                     <td>

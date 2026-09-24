@@ -1,4 +1,4 @@
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -35,6 +35,7 @@ export class EstimateFormComponent implements OnInit {
   readonly cancelled = output<void>();
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(CandidateApiService);
+  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly categories = COST_CATEGORIES;
   protected readonly busy = signal(false);
@@ -52,7 +53,15 @@ export class EstimateFormComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.form.controls.expectedSellingPrice.setValue(this.candidate().expectedSellingPrice);
+    const candidate = this.candidate();
+    this.form.controls.expectedSellingPrice.setValue(
+      candidate.latestEstimate?.expectedSellingPrice ?? null,
+    );
+    this.items.at(0).patchValue({
+      category: CostCategory.Purchase,
+      description: this.translate.instant('cost.0'),
+      estimatedAmount: candidate.askingPrice,
+    });
   }
   private item(value?: CreateEstimateItemRequest) {
     return this.fb.group({

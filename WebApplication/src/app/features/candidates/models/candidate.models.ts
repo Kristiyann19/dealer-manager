@@ -49,10 +49,7 @@ export interface CreateCandidateRequest {
   model: string;
   year: number | null;
   mileage: number | null;
-  vin: string | null;
-  source: string | null;
-  location: string | null;
-  expectedSellingPrice: number;
+  askingPrice: number;
   notes: string | null;
 }
 export interface CandidateListItem {
@@ -62,7 +59,8 @@ export interface CandidateListItem {
   year: number | null;
   mileage: number | null;
   status: CandidateStatus;
-  expectedSellingPrice: number;
+  askingPrice: number | null;
+  expectedSellingPrice: number | null;
   createdAt: string;
   estimatedTotalCost: number | null;
   expectedProfit: number | null;

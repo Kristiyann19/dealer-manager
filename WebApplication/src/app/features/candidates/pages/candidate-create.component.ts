@@ -35,13 +35,7 @@ export class CandidateCreateComponent {
       Validators.min(0),
       Validators.max(2147483647),
     ]),
-    expectedSellingPrice: this.fb.control<number | null>(null, [
-      Validators.required,
-      Validators.min(0),
-    ]),
-    vin: this.fb.nonNullable.control(''),
-    source: this.fb.nonNullable.control(''),
-    location: this.fb.nonNullable.control(''),
+    askingPrice: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
     notes: this.fb.nonNullable.control(''),
   });
   protected readonly fields = this.form.controls;
@@ -58,10 +52,7 @@ export class CandidateCreateComponent {
         ...value,
         make: value.make.trim(),
         model: value.model.trim(),
-        expectedSellingPrice: value.expectedSellingPrice!,
-        vin: optionalText(value.vin),
-        source: optionalText(value.source),
-        location: optionalText(value.location),
+        askingPrice: value.askingPrice!,
         notes: optionalText(value.notes),
       })
       .pipe(

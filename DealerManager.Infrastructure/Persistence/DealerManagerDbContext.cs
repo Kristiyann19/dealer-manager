@@ -37,6 +37,18 @@ namespace DealerManager.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
 
             ApplyConfigurations(modelBuilder);
+            // Match the required text columns in the initial schema independently of nullable compiler settings.
+            modelBuilder.Entity<Candidate>().Property(x => x.Make).IsRequired();
+            modelBuilder.Entity<Candidate>().Property(x => x.Model).IsRequired();
+            modelBuilder.Entity<CandidateEstimateItem>().Property(x => x.Description).IsRequired();
+            modelBuilder.Entity<CandidatePhoto>().Property(x => x.FilePath).IsRequired();
+            modelBuilder.Entity<CapitalAccount>().Property(x => x.Name).IsRequired();
+            modelBuilder.Entity<CapitalAccount>().Property(x => x.Currency).IsRequired();
+            modelBuilder.Entity<FinancialTransaction>().Property(x => x.Description).IsRequired();
+            modelBuilder.Entity<Vehicle>().Property(x => x.Make).IsRequired();
+            modelBuilder.Entity<Vehicle>().Property(x => x.Model).IsRequired();
+            modelBuilder.Entity<VehicleCostPlanItem>().Property(x => x.Description).IsRequired();
+            modelBuilder.Entity<VehicleExpense>().Property(x => x.Description).IsRequired();
             DisableCascadeDelete(modelBuilder);
         }
 

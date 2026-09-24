@@ -42,7 +42,8 @@ const candidate: CandidateDetails = {
   year: null,
   mileage: 0,
   status: CandidateStatus.UnderReview,
-  expectedSellingPrice: 7000,
+  askingPrice: 3000,
+  expectedSellingPrice: null,
   createdAt: '2026-09-23T10:00:00Z',
   estimatedTotalCost: null,
   expectedProfit: null,
@@ -103,7 +104,7 @@ describe('Candidate module HTTP workflows', () => {
     expect(fixture.nativeElement.textContent).toContain('Make is required.');
     input(fixture, '#make', '   ');
     input(fixture, '#model', '320d');
-    input(fixture, '#selling-price', '0');
+    input(fixture, '#asking-price', '0');
     submit(fixture);
     http.expectNone('/api/candidates');
   });
@@ -113,7 +114,7 @@ describe('Candidate module HTTP workflows', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     input(fixture, '#make', ' BMW ');
     input(fixture, '#model', '320d');
-    input(fixture, '#selling-price', '0');
+    input(fixture, '#asking-price', '0');
     input(fixture, '#mileage', '0');
     submit(fixture);
     submit(fixture);
@@ -124,10 +125,7 @@ describe('Candidate module HTTP workflows', () => {
       model: '320d',
       year: null,
       mileage: 0,
-      expectedSellingPrice: 0,
-      vin: null,
-      source: null,
-      location: null,
+      askingPrice: 0,
       notes: null,
     });
     request.flush(candidate);
@@ -138,7 +136,7 @@ describe('Candidate module HTTP workflows', () => {
     fixture.detectChanges();
     input(fixture, '#make', 'BMW');
     input(fixture, '#model', '320d');
-    input(fixture, '#selling-price', '7000');
+    input(fixture, '#asking-price', '7000');
     submit(fixture);
     http
       .expectOne('/api/candidates')
@@ -156,7 +154,7 @@ describe('Candidate module HTTP workflows', () => {
     fixture.detectChanges();
     input(fixture, '#make', 'BMW');
     input(fixture, '#model', '320d');
-    input(fixture, '#selling-price', '7000');
+    input(fixture, '#asking-price', '7000');
     input(fixture, '#year', '2020.5');
     input(fixture, '#mileage', '-1');
     submit(fixture);
@@ -193,10 +191,47 @@ describe('Candidate module HTTP workflows', () => {
     expect(button(fixture, 'Remove').disabled).toBe(true);
     input(fixture, '#description-0', 'No charge');
     input(fixture, '#amount-0', '0');
+    input(fixture, '#estimate-price', '7000');
     submit(fixture);
     const request = http.expectOne('/api/candidates/estimates');
     expect(request.request.body.items[0].estimatedAmount).toBe(0);
     request.flush(estimate);
+  });
+  it('creates with exactly the six requested fields and no selling price', () => {
+    const fixture = TestBed.createComponent(CandidateCreateComponent);
+    fixture.detectChanges();
+    const controls = Array.from(
+      fixture.nativeElement.querySelectorAll('[formControlName]') as NodeListOf<Element>,
+    ).map((element) => element.getAttribute('formControlName'));
+    expect(controls.sort()).toEqual(['askingPrice', 'make', 'mileage', 'model', 'notes', 'year']);
+    expect(fixture.nativeElement.textContent).toContain(en.candidate.askingPriceRequired);
+    expect(fixture.nativeElement.querySelector('#selling-price')).toBeNull();
+  });
+  it('prefills purchase cost from the offer while requiring an independent selling price', () => {
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', candidate);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#amount-0').value).toBe('3000');
+    expect(fixture.nativeElement.querySelector('#estimate-price').value).toBe('');
+    submit(fixture);
+    http.expectNone('/api/candidates/estimates');
+    input(fixture, '#estimate-price', '7000');
+    submit(fixture);
+    const request = http.expectOne('/api/candidates/estimates');
+    expect(request.request.body.expectedSellingPrice).toBe(7000);
+    expect(request.request.body.items).toEqual([
+      { category: 0, description: 'Purchase', estimatedAmount: 3000 },
+    ]);
+    expect(request.request.body).not.toHaveProperty('askingPrice');
+    request.flush(estimate);
+  });
+  it('shows both prices separately and a pending sale price before an estimate', () => {
+    const fixture = TestBed.createComponent(CandidateDetailsComponent);
+    fixture.detectChanges();
+    http.expectOne('/api/candidates/12').flush(candidate);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('€3,000.00');
+    expect(fixture.nativeElement.textContent).toContain(en.candidate.sellingPricePending);
   });
   it('requires an estimate before approval', () => {
     const fixture = TestBed.createComponent(CandidateDetailsComponent);

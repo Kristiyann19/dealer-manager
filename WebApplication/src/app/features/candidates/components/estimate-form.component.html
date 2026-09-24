@@ -9,6 +9,7 @@
     }}
   </p>
   <form [formGroup]="form" (ngSubmit)="submit()">
+    <p class="info-banner mb-5">{{ 'candidate.estimatePurchaseHelp' | translate }}</p>
     @if (error()) {
       <div class="error-banner mb-5" role="alert">{{ error() | translate }}</div>
     }

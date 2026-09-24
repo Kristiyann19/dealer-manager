@@ -49,10 +49,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
                 Model = request.Model.Trim(),
                 Year = request.Year,
                 Mileage = request.Mileage,
-                Vin = Normalize(request.Vin),
-                Source = Normalize(request.Source),
-                Location = Normalize(request.Location),
-                ExpectedSellingPrice = request.ExpectedSellingPrice,
+                AskingPrice = request.AskingPrice,
                 Notes = Normalize(request.Notes),
                 Status = CandidateStatus.UnderReview,
                 CreatedAt = now,
@@ -220,7 +217,8 @@ namespace DealerManager.Infrastructure.Service.Candidate
             {
                 Id = candidate.Id, Make = candidate.Make, Model = candidate.Model,
                 Year = candidate.Year, Mileage = candidate.Mileage, Status = candidate.Status,
-                ExpectedSellingPrice = candidate.ExpectedSellingPrice, CreatedAt = candidate.CreatedAt,
+                AskingPrice = candidate.AskingPrice,
+                ExpectedSellingPrice = latest?.ExpectedSellingPrice, CreatedAt = candidate.CreatedAt,
                 EstimatedTotalCost = analysis?.EstimatedTotalCost,
                 ExpectedProfit = analysis?.ExpectedProfit, ExpectedRoi = analysis?.ExpectedRoi
             };
@@ -235,7 +233,8 @@ namespace DealerManager.Infrastructure.Service.Candidate
             {
                 Id = candidate.Id, Make = candidate.Make, Model = candidate.Model,
                 Year = candidate.Year, Mileage = candidate.Mileage, Status = candidate.Status,
-                ExpectedSellingPrice = candidate.ExpectedSellingPrice, CreatedAt = candidate.CreatedAt,
+                AskingPrice = candidate.AskingPrice,
+                ExpectedSellingPrice = latest?.ExpectedSellingPrice, CreatedAt = candidate.CreatedAt,
                 Vin = candidate.Vin, Source = candidate.Source, Location = candidate.Location,
                 Notes = candidate.Notes, RejectedAt = candidate.RejectedAt, PurchasedAt = candidate.PurchasedAt,
                 EstimateHistory = history, LatestEstimate = latest,
