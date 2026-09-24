@@ -3,7 +3,7 @@ import { DashboardSummary } from '../models/dashboard.models';
 // All dashboard sample data lives here, outside presentation components.
 // Summary figures cover the dealership; the lists below are only recent/active subsets.
 export const MOCK_DASHBOARD: DashboardSummary = {
-  periodLabel: 'September 2026',
+  periodLabel: 'dashboard.period',
   asOf: '2026-09-23T10:00:00+03:00',
   monthly: {
     carsInStock: 23,

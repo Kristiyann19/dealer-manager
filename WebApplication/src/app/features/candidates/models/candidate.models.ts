@@ -22,10 +22,10 @@ export enum CostCategory {
   Other = 13,
 }
 export const CANDIDATE_STATUS_LABELS: Record<CandidateStatus, string> = {
-  [CandidateStatus.UnderReview]: 'Under review',
-  [CandidateStatus.Approved]: 'Approved',
-  [CandidateStatus.Rejected]: 'Rejected',
-  [CandidateStatus.Purchased]: 'Purchased',
+  [CandidateStatus.UnderReview]: 'status.Under Review',
+  [CandidateStatus.Approved]: 'status.Approved',
+  [CandidateStatus.Rejected]: 'status.Rejected',
+  [CandidateStatus.Purchased]: 'status.Purchased',
 };
 export const COST_CATEGORIES = [
   'Purchase',
@@ -42,7 +42,7 @@ export const COST_CATEGORIES = [
   'Fuel',
   'Advertising',
   'Other',
-].map((label, value) => ({ label, value: value as CostCategory }));
+].map((label, value) => ({ label: 'cost.' + value, value: value as CostCategory }));
 
 export interface CreateCandidateRequest {
   make: string;

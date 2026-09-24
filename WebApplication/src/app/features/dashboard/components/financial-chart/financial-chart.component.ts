@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { BaseChartDirective, provideCharts } from 'ng2-charts';
@@ -19,7 +20,7 @@ import { MonthlyFinancialData } from '../../models/dashboard.models';
 
 @Component({
   selector: 'app-financial-chart',
-  imports: [BaseChartDirective, SelectModule, FormsModule],
+  imports: [TranslatePipe, BaseChartDirective, SelectModule, FormsModule],
   providers: [
     provideCharts({
       registerables: [
@@ -39,19 +40,24 @@ import { MonthlyFinancialData } from '../../models/dashboard.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FinancialChartComponent {
+  private readonly translate = inject(TranslateService);
+  private text(key: string): string {
+    this.translate.currentLang();
+    return this.translate.instant(key);
+  }
   readonly data = input.required<MonthlyFinancialData[]>();
   protected readonly months = signal(6);
-  protected readonly periods = [
-    { label: 'Last 6 months', value: 6 },
-    { label: 'Last 3 months', value: 3 },
-  ];
+  protected readonly periods = computed(() => [
+    { label: this.text('dashboard.sixMonths'), value: 6 },
+    { label: this.text('dashboard.threeMonths'), value: 3 },
+  ]);
   protected readonly visibleData = computed(() => this.data().slice(-this.months()));
   protected readonly chartData = computed<ChartData<'bar' | 'line'>>(() => ({
-    labels: this.visibleData().map((month) => month.month),
+    labels: this.visibleData().map((month) => this.text('months.' + month.month)),
     datasets: [
       {
         type: 'bar',
-        label: 'Capital Invested',
+        label: this.text('ui.capital_invested'),
         data: this.visibleData().map((month) => month.capitalInvested),
         backgroundColor: '#b9d3fb',
         borderRadius: 3,
@@ -60,7 +66,7 @@ export class FinancialChartComponent {
       },
       {
         type: 'bar',
-        label: 'Sales Revenue',
+        label: this.text('ui.sales_revenue'),
         data: this.visibleData().map((month) => month.salesRevenue),
         backgroundColor: '#3976df',
         borderRadius: 3,
@@ -69,7 +75,7 @@ export class FinancialChartComponent {
       },
       {
         type: 'line',
-        label: 'Net Profit',
+        label: this.text('ui.net_profit'),
         data: this.visibleData().map((month) => month.netProfit),
         borderColor: '#159b73',
         backgroundColor: '#159b73',
@@ -94,7 +100,7 @@ export class FinancialChartComponent {
           label: (context) =>
             context.dataset.label +
             ': ' +
-            new Intl.NumberFormat('en-IE', {
+            new Intl.NumberFormat(this.translate.currentLang() === 'bg' ? 'bg-BG' : 'en-IE', {
               style: 'currency',
               currency: 'EUR',
               maximumFractionDigits: 0,
@@ -115,7 +121,12 @@ export class FinancialChartComponent {
         ticks: {
           color: '#8290a5',
           font: { size: 10 },
-          callback: (value) => '€' + Number(value) / 1000 + 'k',
+          callback: (value) =>
+            new Intl.NumberFormat(this.translate.currentLang() === 'bg' ? 'bg-BG' : 'en-IE', {
+              notation: 'compact',
+              style: 'currency',
+              currency: 'EUR',
+            }).format(Number(value)),
         },
       },
     },

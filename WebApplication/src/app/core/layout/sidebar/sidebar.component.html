@@ -3,23 +3,23 @@
     routerLink="/dashboard"
     (click)="navigate.emit()"
     class="flex items-center gap-3 px-6 py-7"
-    aria-label="AutoCapital dashboard"
+    [attr.aria-label]="'ui.autocapital_dashboard' | translate"
   >
     <span class="brand-mark"
       ><svg lucideIcon="car-front" [size]="23" aria-hidden="true"></svg
     ></span>
     <span
       ><span class="block text-lg font-bold tracking-tight text-slate-900"
-        >AutoCapital<span class="text-blue-600">.</span></span
-      ><span class="block text-[10px] text-slate-400 tracking-[0.1em] uppercase mt-0.5"
-        >Dealership ERP</span
-      ></span
+        >{{ 'ui.autocapital' | translate }}<span class="text-blue-600">.</span></span
+      ><span class="block text-[10px] text-slate-400 tracking-[0.1em] uppercase mt-0.5">{{
+        'ui.dealership_erp' | translate
+      }}</span></span
     >
   </a>
   <p class="px-7 mt-4 mb-3 text-[10px] uppercase font-semibold tracking-[0.13em] text-slate-400">
-    Workspace
+    {{ 'ui.workspace' | translate }}
   </p>
-  <nav class="space-y-1 px-3" aria-label="Main navigation">
+  <nav class="space-y-1 px-3" [attr.aria-label]="'ui.main_navigation' | translate">
     @for (link of links; track link.path) {
       <a
         [routerLink]="link.path"
@@ -29,7 +29,7 @@
         class="nav-link"
       >
         <svg [lucideIcon]="link.icon" [size]="18" aria-hidden="true"></svg
-        ><span>{{ link.label }}</span>
+        ><span>{{ link.label | translate }}</span>
       </a>
     }
   </nav>
@@ -40,15 +40,19 @@
       ariaCurrentWhenActive="page"
       (click)="navigate.emit()"
       class="nav-link"
-      ><svg lucideIcon="settings" [size]="18" aria-hidden="true"></svg>Settings</a
+      ><svg lucideIcon="settings" [size]="18" aria-hidden="true"></svg
+      >{{ 'ui.settings' | translate }}</a
     >
     <div class="mx-3 mt-5 border-t border-slate-100 pt-5 flex items-center gap-3">
       <span class="avatar bg-slate-100 text-slate-600">{{ workspace.user.initials }}</span>
       <div>
         <p class="text-xs font-semibold text-slate-800">{{ workspace.user.name }}</p>
-        <p class="text-[10px] text-slate-400 mt-1">{{ workspace.user.role }}</p>
+        <p class="text-[10px] text-slate-400 mt-1">{{ 'profile.role' | translate }}</p>
       </div>
-      <span class="ml-auto h-2 w-2 rounded-full bg-emerald-500" aria-label="Demo profile"></span>
+      <span
+        class="ml-auto h-2 w-2 rounded-full bg-emerald-500"
+        [attr.aria-label]="'ui.demo_profile' | translate"
+      ></span>
     </div>
   </div>
 </aside>

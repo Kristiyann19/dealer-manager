@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { LocalizedNumberPipe } from '../../../../shared/pipes/localized-format.pipe';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TableModule } from 'primeng/table';
@@ -14,11 +16,12 @@ import { CandidateStatus } from '../../../../shared/models/ui.models';
 @Component({
   selector: 'app-recent-candidates',
   imports: [
+    TranslatePipe,
     TableModule,
     SelectModule,
     DialogModule,
     FormsModule,
-    DecimalPipe,
+    LocalizedNumberPipe,
     RouterLink,
     LucideDynamicIcon,
     StatusBadgeComponent,
@@ -28,16 +31,21 @@ import { CandidateStatus } from '../../../../shared/models/ui.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecentCandidatesComponent {
+  private readonly translate = inject(TranslateService);
   readonly candidates = input.required<CandidateSummary[]>();
   readonly query = input('');
   protected readonly selectedStatus = signal<CandidateStatus | null>(null);
   protected readonly selectedCandidate = signal<CandidateSummary | null>(null);
-  protected readonly statuses = [
-    { label: 'All statuses', value: null },
-    { label: 'Under Review', value: 'Under Review' },
-    { label: 'Approved', value: 'Approved' },
-    { label: 'Pending Inspection', value: 'Pending Inspection' },
-  ];
+  protected readonly statuses = computed(() => {
+    this.translate.currentLang();
+    return [
+      { label: this.translate.instant('dashboard.allStatuses'), value: null },
+      ...(['Under Review', 'Approved', 'Pending Inspection'] as const).map((value) => ({
+        label: this.translate.instant('status.' + value),
+        value,
+      })),
+    ];
+  });
   protected readonly filtered = computed(() => {
     const query = this.query().trim().toLowerCase();
     return this.candidates().filter(

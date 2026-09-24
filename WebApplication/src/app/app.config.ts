@@ -1,6 +1,19 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+import { LanguageService } from './core/services/language.service';
+import { registerLocaleData } from '@angular/common';
+import bgLocale from '@angular/common/locales/bg';
+
+registerLocaleData(bgLocale);
 import { provideHttpClient } from '@angular/common/http';
-import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { provideRouter, TitleStrategy, withInMemoryScrolling } from '@angular/router';
+import { TranslatedTitleStrategy } from './core/services/translated-title.strategy';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
@@ -56,8 +69,18 @@ const AutoCapitalTheme = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
+    provideTranslateService({
+      fallbackLang: 'en',
+      loader: provideTranslateHttpLoader({
+        prefix: './assets/i18n/',
+        suffix: '.json',
+        failOnError: true,
+      }),
+    }),
+    provideAppInitializer(() => inject(LanguageService).initialize()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })),
+    { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
     providePrimeNG({
       theme: {
         preset: AutoCapitalTheme,

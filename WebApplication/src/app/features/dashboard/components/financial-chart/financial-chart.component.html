@@ -1,29 +1,33 @@
 <section class="panel h-full px-5 py-4" aria-labelledby="chart-title">
   <div class="section-heading">
     <div>
-      <h2 id="chart-title">Monthly Financial Overview</h2>
-      <p class="mt-1.5 text-[11px] text-slate-400">Capital deployment, revenue and profitability</p>
+      <h2 id="chart-title">{{ 'ui.monthly_financial_overview' | translate }}</h2>
+      <p class="mt-1.5 text-[11px] text-slate-400">
+        {{ 'ui.capital_deployment_revenue_and_profitability' | translate }}
+      </p>
     </div>
     <p-select
-      [options]="periods"
+      [options]="periods()"
       optionLabel="label"
       optionValue="value"
       [ngModel]="months()"
       (ngModelChange)="months.set($event)"
-      ariaLabel="Chart period"
+      [ariaLabel]="'ui.chart_period' | translate"
       appendTo="body"
       size="small"
     />
   </div>
   <div class="flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-slate-500 mb-6 mt-5">
     <span class="flex items-center gap-2"
-      ><span class="h-2 w-2 rounded-sm bg-[#b9d3fb]"></span>Capital Invested</span
+      ><span class="h-2 w-2 rounded-sm bg-[#b9d3fb]"></span
+      >{{ 'ui.capital_invested' | translate }}</span
     >
     <span class="flex items-center gap-2"
-      ><span class="h-2 w-2 rounded-sm bg-[#3976df]"></span>Sales Revenue</span
+      ><span class="h-2 w-2 rounded-sm bg-[#3976df]"></span
+      >{{ 'ui.sales_revenue' | translate }}</span
     >
     <span class="flex items-center gap-2"
-      ><span class="h-0.5 w-3 bg-[#159b73]"></span>Net Profit</span
+      ><span class="h-0.5 w-3 bg-[#159b73]"></span>{{ 'ui.net_profit' | translate }}</span
     >
   </div>
   <div class="h-[285px]">
@@ -33,28 +37,35 @@
       [options]="options"
       [type]="'bar'"
       role="img"
-      aria-label="Monthly capital invested, sales revenue and net profit in euros. Exact values are available in the table below."
+      [attr.aria-label]="
+        'ui.monthly_capital_invested_sales_revenue_and_net_profit_in_euros_exact_values_ar'
+          | translate
+      "
     ></canvas>
   </div>
   <details class="mt-4 text-[10px] text-slate-500">
-    <summary class="cursor-pointer hover:text-blue-600">View chart data</summary>
+    <summary class="cursor-pointer hover:text-blue-600">
+      {{ 'ui.view_chart_data' | translate }}
+    </summary>
     <div class="overflow-x-auto mt-3">
       <table class="w-full text-right">
         <caption class="sr-only">
-          Monthly financial data in EUR
+          {{
+            'ui.monthly_financial_data_in_eur' | translate
+          }}
         </caption>
         <thead>
           <tr>
-            <th scope="col" class="text-left py-2">Month</th>
-            <th scope="col">Invested (€)</th>
-            <th scope="col">Revenue (€)</th>
-            <th scope="col">Profit (€)</th>
+            <th scope="col" class="text-left py-2">{{ 'ui.month' | translate }}</th>
+            <th scope="col">{{ 'ui.invested' | translate }}</th>
+            <th scope="col">{{ 'ui.revenue' | translate }}</th>
+            <th scope="col">{{ 'ui.profit' | translate }}</th>
           </tr>
         </thead>
         <tbody>
           @for (month of visibleData(); track month.month) {
             <tr>
-              <th scope="row" class="text-left py-1">{{ month.month }}</th>
+              <th scope="row" class="text-left py-1">{{ 'months.' + month.month | translate }}</th>
               <td>{{ month.capitalInvested }}</td>
               <td>{{ month.salesRevenue }}</td>
               <td>{{ month.netProfit }}</td>

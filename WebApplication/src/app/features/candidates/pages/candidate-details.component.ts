@@ -1,4 +1,10 @@
 import {
+  LocalizedDatePipe,
+  LocalizedNumberPipe,
+  LocalizedCurrencyPipe,
+} from '../../../shared/pipes/localized-format.pipe';
+import { TranslatePipe } from '@ngx-translate/core';
+import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
@@ -6,7 +12,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -33,11 +39,12 @@ import { apiError, optionalText } from '../components/candidate-form-utils';
 @Component({
   selector: 'app-candidate-details',
   imports: [
+    TranslatePipe,
     RouterLink,
     ReactiveFormsModule,
-    CurrencyPipe,
-    DatePipe,
-    DecimalPipe,
+    LocalizedCurrencyPipe,
+    LocalizedDatePipe,
+    LocalizedNumberPipe,
     CandidateStatusComponent,
     EstimateFormComponent,
   ],
@@ -54,6 +61,7 @@ export class CandidateDetailsComponent {
   protected readonly error = signal('');
   protected readonly actionError = signal('');
   protected readonly notice = signal('');
+  protected readonly savedVersion = signal(0);
   protected readonly busy = signal(false);
   protected readonly showEstimate = signal(false);
   protected readonly decision = signal<'approve' | 'reject' | null>(null);
@@ -91,7 +99,7 @@ export class CandidateDetailsComponent {
               this.error.set('');
               this.candidate.set(null);
               if (!Number.isInteger(id) || id < 1 || id > 2147483647)
-                return of({ data: null, error: 'Invalid candidate ID.' });
+                return of({ data: null, error: 'errors.invalidId' });
               return this.api.details(id).pipe(
                 map((data) => ({ data, error: '' })),
                 catchError((error) => of({ data: null, error: apiError(error) })),
@@ -122,9 +130,8 @@ export class CandidateDetailsComponent {
   }
   protected estimateSaved(estimate: CandidateEstimate) {
     this.selectedVersion.set(estimate.id);
-    this.notice.set(
-      `Estimate version ${estimate.version} saved. Previous versions remain unchanged.`,
-    );
+    this.savedVersion.set(estimate.version);
+    this.notice.set('candidate.versionSaved');
     this.refresh();
   }
   protected openDecision(decision: 'approve' | 'reject') {
@@ -154,11 +161,7 @@ export class CandidateDetailsComponent {
           if (this.candidate()?.id !== candidate.id) return;
           this.candidate.set(updated);
           this.decision.set(null);
-          this.notice.set(
-            decision === 'approve'
-              ? 'Candidate approved. It has not been purchased.'
-              : 'Candidate rejected. The evaluation history has been preserved.',
-          );
+          this.notice.set(decision === 'approve' ? 'candidate.approved' : 'candidate.rejected');
         },
         error: (error) => {
           if (this.candidate()?.id === candidate.id) this.actionError.set(apiError(error, true));

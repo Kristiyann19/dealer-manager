@@ -1,23 +1,25 @@
 <div class="dashboard-content mx-auto max-w-[1600px]">
   <div class="page-heading">
     <div>
-      <p class="eyebrow">YOUR DEALERSHIP AT A GLANCE</p>
-      <h1>Dashboard</h1>
+      <p class="eyebrow">{{ 'ui.your_dealership_at_a_glance' | translate }}</p>
+      <h1>{{ 'ui.dashboard' | translate }}</h1>
       <p class="mt-2 text-xs text-slate-500">
-        A clear view of your inventory, operations and capital.
+        {{ 'ui.a_clear_view_of_your_inventory_operations_and_capital' | translate }}
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-3">
       <span class="demo-pill"
-        ><span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>Demo workspace</span
+        ><span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span
+        >{{ 'ui.demo_workspace' | translate }}</span
       ><button
         type="button"
         class="secondary-button"
         (click)="reload.next()"
         [disabled]="state().status === 'loading'"
-        aria-label="Refresh dashboard"
+        [attr.aria-label]="'ui.refresh_dashboard' | translate"
       >
-        <svg lucideIcon="refresh-cw" [size]="14" aria-hidden="true"></svg>Refresh
+        <svg lucideIcon="refresh-cw" [size]="14" aria-hidden="true"></svg
+        >{{ 'ui.refresh' | translate }}
       </button>
     </div>
   </div>
@@ -26,14 +28,16 @@
     @case ('loading') {
       <div class="panel p-10 text-sm text-slate-500 flex items-center gap-3" role="status">
         <svg lucideIcon="refresh-cw" class="animate-spin" [size]="18" aria-hidden="true"></svg
-        >Loading your dashboard…
+        >{{ 'ui.loading_your_dashboard' | translate }}
       </div>
     }
     @case ('error') {
       <div class="panel p-8" role="alert">
-        <h2>We couldn't load the dashboard.</h2>
-        <p class="mt-2 text-sm text-slate-500">Please try again.</p>
-        <button class="primary-button mt-5" type="button" (click)="reload.next()">Try again</button>
+        <h2>{{ 'ui.we_couldn_t_load_the_dashboard' | translate }}</h2>
+        <p class="mt-2 text-sm text-slate-500">{{ 'ui.please_try_again' | translate }}</p>
+        <button class="primary-button mt-5" type="button" (click)="reload.next()">
+          {{ 'ui.try_again' | translate }}
+        </button>
       </div>
     }
     @case ('ready') {
@@ -43,9 +47,12 @@
         <app-operational-pipeline [data]="current.data.pipeline" />
         @if (workspace.searchQuery()) {
           <div class="flex justify-between gap-3 text-xs text-slate-500" role="status">
-            <span>Filtering candidates and active vehicles for “{{ workspace.searchQuery() }}”</span
+            <span>{{
+              'ui.filtering_candidates_and_active_vehicles_for_value'
+                | translate: { p0: workspace.searchQuery() }
+            }}</span
             ><button class="text-link" type="button" (click)="workspace.searchQuery.set('')">
-              Clear search
+              {{ 'ui.clear_search' | translate }}
             </button>
           </div>
         }
@@ -64,11 +71,11 @@
         </div>
       </div>
       <footer class="mt-6 flex flex-wrap justify-between gap-2 text-[10px] text-slate-400">
-        <span>AutoCapital · Dealership workspace</span
-        ><span
-          >Sample data as of {{ current.data.asOf | date: 'd MMM y' : 'UTC' }} · All amounts in
-          EUR</span
-        >
+        <span>{{ 'ui.autocapital_dealership_workspace' | translate }}</span
+        ><span>{{
+          'ui.sample_data_as_of_value_all_amounts_in_eur'
+            | translate: { p0: (current.data.asOf | localizedDate: 'd MMM y' : 'UTC') }
+        }}</span>
       </footer>
     }
   }

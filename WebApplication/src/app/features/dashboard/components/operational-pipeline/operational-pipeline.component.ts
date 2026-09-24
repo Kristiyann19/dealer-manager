@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
@@ -5,11 +6,13 @@ import { PipelineSummary } from '../../models/dashboard.models';
 
 @Component({
   selector: 'app-operational-pipeline',
-  imports: [RouterLink, LucideDynamicIcon],
+  imports: [TranslatePipe, RouterLink, LucideDynamicIcon],
   template: ` <section class="panel px-5 py-4" aria-labelledby="pipeline-title">
     <div class="section-heading !mb-4">
-      <h2 id="pipeline-title">Operational Pipeline</h2>
-      <span class="text-[11px] text-slate-400 hidden sm:block">From opportunity to sale</span>
+      <h2 id="pipeline-title">{{ 'ui.operational_pipeline' | translate }}</h2>
+      <span class="text-[11px] text-slate-400 hidden sm:block">{{
+        'ui.from_opportunity_to_sale' | translate
+      }}</span>
     </div>
     <div class="pipeline-grid">
       @for (stage of stages(); track stage.label; let last = $last) {
@@ -18,7 +21,7 @@ import { PipelineSummary } from '../../models/dashboard.models';
             ><svg [lucideIcon]="stage.icon" [size]="17" aria-hidden="true"></svg
           ></span>
           <div class="flex-1">
-            <p class="text-[11px] text-slate-500">{{ stage.label }}</p>
+            <p class="text-[11px] text-slate-500">{{ stage.label | translate }}</p>
             <p class="mt-1 text-xl font-semibold text-slate-800 tabular-nums">{{ stage.count }}</p>
           </div>
           @if (!last) {
@@ -39,33 +42,39 @@ export class OperationalPipelineComponent {
   readonly data = input.required<PipelineSummary>();
   protected readonly stages = computed(() => [
     {
-      label: 'Candidates',
+      label: 'ui.candidates',
       count: this.data().candidates,
       icon: 'clipboard-list',
       tone: 'slate',
       route: '/candidates',
     },
     {
-      label: 'Transporting',
+      label: 'status.Transporting',
       count: this.data().transporting,
       icon: 'truck',
       tone: 'blue',
       route: '/vehicles',
     },
     {
-      label: 'Repairing',
+      label: 'status.Repairing',
       count: this.data().repairing,
       icon: 'wrench',
       tone: 'amber',
       route: '/vehicles',
     },
     {
-      label: 'Ready for Sale',
+      label: 'status.Ready For Sale',
       count: this.data().readyForSale,
       icon: 'circle-check',
       tone: 'green',
       route: '/vehicles',
     },
-    { label: 'Listed', count: this.data().listed, icon: 'tag', tone: 'blue', route: '/vehicles' },
+    {
+      label: 'status.Listed',
+      count: this.data().listed,
+      icon: 'tag',
+      tone: 'blue',
+      route: '/vehicles',
+    },
   ]);
 }

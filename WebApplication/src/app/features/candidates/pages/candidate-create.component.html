@@ -1,53 +1,57 @@
 <div class="mx-auto max-w-4xl">
-  <a class="text-link mb-5" routerLink="/candidates">← All candidates</a>
+  <a class="text-link mb-5" routerLink="/candidates">{{ 'ui.all_candidates' | translate }}</a>
   <div class="page-heading">
     <div>
-      <p class="eyebrow">A NEW OPPORTUNITY</p>
-      <h1>New candidate</h1>
+      <p class="eyebrow">{{ 'ui.a_new_opportunity' | translate }}</p>
+      <h1>{{ 'ui.new_candidate_2' | translate }}</h1>
       <p class="mt-2 text-xs text-slate-500">
-        Capture the vehicle details. You can add a cost estimate after saving.
+        {{ 'ui.capture_the_vehicle_details_you_can_add_a_cost_estimate_after_saving' | translate }}
       </p>
     </div>
   </div>
   <form class="panel p-5 sm:p-8" [formGroup]="form" (ngSubmit)="submit()">
     @if (error()) {
-      <div class="error-banner mb-6" role="alert">{{ error() }}</div>
+      <div class="error-banner mb-6" role="alert">{{ error() | translate }}</div>
     }
     <fieldset [disabled]="busy()">
-      <legend class="font-semibold mb-5">Vehicle details</legend>
-      <p class="text-xs text-slate-500 mb-5">Fields marked * are required.</p>
+      <legend class="font-semibold mb-5">{{ 'ui.vehicle_details' | translate }}</legend>
+      <p class="text-xs text-slate-500 mb-5">{{ 'ui.fields_marked_are_required' | translate }}</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-          <label class="field-label" for="make">Make *</label
+          <label class="field-label" for="make">{{ 'ui.make' | translate }}</label
           ><input
             id="make"
             class="form-input"
             formControlName="make"
             autocomplete="off"
-            placeholder="e.g. BMW"
+            [placeholder]="'ui.e_g_bmw' | translate"
             aria-required="true"
             [attr.aria-invalid]="fields.make.touched && fields.make.invalid"
             aria-describedby="make-error"
-          /><app-field-error id="make-error" [control]="fields.make" message="Make is required." />
+          /><app-field-error
+            id="make-error"
+            [control]="fields.make"
+            [message]="'ui.make_is_required' | translate"
+          />
         </div>
         <div>
-          <label class="field-label" for="model">Model *</label
+          <label class="field-label" for="model">{{ 'ui.model' | translate }}</label
           ><input
             id="model"
             class="form-input"
             formControlName="model"
-            placeholder="e.g. 320d"
+            [placeholder]="'ui.e_g_320d' | translate"
             aria-required="true"
             [attr.aria-invalid]="fields.model.touched && fields.model.invalid"
             aria-describedby="model-error"
           /><app-field-error
             id="model-error"
             [control]="fields.model"
-            message="Model is required."
+            [message]="'ui.model_is_required' | translate"
           />
         </div>
         <div>
-          <label class="field-label" for="year">Year</label
+          <label class="field-label" for="year">{{ 'ui.year' | translate }}</label
           ><input
             id="year"
             class="form-input"
@@ -60,11 +64,11 @@
           /><app-field-error
             id="year-error"
             [control]="fields.year"
-            [message]="'Enter a whole year between 1886 and ' + maxYear + '.'"
+            [message]="'form.year' | translate: { maxYear: maxYear }"
           />
         </div>
         <div>
-          <label class="field-label" for="mileage">Mileage (km)</label
+          <label class="field-label" for="mileage">{{ 'ui.mileage_km' | translate }}</label
           ><input
             id="mileage"
             class="form-input"
@@ -76,33 +80,35 @@
           /><app-field-error
             id="mileage-error"
             [control]="fields.mileage"
-            message="Mileage must be a whole number between 0 and 2,147,483,647."
+            [message]="'ui.mileage_must_be_a_whole_number_between_0_and_2_147_483_647' | translate"
           />
         </div>
         <div class="sm:col-span-2">
-          <label class="field-label" for="vin">VIN</label
+          <label class="field-label" for="vin">{{ 'ui.vin' | translate }}</label
           ><input id="vin" class="form-input" formControlName="vin" />
         </div>
         <div>
-          <label class="field-label" for="source">Source</label
+          <label class="field-label" for="source">{{ 'ui.source' | translate }}</label
           ><input
             id="source"
             class="form-input"
             formControlName="source"
-            placeholder="Auction, listing or seller"
+            [placeholder]="'ui.auction_listing_or_seller' | translate"
           />
         </div>
         <div>
-          <label class="field-label" for="location">Location</label
+          <label class="field-label" for="location">{{ 'ui.location' | translate }}</label
           ><input
             id="location"
             class="form-input"
             formControlName="location"
-            placeholder="City, country"
+            [placeholder]="'ui.city_country' | translate"
           />
         </div>
         <div>
-          <label class="field-label" for="selling-price">Expected selling price (EUR) *</label
+          <label class="field-label" for="selling-price">{{
+            'ui.expected_selling_price_eur' | translate
+          }}</label
           ><input
             id="selling-price"
             class="form-input"
@@ -115,29 +121,34 @@
           /><app-field-error
             id="price-error"
             [control]="fields.expectedSellingPrice"
-            message="Enter an expected selling price of zero or more."
+            [message]="'ui.enter_an_expected_selling_price_of_zero_or_more' | translate"
           />
         </div>
         <div class="sm:col-span-2">
-          <label class="field-label" for="notes">Notes</label
+          <label class="field-label" for="notes">{{ 'ui.notes' | translate }}</label
           ><textarea
             id="notes"
             class="form-input"
             rows="4"
             formControlName="notes"
-            placeholder="Condition, seller details or anything worth investigating"
+            [placeholder]="
+              'ui.condition_seller_details_or_anything_worth_investigating' | translate
+            "
           ></textarea>
         </div>
       </div>
       <div class="mt-7 pt-5 border-t border-slate-100 flex justify-end gap-3">
-        <a class="secondary-button" routerLink="/candidates">Cancel</a
+        <a class="secondary-button" routerLink="/candidates">{{ 'ui.cancel' | translate }}</a
         ><button type="submit" class="primary-button" [disabled]="busy()">
-          {{ busy() ? 'Creating…' : 'Create candidate' }}
+          {{ busy() ? ('common.creating' | translate) : ('candidate.create' | translate) }}
         </button>
       </div>
     </fieldset>
     <p class="text-xs text-slate-500 mt-5">
-      The candidate starts under review. Creating an opportunity does not move any capital.
+      {{
+        'ui.the_candidate_starts_under_review_creating_an_opportunity_does_not_move_any_ca'
+          | translate
+      }}
     </p>
   </form>
 </div>

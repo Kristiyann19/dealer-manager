@@ -1,8 +1,8 @@
-<a class="skip-link" href="#main-content">Skip to content</a>
+<a class="skip-link" href="#main-content">{{ 'ui.skip_to_content' | translate }}</a>
 @if (menuOpen()) {
   <button
     class="fixed inset-0 z-30 bg-slate-900/30 lg:hidden"
-    aria-label="Close navigation"
+    [attr.aria-label]="'ui.close_navigation' | translate"
     (click)="menuOpen.set(false)"
   ></button>
 }

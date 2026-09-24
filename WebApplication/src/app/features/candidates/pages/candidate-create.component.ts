@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -9,7 +10,7 @@ import { apiError, integer, optionalText, requiredText } from '../components/can
 
 @Component({
   selector: 'app-candidate-create',
-  imports: [ReactiveFormsModule, RouterLink, FieldErrorComponent],
+  imports: [TranslatePipe, ReactiveFormsModule, RouterLink, FieldErrorComponent],
   templateUrl: './candidate-create.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

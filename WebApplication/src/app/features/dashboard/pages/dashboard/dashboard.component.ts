@@ -1,5 +1,7 @@
+import { LocalizedDatePipe } from '../../../../shared/pipes/localized-format.pipe';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { DatePipe } from '@angular/common';
+
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of, startWith, Subject, switchMap } from 'rxjs';
 import { LucideDynamicIcon } from '@lucide/angular';
@@ -19,7 +21,8 @@ type DashboardState =
 @Component({
   selector: 'app-dashboard',
   imports: [
-    DatePipe,
+    TranslatePipe,
+    LocalizedDatePipe,
     LucideDynamicIcon,
     MonthlyOverviewComponent,
     FinancialOverviewComponent,

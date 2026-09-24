@@ -1,5 +1,11 @@
+import {
+  LocalizedDatePipe,
+  LocalizedNumberPipe,
+  LocalizedCurrencyPipe,
+} from '../../../shared/pipes/localized-format.pipe';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -25,11 +31,12 @@ type ListState =
 @Component({
   selector: 'app-candidate-list',
   imports: [
+    TranslatePipe,
     RouterLink,
     ReactiveFormsModule,
-    CurrencyPipe,
-    DatePipe,
-    DecimalPipe,
+    LocalizedCurrencyPipe,
+    LocalizedDatePipe,
+    LocalizedNumberPipe,
     CandidateStatusComponent,
   ],
   templateUrl: './candidate-list.component.html',

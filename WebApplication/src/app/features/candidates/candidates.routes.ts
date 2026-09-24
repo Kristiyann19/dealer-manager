@@ -4,19 +4,19 @@ export const CANDIDATE_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    title: 'Candidates | AutoCapital',
+    title: 'ui.candidates',
     loadComponent: () =>
       import('./pages/candidate-list.component').then((m) => m.CandidateListComponent),
   },
   {
     path: 'new',
-    title: 'New candidate | AutoCapital',
+    title: 'ui.new_candidate_2',
     loadComponent: () =>
       import('./pages/candidate-create.component').then((m) => m.CandidateCreateComponent),
   },
   {
     path: ':id',
-    title: 'Candidate details | AutoCapital',
+    title: 'ui.candidate_overview',
     loadComponent: () =>
       import('./pages/candidate-details.component').then((m) => m.CandidateDetailsComponent),
   },

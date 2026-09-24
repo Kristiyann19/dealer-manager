@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TagModule } from 'primeng/tag';
 import { DisplayStatus } from '../../models/ui.models';
@@ -13,8 +14,8 @@ const SEVERITIES = {
 
 @Component({
   selector: 'app-status-badge',
-  imports: [TagModule],
-  template: `<p-tag [value]="status()" [severity]="severity()" />`,
+  imports: [TagModule, TranslatePipe],
+  template: `<p-tag [value]="'status.' + status() | translate" [severity]="severity()" />`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatusBadgeComponent {

@@ -1,21 +1,27 @@
 <section class="panel p-5 sm:p-7" aria-labelledby="estimate-title">
-  <div class="section-heading"><h2 id="estimate-title">New estimate version</h2></div>
+  <div class="section-heading">
+    <h2 id="estimate-title">{{ 'ui.new_estimate_version' | translate }}</h2>
+  </div>
   <p class="text-xs text-slate-500 mb-5">
-    Previous versions stay unchanged. Include the purchase price and all expected costs. All amounts
-    are in EUR.
+    {{
+      'ui.previous_versions_stay_unchanged_include_the_purchase_price_and_all_expected_c'
+        | translate
+    }}
   </p>
   <form [formGroup]="form" (ngSubmit)="submit()">
     @if (error()) {
-      <div class="error-banner mb-5" role="alert">{{ error() }}</div>
+      <div class="error-banner mb-5" role="alert">{{ error() | translate }}</div>
     }
     <fieldset [disabled]="busy()">
       @if (candidate().latestEstimate) {
         <button type="button" class="secondary-button mb-5" (click)="copyLatest()">
-          Replace draft items with latest estimate
+          {{ 'ui.replace_draft_items_with_latest_estimate' | translate }}
         </button>
       }
       <div class="max-w-sm mb-5">
-        <label class="field-label" for="estimate-price">Expected selling price (EUR) *</label
+        <label class="field-label" for="estimate-price">{{
+          'ui.expected_selling_price_eur' | translate
+        }}</label
         ><input
           id="estimate-price"
           class="form-input"
@@ -28,36 +34,42 @@
         /><app-field-error
           id="estimate-price-error"
           [control]="form.controls.expectedSellingPrice"
-          message="Enter a selling price of zero or more."
+          [message]="'ui.enter_a_selling_price_of_zero_or_more' | translate"
         />
       </div>
       <div formArrayName="items" class="space-y-3">
         @for (item of items.controls; track item; let i = $index) {
           <div [formGroupName]="i" class="estimate-item">
             <div>
-              <label class="field-label" [for]="'category-' + i">Category *</label
+              <label class="field-label" [for]="'category-' + i">{{
+                'ui.category' | translate
+              }}</label
               ><select class="form-input" [id]="'category-' + i" formControlName="category">
                 @for (category of categories; track category.value) {
-                  <option [ngValue]="category.value">{{ category.label }}</option>
+                  <option [ngValue]="category.value">{{ category.label | translate }}</option>
                 }
               </select>
             </div>
             <div>
-              <label class="field-label" [for]="'description-' + i">Description *</label
+              <label class="field-label" [for]="'description-' + i">{{
+                'ui.description' | translate
+              }}</label
               ><input
                 class="form-input"
                 [id]="'description-' + i"
                 formControlName="description"
-                placeholder="e.g. Fuel system repair"
+                [placeholder]="'ui.e_g_fuel_system_repair' | translate"
                 [attr.aria-describedby]="'description-error-' + i"
               /><app-field-error
                 [id]="'description-error-' + i"
                 [control]="item.controls.description"
-                message="Description is required."
+                [message]="'ui.description_is_required' | translate"
               />
             </div>
             <div>
-              <label class="field-label" [for]="'amount-' + i">Estimated amount *</label
+              <label class="field-label" [for]="'amount-' + i">{{
+                'ui.estimated_amount' | translate
+              }}</label
               ><input
                 class="form-input"
                 [id]="'amount-' + i"
@@ -69,39 +81,39 @@
               /><app-field-error
                 [id]="'amount-error-' + i"
                 [control]="item.controls.estimatedAmount"
-                message="Enter an amount of zero or more."
+                [message]="'ui.enter_an_amount_of_zero_or_more' | translate"
               />
             </div>
             <button
               type="button"
               class="secondary-button self-start mt-6"
               [disabled]="items.length === 1"
-              [attr.aria-label]="'Remove cost item ' + (i + 1)"
+              [attr.aria-label]="'candidate.removeItem' | translate: { index: i + 1 }"
               (click)="removeItem(i)"
             >
-              Remove
+              {{ 'ui.remove' | translate }}
             </button>
           </div>
         }
       </div>
       <button type="button" class="secondary-button mt-4" (click)="addItem()">
-        + Add cost item
+        {{ 'ui.add_cost_item' | translate }}
       </button>
       <div class="mt-5">
-        <label class="field-label" for="estimate-notes">Estimate notes</label
+        <label class="field-label" for="estimate-notes">{{ 'ui.estimate_notes' | translate }}</label
         ><textarea
           class="form-input"
           id="estimate-notes"
           rows="3"
           formControlName="notes"
-          placeholder="What changed and why?"
+          [placeholder]="'ui.what_changed_and_why' | translate"
         ></textarea>
       </div>
       <div class="mt-6 flex flex-wrap justify-end gap-3">
         <button type="button" class="secondary-button" (click)="cancelled.emit()">
-          Cancel estimate</button
+          {{ 'ui.cancel_estimate' | translate }}</button
         ><button type="submit" class="primary-button" [disabled]="busy()">
-          {{ busy() ? 'Saving…' : 'Save new version' }}
+          {{ busy() ? ('common.saving' | translate) : ('candidate.saveVersion' | translate) }}
         </button>
       </div>
     </fieldset>

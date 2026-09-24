@@ -14,6 +14,13 @@ import {
   CostCategory,
 } from './models/candidate.models';
 import { apiError } from './components/candidate-form-utils';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
+import en from '../../../assets/i18n/en.json';
+import bg from '../../../assets/i18n/bg.json';
+import { registerLocaleData } from '@angular/common';
+import bgLocale from '@angular/common/locales/bg';
+
+registerLocaleData(bgLocale);
 
 const estimate: CandidateEstimate = {
   id: 7,
@@ -74,6 +81,7 @@ describe('Candidate module HTTP workflows', () => {
     params = new BehaviorSubject(convertToParamMap({ id: '12' }));
     TestBed.configureTestingModule({
       providers: [
+        provideTranslateService(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -81,6 +89,10 @@ describe('Candidate module HTTP workflows', () => {
       ],
     });
     http = TestBed.inject(HttpTestingController);
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', en);
+    translate.setTranslation('bg', bg);
+    translate.use('en').subscribe();
   });
   afterEach(() => http.verify());
 
@@ -135,7 +147,7 @@ describe('Candidate module HTTP workflows', () => {
         { status: 400, statusText: 'Bad Request' },
       );
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Year is out of range.');
+    expect(fixture.nativeElement.textContent).toContain(en.errors.validation);
     expect(fixture.nativeElement.querySelector('#make').value).toBe('BMW');
     expect(button(fixture, 'Create candidate').disabled).toBe(false);
   });
@@ -253,7 +265,7 @@ describe('Candidate module HTTP workflows', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'Refresh the candidate before trying again.',
     );
-    expect(fixture.nativeElement.textContent).toContain('Under review');
+    expect(fixture.nativeElement.textContent).toContain('Under Review');
   });
   it('handles missing candidates and route ID changes', () => {
     const fixture = TestBed.createComponent(CandidateDetailsComponent);
@@ -313,8 +325,33 @@ describe('Candidate module HTTP workflows', () => {
     expect(fixture.nativeElement.textContent).not.toContain('No candidates yet');
   });
   it('warns about uncertain write outcomes rather than automatically retrying a POST', () => {
-    expect(apiError(new HttpErrorResponse({ status: 0 }), true)).toContain(
-      'avoid creating a duplicate',
-    );
+    expect(apiError(new HttpErrorResponse({ status: 0 }), true)).toBe('errors.uncertainWrite');
+  });
+  it('switches labels and existing validation errors without losing a candidate draft', () => {
+    const fixture = TestBed.createComponent(CandidateCreateComponent);
+    fixture.detectChanges();
+    input(fixture, '#model', '320d');
+    submit(fixture);
+    const translate = TestBed.inject(TranslateService);
+    translate.use('bg').subscribe();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(bg.ui.make_is_required);
+    expect(button(fixture, bg.candidate.create)).toBeDefined();
+    expect(fixture.nativeElement.querySelector('#model').value).toBe('320d');
+    translate.use('en').subscribe();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.ui.make_is_required);
+    expect(fixture.nativeElement.querySelector('#model').value).toBe('320d');
+    http.expectNone('/api/candidates');
+  });
+  it('translates a displayed API error when the language changes', () => {
+    const fixture = TestBed.createComponent(CandidateListComponent);
+    fixture.detectChanges();
+    http
+      .expectOne((req) => req.url === '/api/candidates')
+      .flush({}, { status: 503, statusText: 'Unavailable' });
+    TestBed.inject(TranslateService).use('bg').subscribe();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(bg.errors.unavailable);
   });
 });

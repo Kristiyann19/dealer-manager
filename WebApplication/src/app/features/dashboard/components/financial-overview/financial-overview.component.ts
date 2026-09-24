@@ -1,46 +1,47 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { KpiCardComponent } from '../../../../shared/components/kpi-card/kpi-card.component';
 import { FinancialOverview } from '../../models/dashboard.models';
 
 @Component({
   selector: 'app-financial-overview',
-  imports: [KpiCardComponent],
+  imports: [TranslatePipe, KpiCardComponent],
   template: ` <section aria-labelledby="capital-title">
     <div class="section-heading">
-      <h2 id="capital-title">Capital &amp; Financial Position</h2>
-      <span class="text-[11px] text-slate-400">Current position · EUR</span>
+      <h2 id="capital-title">{{ 'ui.capital_financial_position' | translate }}</h2>
+      <span class="text-[11px] text-slate-400">{{ 'ui.current_position_eur' | translate }}</span>
     </div>
     <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
       <app-kpi-card
-        label="Available Cash"
+        [label]="'ui.available_cash' | translate"
         [value]="data().availableCash"
         icon="wallet"
         tone="green"
         [money]="true"
-        context="Available for new opportunities"
+        [context]="'ui.available_for_new_opportunities' | translate"
       />
       <app-kpi-card
-        label="Capital Invested"
+        [label]="'ui.capital_invested' | translate"
         [value]="data().capitalInvested"
         icon="landmark"
         tone="blue"
         [money]="true"
-        context="Capital currently in vehicles"
+        [context]="'ui.capital_currently_in_vehicles' | translate"
       />
       <app-kpi-card
-        label="Committed Costs"
+        [label]="'ui.committed_costs' | translate"
         [value]="data().committedCosts"
         icon="receipt-text"
         tone="amber"
         [money]="true"
-        context="Planned and agreed costs"
+        [context]="'ui.planned_and_agreed_costs' | translate"
       />
       <app-kpi-card
-        label="Inventory Value"
+        [label]="'ui.inventory_value' | translate"
         [value]="data().inventoryValue"
         icon="warehouse"
         [money]="true"
-        context="Expected selling value"
+        [context]="'ui.expected_selling_value' | translate"
       />
     </div>
   </section>`,

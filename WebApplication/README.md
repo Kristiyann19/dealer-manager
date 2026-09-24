@@ -1,5 +1,23 @@
 # AutoCapital frontend
 
+## Bulgarian and English
+
+The interface uses `@ngx-translate/core` with HTTP-loaded `src/assets/i18n/bg.json` and `en.json`. The BG/EN buttons in the topbar switch language immediately and save the preference in local storage. Bulgarian is the initial language and English is the fallback. Language changes preserve drafts and update page titles, status labels, charts, messages, dates and currency formatting.
+
+Add each new UI string to both JSON files and import `TranslatePipe` in the standalone component:
+
+```html
+<h1>{{ 'ui.candidates' | translate }}</h1>
+<input [placeholder]="'ui.make_model_or_vin' | translate" />
+<button [attr.aria-label]="'candidate.reviewLabel' | translate: { vehicle: candidate.make }">
+  {{ 'ui.review_2' | translate }}
+</button>
+```
+
+Use named interpolation parameters for dynamic text. Domain values and user-entered content are not translated. The API currently returns English error prose without localization codes; the client displays localized messages by HTTP error category, while form validation provides field-specific guidance.
+
+`pnpm check:i18n` checks key parity, interpolation parameters, missing literal keys and untranslated static template text. See `AGENTS.md` for conventions for future changes. Provider setup follows the [ngx-translate documentation](https://ngx-translate.org/reference/configuration/).
+
 ## Candidate module and API connection
 
 The `/candidates` module uses the real WebAPI: server-side search and pagination, candidate creation, details, estimate versions, approval and rejection. The dashboard still uses sample data.

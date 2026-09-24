@@ -8,24 +8,13 @@ export const integer: ValidatorFn = (control: AbstractControl): ValidationErrors
 export const optionalText = (value: string) => value.trim() || null;
 
 export function apiError(error: unknown, writing = false): string {
-  if (!(error instanceof HttpErrorResponse)) return 'Something went wrong. Please try again.';
+  if (!(error instanceof HttpErrorResponse)) return 'errors.unexpected';
   if (error.status === 0 || error.status >= 500) {
-    return writing
-      ? 'The server did not confirm the result. Check the candidate before submitting again to avoid creating a duplicate.'
-      : 'Cannot reach the server. Check that the WebAPI and database are running, then try again.';
+    return writing ? 'errors.uncertainWrite' : 'errors.unavailable';
   }
-  if (error.status === 404)
-    return 'This candidate could not be found. It may no longer be available.';
-  if (error.status === 409)
-    return `${error.error?.detail || 'The candidate has changed.'} Refresh the candidate before trying again.`;
-  const errors: unknown = error.error?.errors;
-  if (errors && typeof errors === 'object') {
-    const messages = Object.values(errors)
-      .flat()
-      .filter((value): value is string => typeof value === 'string');
-    if (messages.length) return messages.join(' ');
-  }
-  return (
-    error.error?.detail || 'The request could not be completed. Check the values and try again.'
-  );
+  if (error.status === 404) return 'errors.notFound';
+  if (error.status === 409) return 'errors.conflict';
+  // The API currently sends English prose rather than stable localization codes.
+  // Keep client messages language-neutral until the server exposes such codes.
+  return 'errors.validation';
 }

@@ -1,23 +1,25 @@
 <div class="mx-auto max-w-[1600px] space-y-5">
   <div class="page-heading">
     <div>
-      <p class="eyebrow">BEFORE THE PURCHASE</p>
-      <h1>Candidates</h1>
+      <p class="eyebrow">{{ 'ui.before_the_purchase' | translate }}</p>
+      <h1>{{ 'ui.candidates' | translate }}</h1>
       <p class="mt-2 text-xs text-slate-500">
-        Evaluate opportunities and keep every estimate in one place.
+        {{ 'ui.evaluate_opportunities_and_keep_every_estimate_in_one_place' | translate }}
       </p>
     </div>
-    <a routerLink="/candidates/new" class="primary-button">+ New candidate</a>
+    <a routerLink="/candidates/new" class="primary-button">{{
+      'ui.new_candidate_3' | translate
+    }}</a>
   </div>
-  <section class="panel overflow-hidden" aria-label="Candidate list">
+  <section class="panel overflow-hidden" [attr.aria-label]="'ui.candidate_list' | translate">
     <div class="p-5 flex flex-wrap justify-between gap-3 items-end">
       <label class="block w-full sm:max-w-sm"
-        ><span class="field-label">Search candidates</span
+        ><span class="field-label">{{ 'ui.search_candidates' | translate }}</span
         ><input
           class="form-input"
           type="search"
           [formControl]="search"
-          placeholder="Make, model or VIN"
+          [placeholder]="'ui.make_model_or_vin' | translate"
       /></label>
       <button
         type="button"
@@ -25,18 +27,22 @@
         (click)="refresh()"
         [disabled]="state().status === 'loading'"
       >
-        Refresh list
+        {{ 'ui.refresh_list' | translate }}
       </button>
     </div>
     @let current = state();
     @switch (current.status) {
       @case ('loading') {
-        <div class="p-10 text-slate-500" role="status">Loading candidates…</div>
+        <div class="p-10 text-slate-500" role="status">
+          {{ 'ui.loading_candidates' | translate }}
+        </div>
       }
       @case ('error') {
         <div class="m-5 error-banner" role="alert">
-          <p>{{ current.message }}</p>
-          <button type="button" class="secondary-button mt-3" (click)="refresh()">Try again</button>
+          <p>{{ current.message | translate }}</p>
+          <button type="button" class="secondary-button mt-3" (click)="refresh()">
+            {{ 'ui.try_again' | translate }}
+          </button>
         </div>
       }
       @case ('ready') {
@@ -44,18 +50,23 @@
           <div class="overflow-x-auto">
             <table class="candidate-table">
               <caption class="sr-only">
-                Candidates with their latest financial estimates. All amounts in EUR.
+                {{
+                  'ui.candidates_with_their_latest_financial_estimates_all_amounts_in_eur'
+                    | translate
+                }}
               </caption>
               <thead>
                 <tr>
-                  <th>Vehicle</th>
-                  <th>Status</th>
-                  <th>Expected sale</th>
-                  <th>Estimated cost</th>
-                  <th>Expected profit</th>
-                  <th>ROI</th>
-                  <th>Created</th>
-                  <th><span class="sr-only">Actions</span></th>
+                  <th>{{ 'ui.vehicle' | translate }}</th>
+                  <th>{{ 'ui.status' | translate }}</th>
+                  <th>{{ 'ui.expected_sale' | translate }}</th>
+                  <th>{{ 'ui.estimated_cost' | translate }}</th>
+                  <th>{{ 'ui.expected_profit' | translate }}</th>
+                  <th>{{ 'ui.roi' | translate }}</th>
+                  <th>{{ 'ui.created' | translate }}</th>
+                  <th>
+                    <span class="sr-only">{{ 'ui.actions' | translate }}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -68,23 +79,27 @@
                         >{{ candidate.make }} {{ candidate.model }}</a
                       >
                       <p class="text-xs text-slate-500 mt-1">
-                        {{ candidate.year ?? 'Year unknown' }} ·
+                        {{ candidate.year ?? ('common.yearUnknown' | translate) }} ·
                         {{
                           candidate.mileage === null
-                            ? 'Mileage unknown'
-                            : (candidate.mileage | number) + ' km'
+                            ? ('common.mileageUnknown' | translate)
+                            : (candidate.mileage | localizedNumber) + ('common.km' | translate)
                         }}
                       </p>
                     </td>
                     <td><app-candidate-status [status]="candidate.status" /></td>
                     <td>
-                      {{ candidate.expectedSellingPrice | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                      {{
+                        candidate.expectedSellingPrice
+                          | localizedCurrency: 'EUR' : 'symbol' : '1.2-2'
+                      }}
                     </td>
                     <td>
                       {{
                         candidate.estimatedTotalCost === null
-                          ? 'No estimate'
-                          : (candidate.estimatedTotalCost | currency: 'EUR' : 'symbol' : '1.2-2')
+                          ? ('common.noEstimate' | translate)
+                          : (candidate.estimatedTotalCost
+                            | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
                       }}
                     </td>
                     <td
@@ -95,23 +110,27 @@
                       {{
                         candidate.expectedProfit === null
                           ? '—'
-                          : (candidate.expectedProfit | currency: 'EUR' : 'symbol' : '1.2-2')
+                          : (candidate.expectedProfit
+                            | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
                       }}
                     </td>
                     <td>
                       {{
                         candidate.expectedRoi === null
                           ? '—'
-                          : (candidate.expectedRoi | number: '1.0-2') + '%'
+                          : (candidate.expectedRoi | localizedNumber: '1.0-2') + '%'
                       }}
                     </td>
-                    <td>{{ candidate.createdAt | date: 'dd MMM y' }}</td>
+                    <td>{{ candidate.createdAt | localizedDate: 'dd MMM y' }}</td>
                     <td>
                       <a
                         class="review-button"
                         [routerLink]="['/candidates', candidate.id]"
-                        [attr.aria-label]="'Review ' + candidate.make + ' ' + candidate.model"
-                        >Review →</a
+                        [attr.aria-label]="
+                          'candidate.reviewLabel'
+                            | translate: { vehicle: candidate.make + ' ' + candidate.model }
+                        "
+                        >{{ 'ui.review' | translate }}</a
                       >
                     </td>
                   </tr>
@@ -121,32 +140,37 @@
           </div>
         } @else {
           <div class="text-center p-12">
-            <h2>{{ query() ? 'No matching candidates' : 'No candidates yet' }}</h2>
+            <h2>
+              {{ query() ? ('candidate.noMatches' | translate) : ('candidate.empty' | translate) }}
+            </h2>
             <p class="text-sm text-slate-500 mt-2">
               {{
-                query()
-                  ? 'Try another make, model or VIN.'
-                  : 'Add your first vehicle opportunity to start an evaluation.'
+                query() ? ('candidate.trySearch' | translate) : ('candidate.addFirst' | translate)
               }}
             </p>
             @if (query()) {
               <button type="button" class="secondary-button mt-5" (click)="search.setValue('')">
-                Clear search
+                {{ 'ui.clear_search' | translate }}
               </button>
             } @else if (offset() === 0) {
-              <a routerLink="/candidates/new" class="primary-button mt-5">Create first candidate</a>
+              <a routerLink="/candidates/new" class="primary-button mt-5">{{
+                'ui.create_first_candidate' | translate
+              }}</a>
             }
           </div>
         }
         <div
           class="p-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500"
         >
-          <span role="status"
-            >{{ current.data.items.length ? offset() + 1 : 0 }}–{{
-              current.data.items.length ? end(current.data.totalCount) : 0
-            }}
-            of {{ current.data.totalCount }} candidates · EUR</span
-          >
+          <span role="status">{{
+            'ui.value_value_of_value_candidates_eur'
+              | translate
+                : {
+                    p0: current.data.items.length ? offset() + 1 : 0,
+                    p1: current.data.items.length ? end(current.data.totalCount) : 0,
+                    p2: current.data.totalCount,
+                  }
+          }}</span>
           <div class="flex gap-2">
             <button
               type="button"
@@ -154,14 +178,14 @@
               [disabled]="offset() === 0"
               (click)="page(-1)"
             >
-              Previous</button
+              {{ 'ui.previous' | translate }}</button
             ><button
               type="button"
               class="secondary-button"
               [disabled]="offset() + limit >= current.data.totalCount"
               (click)="page(1)"
             >
-              Next
+              {{ 'ui.next' | translate }}
             </button>
           </div>
         </div>

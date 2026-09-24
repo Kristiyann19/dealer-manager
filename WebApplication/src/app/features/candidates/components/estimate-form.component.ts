@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,7 +25,7 @@ import { apiError, optionalText, requiredText } from './candidate-form-utils';
 
 @Component({
   selector: 'app-estimate-form',
-  imports: [ReactiveFormsModule, FieldErrorComponent],
+  imports: [TranslatePipe, ReactiveFormsModule, FieldErrorComponent],
   templateUrl: './estimate-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

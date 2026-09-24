@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
@@ -7,7 +8,13 @@ import { ActiveVehicleSummary } from '../../models/dashboard.models';
 
 @Component({
   selector: 'app-active-vehicles',
-  imports: [RouterLink, LucideDynamicIcon, StatusBadgeComponent, MoneyDisplayComponent],
+  imports: [
+    TranslatePipe,
+    RouterLink,
+    LucideDynamicIcon,
+    StatusBadgeComponent,
+    MoneyDisplayComponent,
+  ],
   templateUrl: './active-vehicles.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

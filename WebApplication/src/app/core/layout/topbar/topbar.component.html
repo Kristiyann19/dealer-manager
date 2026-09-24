@@ -5,7 +5,7 @@
     <button
       type="button"
       class="icon-button lg:hidden"
-      aria-label="Toggle navigation"
+      [attr.aria-label]="'ui.toggle_navigation' | translate"
       (click)="toggleMenu.emit()"
     >
       <svg lucideIcon="menu" [size]="20" aria-hidden="true"></svg>
@@ -21,23 +21,47 @@
         <input
           #searchInput
           type="search"
-          aria-label="Search dashboard vehicles and candidates"
-          placeholder="Search VIN, model, candidate..."
+          [attr.aria-label]="'ui.search_dashboard_vehicles_and_candidates' | translate"
+          [placeholder]="'ui.search_vin_model_candidate' | translate"
           class="min-w-0 w-full bg-transparent outline-none text-xs"
           [value]="workspace.searchQuery()"
           (input)="workspace.searchQuery.set(searchInput.value)"
         />
       </label>
     } @else {
-      <span class="text-xs text-slate-500">Dealership workspace</span>
+      <span class="hidden md:block truncate text-xs text-slate-500">{{
+        'ui.dealership_workspace' | translate
+      }}</span>
     }
   </div>
   <div class="flex items-center gap-3">
+    <div class="flex gap-1" role="group" [attr.aria-label]="'language.choose' | translate">
+      <button
+        type="button"
+        class="secondary-button"
+        [class.!bg-blue-50]="language.current() === 'bg'"
+        [attr.aria-pressed]="language.current() === 'bg'"
+        [disabled]="language.loading()"
+        (click)="language.change('bg')"
+      >
+        {{ 'language.bg' | translate }}
+      </button>
+      <button
+        type="button"
+        class="secondary-button"
+        [class.!bg-blue-50]="language.current() === 'en'"
+        [attr.aria-pressed]="language.current() === 'en'"
+        [disabled]="language.loading()"
+        (click)="language.change('en')"
+      >
+        {{ 'language.en' | translate }}
+      </button>
+    </div>
     <button
       type="button"
       class="icon-button relative"
-      aria-label="Notifications"
-      pTooltip="Notifications"
+      [attr.aria-label]="'ui.notifications' | translate"
+      [pTooltip]="'ui.notifications' | translate"
       tooltipPosition="bottom"
       (click)="dialog.set('notifications')"
     >
@@ -46,21 +70,25 @@
     <span class="h-5 w-px bg-slate-200 hidden sm:block"></span>
     <a class="primary-button" routerLink="/candidates/new">
       <svg lucideIcon="plus" [size]="16" aria-hidden="true"></svg
-      ><span class="hidden sm:inline">New Candidate</span><span class="sm:hidden">New</span>
+      ><span class="hidden sm:inline">{{ 'ui.new_candidate' | translate }}</span
+      ><span class="sm:hidden">{{ 'ui.new' | translate }}</span>
     </a>
     <button
       type="button"
       class="avatar bg-blue-50 text-blue-700 border border-blue-100"
-      aria-label="View profile"
+      [attr.aria-label]="'ui.view_profile' | translate"
       (click)="dialog.set('profile')"
     >
       {{ workspace.user.initials }}
     </button>
   </div>
 </header>
+@if (language.error()) {
+  <p class="error-banner" role="alert">{{ 'language.loadError' | translate }}</p>
+}
 <p-dialog
-  closeAriaLabel="Close dialog"
-  [header]="dialog() === 'profile' ? 'Your profile' : 'Notifications'"
+  [closeAriaLabel]="'ui.close_dialog' | translate"
+  [header]="(dialog() === 'profile' ? 'profile.title' : 'ui.notifications') | translate"
   [visible]="dialog() !== null"
   (visibleChange)="dialog.set(null)"
   [modal]="true"
@@ -70,14 +98,14 @@
   @switch (dialog()) {
     @case ('notifications') {
       <p class="text-sm text-slate-600">
-        You're all caught up. Live notifications will be available later.
+        {{ 'ui.you_re_all_caught_up_live_notifications_will_be_available_later' | translate }}
       </p>
     }
     @case ('profile') {
       <p class="font-semibold">{{ workspace.user.name }}</p>
-      <p class="mt-1 text-sm text-slate-500">{{ workspace.user.role }}</p>
+      <p class="mt-1 text-sm text-slate-500">{{ 'profile.role' | translate }}</p>
       <p class="mt-5 text-xs text-slate-500">
-        Temporary demo profile. Authentication is not enabled.
+        {{ 'ui.temporary_demo_profile_authentication_is_not_enabled' | translate }}
       </p>
     }
   }
