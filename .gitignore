@@ -10,6 +10,9 @@
 # Visual Studio local settings and cache
 .vs/
 
+# Local pnpm package store
+.pnpm-store/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

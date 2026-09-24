@@ -10,18 +10,27 @@
     >
       <svg lucideIcon="menu" [size]="20" aria-hidden="true"></svg>
     </button>
-    <label class="search-box flex items-center gap-3 w-full max-w-[390px]">
-      <svg lucideIcon="search" [size]="17" class="text-slate-400 shrink-0" aria-hidden="true"></svg>
-      <input
-        #searchInput
-        type="search"
-        aria-label="Search dashboard vehicles and candidates"
-        placeholder="Search VIN, model, candidate..."
-        class="min-w-0 w-full bg-transparent outline-none text-xs"
-        [value]="workspace.searchQuery()"
-        (input)="workspace.searchQuery.set(searchInput.value)"
-      />
-    </label>
+    @if (isDashboard()) {
+      <label class="search-box flex items-center gap-3 w-full max-w-[390px]">
+        <svg
+          lucideIcon="search"
+          [size]="17"
+          class="text-slate-400 shrink-0"
+          aria-hidden="true"
+        ></svg>
+        <input
+          #searchInput
+          type="search"
+          aria-label="Search dashboard vehicles and candidates"
+          placeholder="Search VIN, model, candidate..."
+          class="min-w-0 w-full bg-transparent outline-none text-xs"
+          [value]="workspace.searchQuery()"
+          (input)="workspace.searchQuery.set(searchInput.value)"
+        />
+      </label>
+    } @else {
+      <span class="text-xs text-slate-500">Dealership workspace</span>
+    }
   </div>
   <div class="flex items-center gap-3">
     <button
@@ -35,10 +44,10 @@
       <svg lucideIcon="bell" [size]="19" aria-hidden="true"></svg>
     </button>
     <span class="h-5 w-px bg-slate-200 hidden sm:block"></span>
-    <button type="button" class="primary-button" (click)="dialog.set('candidate')">
+    <a class="primary-button" routerLink="/candidates/new">
       <svg lucideIcon="plus" [size]="16" aria-hidden="true"></svg
       ><span class="hidden sm:inline">New Candidate</span><span class="sm:hidden">New</span>
-    </button>
+    </a>
     <button
       type="button"
       class="avatar bg-blue-50 text-blue-700 border border-blue-100"
@@ -51,13 +60,7 @@
 </header>
 <p-dialog
   closeAriaLabel="Close dialog"
-  [header]="
-    dialog() === 'candidate'
-      ? 'New Candidate'
-      : dialog() === 'profile'
-        ? 'Your profile'
-        : 'Notifications'
-  "
+  [header]="dialog() === 'profile' ? 'Your profile' : 'Notifications'"
   [visible]="dialog() !== null"
   (visibleChange)="dialog.set(null)"
   [modal]="true"
@@ -65,12 +68,6 @@
   [style]="{ width: '420px', maxWidth: '92vw' }"
 >
   @switch (dialog()) {
-    @case ('candidate') {
-      <p class="text-sm text-slate-600 leading-relaxed">
-        Candidate creation will be available when this module is implemented. You can explore the
-        sample candidates on the dashboard.
-      </p>
-    }
     @case ('notifications') {
       <p class="text-sm text-slate-600">
         You're all caught up. Live notifications will be available later.

@@ -27,9 +27,8 @@ export const routes: Routes = [
       },
       {
         path: 'candidates',
-        title: 'Candidates | AutoCapital',
-        loadComponent: placeholder,
-        data: { title: 'Candidates', icon: 'clipboard-list' },
+        loadChildren: () =>
+          import('./features/candidates/candidates.routes').then((m) => m.CANDIDATE_ROUTES),
       },
       {
         path: 'vehicles',

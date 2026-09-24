@@ -1,0 +1,111 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
+} from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
+import {
+  CandidateDetails,
+  CandidateEstimate,
+  COST_CATEGORIES,
+  CostCategory,
+  CreateEstimateItemRequest,
+} from '../models/candidate.models';
+import { CandidateApiService } from '../services/candidate-api.service';
+import { FieldErrorComponent } from './field-error.component';
+import { apiError, optionalText, requiredText } from './candidate-form-utils';
+
+@Component({
+  selector: 'app-estimate-form',
+  imports: [ReactiveFormsModule, FieldErrorComponent],
+  templateUrl: './estimate-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class EstimateFormComponent implements OnInit {
+  readonly candidate = input.required<CandidateDetails>();
+  readonly saved = output<CandidateEstimate>();
+  readonly cancelled = output<void>();
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(CandidateApiService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly categories = COST_CATEGORIES;
+  protected readonly busy = signal(false);
+  protected readonly error = signal('');
+  protected readonly form = this.fb.group({
+    expectedSellingPrice: this.fb.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
+    notes: this.fb.nonNullable.control(''),
+    items: this.fb.array([this.item()], Validators.minLength(1)),
+  });
+  protected get items() {
+    return this.form.controls.items;
+  }
+
+  ngOnInit() {
+    this.form.controls.expectedSellingPrice.setValue(this.candidate().expectedSellingPrice);
+  }
+  private item(value?: CreateEstimateItemRequest) {
+    return this.fb.group({
+      category: this.fb.nonNullable.control(value?.category ?? CostCategory.Purchase, [
+        Validators.required,
+      ]),
+      description: this.fb.nonNullable.control(value?.description ?? '', requiredText),
+      estimatedAmount: this.fb.control<number | null>(value?.estimatedAmount ?? null, [
+        Validators.required,
+        Validators.min(0),
+      ]),
+    });
+  }
+  protected addItem() {
+    this.items.push(this.item());
+  }
+  protected removeItem(index: number) {
+    if (this.items.length > 1) this.items.removeAt(index);
+  }
+  protected copyLatest() {
+    const latest = this.candidate().latestEstimate;
+    if (!latest || this.busy()) return;
+    while (this.items.length > latest.items.length) this.items.removeAt(this.items.length - 1);
+    latest.items.forEach((item, index) => {
+      if (index < this.items.length) this.items.at(index).reset(item);
+      else this.items.push(this.item(item));
+    });
+    this.form.patchValue({ expectedSellingPrice: latest.expectedSellingPrice, notes: '' });
+  }
+  protected submit() {
+    if (this.busy()) return;
+    this.form.markAllAsTouched();
+    if (this.form.invalid) return;
+    const value = this.form.getRawValue();
+    this.busy.set(true);
+    this.error.set('');
+    this.api
+      .createEstimate({
+        candidateId: this.candidate().id,
+        expectedSellingPrice: value.expectedSellingPrice!,
+        notes: optionalText(value.notes),
+        items: value.items.map((item) => ({
+          category: item.category,
+          description: item.description.trim(),
+          estimatedAmount: item.estimatedAmount!,
+        })),
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.busy.set(false)),
+      )
+      .subscribe({
+        next: (estimate) => this.saved.emit(estimate),
+        error: (error) => this.error.set(apiError(error, true)),
+      });
+  }
+}

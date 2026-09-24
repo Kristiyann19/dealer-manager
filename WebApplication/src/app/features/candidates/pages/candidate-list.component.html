@@ -1,0 +1,171 @@
+<div class="mx-auto max-w-[1600px] space-y-5">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">BEFORE THE PURCHASE</p>
+      <h1>Candidates</h1>
+      <p class="mt-2 text-xs text-slate-500">
+        Evaluate opportunities and keep every estimate in one place.
+      </p>
+    </div>
+    <a routerLink="/candidates/new" class="primary-button">+ New candidate</a>
+  </div>
+  <section class="panel overflow-hidden" aria-label="Candidate list">
+    <div class="p-5 flex flex-wrap justify-between gap-3 items-end">
+      <label class="block w-full sm:max-w-sm"
+        ><span class="field-label">Search candidates</span
+        ><input
+          class="form-input"
+          type="search"
+          [formControl]="search"
+          placeholder="Make, model or VIN"
+      /></label>
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="refresh()"
+        [disabled]="state().status === 'loading'"
+      >
+        Refresh list
+      </button>
+    </div>
+    @let current = state();
+    @switch (current.status) {
+      @case ('loading') {
+        <div class="p-10 text-slate-500" role="status">Loading candidates…</div>
+      }
+      @case ('error') {
+        <div class="m-5 error-banner" role="alert">
+          <p>{{ current.message }}</p>
+          <button type="button" class="secondary-button mt-3" (click)="refresh()">Try again</button>
+        </div>
+      }
+      @case ('ready') {
+        @if (current.data.items.length) {
+          <div class="overflow-x-auto">
+            <table class="candidate-table">
+              <caption class="sr-only">
+                Candidates with their latest financial estimates. All amounts in EUR.
+              </caption>
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Status</th>
+                  <th>Expected sale</th>
+                  <th>Estimated cost</th>
+                  <th>Expected profit</th>
+                  <th>ROI</th>
+                  <th>Created</th>
+                  <th><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (candidate of current.data.items; track candidate.id) {
+                  <tr>
+                    <td>
+                      <a
+                        class="font-semibold text-blue-700"
+                        [routerLink]="['/candidates', candidate.id]"
+                        >{{ candidate.make }} {{ candidate.model }}</a
+                      >
+                      <p class="text-xs text-slate-500 mt-1">
+                        {{ candidate.year ?? 'Year unknown' }} ·
+                        {{
+                          candidate.mileage === null
+                            ? 'Mileage unknown'
+                            : (candidate.mileage | number) + ' km'
+                        }}
+                      </p>
+                    </td>
+                    <td><app-candidate-status [status]="candidate.status" /></td>
+                    <td>
+                      {{ candidate.expectedSellingPrice | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                    </td>
+                    <td>
+                      {{
+                        candidate.estimatedTotalCost === null
+                          ? 'No estimate'
+                          : (candidate.estimatedTotalCost | currency: 'EUR' : 'symbol' : '1.2-2')
+                      }}
+                    </td>
+                    <td
+                      [class.text-red-600]="
+                        candidate.expectedProfit !== null && candidate.expectedProfit < 0
+                      "
+                    >
+                      {{
+                        candidate.expectedProfit === null
+                          ? '—'
+                          : (candidate.expectedProfit | currency: 'EUR' : 'symbol' : '1.2-2')
+                      }}
+                    </td>
+                    <td>
+                      {{
+                        candidate.expectedRoi === null
+                          ? '—'
+                          : (candidate.expectedRoi | number: '1.0-2') + '%'
+                      }}
+                    </td>
+                    <td>{{ candidate.createdAt | date: 'dd MMM y' }}</td>
+                    <td>
+                      <a
+                        class="review-button"
+                        [routerLink]="['/candidates', candidate.id]"
+                        [attr.aria-label]="'Review ' + candidate.make + ' ' + candidate.model"
+                        >Review →</a
+                      >
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="text-center p-12">
+            <h2>{{ query() ? 'No matching candidates' : 'No candidates yet' }}</h2>
+            <p class="text-sm text-slate-500 mt-2">
+              {{
+                query()
+                  ? 'Try another make, model or VIN.'
+                  : 'Add your first vehicle opportunity to start an evaluation.'
+              }}
+            </p>
+            @if (query()) {
+              <button type="button" class="secondary-button mt-5" (click)="search.setValue('')">
+                Clear search
+              </button>
+            } @else if (offset() === 0) {
+              <a routerLink="/candidates/new" class="primary-button mt-5">Create first candidate</a>
+            }
+          </div>
+        }
+        <div
+          class="p-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500"
+        >
+          <span role="status"
+            >{{ current.data.items.length ? offset() + 1 : 0 }}–{{
+              current.data.items.length ? end(current.data.totalCount) : 0
+            }}
+            of {{ current.data.totalCount }} candidates · EUR</span
+          >
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="secondary-button"
+              [disabled]="offset() === 0"
+              (click)="page(-1)"
+            >
+              Previous</button
+            ><button
+              type="button"
+              class="secondary-button"
+              [disabled]="offset() + limit >= current.data.totalCount"
+              (click)="page(1)"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </section>
+</div>

@@ -1,0 +1,143 @@
+<div class="mx-auto max-w-4xl">
+  <a class="text-link mb-5" routerLink="/candidates">← All candidates</a>
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">A NEW OPPORTUNITY</p>
+      <h1>New candidate</h1>
+      <p class="mt-2 text-xs text-slate-500">
+        Capture the vehicle details. You can add a cost estimate after saving.
+      </p>
+    </div>
+  </div>
+  <form class="panel p-5 sm:p-8" [formGroup]="form" (ngSubmit)="submit()">
+    @if (error()) {
+      <div class="error-banner mb-6" role="alert">{{ error() }}</div>
+    }
+    <fieldset [disabled]="busy()">
+      <legend class="font-semibold mb-5">Vehicle details</legend>
+      <p class="text-xs text-slate-500 mb-5">Fields marked * are required.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="field-label" for="make">Make *</label
+          ><input
+            id="make"
+            class="form-input"
+            formControlName="make"
+            autocomplete="off"
+            placeholder="e.g. BMW"
+            aria-required="true"
+            [attr.aria-invalid]="fields.make.touched && fields.make.invalid"
+            aria-describedby="make-error"
+          /><app-field-error id="make-error" [control]="fields.make" message="Make is required." />
+        </div>
+        <div>
+          <label class="field-label" for="model">Model *</label
+          ><input
+            id="model"
+            class="form-input"
+            formControlName="model"
+            placeholder="e.g. 320d"
+            aria-required="true"
+            [attr.aria-invalid]="fields.model.touched && fields.model.invalid"
+            aria-describedby="model-error"
+          /><app-field-error
+            id="model-error"
+            [control]="fields.model"
+            message="Model is required."
+          />
+        </div>
+        <div>
+          <label class="field-label" for="year">Year</label
+          ><input
+            id="year"
+            class="form-input"
+            type="number"
+            step="1"
+            min="1886"
+            [max]="maxYear"
+            formControlName="year"
+            aria-describedby="year-error"
+          /><app-field-error
+            id="year-error"
+            [control]="fields.year"
+            [message]="'Enter a whole year between 1886 and ' + maxYear + '.'"
+          />
+        </div>
+        <div>
+          <label class="field-label" for="mileage">Mileage (km)</label
+          ><input
+            id="mileage"
+            class="form-input"
+            type="number"
+            step="1"
+            min="0"
+            formControlName="mileage"
+            aria-describedby="mileage-error"
+          /><app-field-error
+            id="mileage-error"
+            [control]="fields.mileage"
+            message="Mileage must be a whole number between 0 and 2,147,483,647."
+          />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="field-label" for="vin">VIN</label
+          ><input id="vin" class="form-input" formControlName="vin" />
+        </div>
+        <div>
+          <label class="field-label" for="source">Source</label
+          ><input
+            id="source"
+            class="form-input"
+            formControlName="source"
+            placeholder="Auction, listing or seller"
+          />
+        </div>
+        <div>
+          <label class="field-label" for="location">Location</label
+          ><input
+            id="location"
+            class="form-input"
+            formControlName="location"
+            placeholder="City, country"
+          />
+        </div>
+        <div>
+          <label class="field-label" for="selling-price">Expected selling price (EUR) *</label
+          ><input
+            id="selling-price"
+            class="form-input"
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="expectedSellingPrice"
+            aria-required="true"
+            aria-describedby="price-error"
+          /><app-field-error
+            id="price-error"
+            [control]="fields.expectedSellingPrice"
+            message="Enter an expected selling price of zero or more."
+          />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="field-label" for="notes">Notes</label
+          ><textarea
+            id="notes"
+            class="form-input"
+            rows="4"
+            formControlName="notes"
+            placeholder="Condition, seller details or anything worth investigating"
+          ></textarea>
+        </div>
+      </div>
+      <div class="mt-7 pt-5 border-t border-slate-100 flex justify-end gap-3">
+        <a class="secondary-button" routerLink="/candidates">Cancel</a
+        ><button type="submit" class="primary-button" [disabled]="busy()">
+          {{ busy() ? 'Creating…' : 'Create candidate' }}
+        </button>
+      </div>
+    </fieldset>
+    <p class="text-xs text-slate-500 mt-5">
+      The candidate starts under review. Creating an opportunity does not move any capital.
+    </p>
+  </form>
+</div>

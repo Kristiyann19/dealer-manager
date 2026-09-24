@@ -1,0 +1,109 @@
+<section class="panel p-5 sm:p-7" aria-labelledby="estimate-title">
+  <div class="section-heading"><h2 id="estimate-title">New estimate version</h2></div>
+  <p class="text-xs text-slate-500 mb-5">
+    Previous versions stay unchanged. Include the purchase price and all expected costs. All amounts
+    are in EUR.
+  </p>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    @if (error()) {
+      <div class="error-banner mb-5" role="alert">{{ error() }}</div>
+    }
+    <fieldset [disabled]="busy()">
+      @if (candidate().latestEstimate) {
+        <button type="button" class="secondary-button mb-5" (click)="copyLatest()">
+          Replace draft items with latest estimate
+        </button>
+      }
+      <div class="max-w-sm mb-5">
+        <label class="field-label" for="estimate-price">Expected selling price (EUR) *</label
+        ><input
+          id="estimate-price"
+          class="form-input"
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="expectedSellingPrice"
+          aria-required="true"
+          aria-describedby="estimate-price-error"
+        /><app-field-error
+          id="estimate-price-error"
+          [control]="form.controls.expectedSellingPrice"
+          message="Enter a selling price of zero or more."
+        />
+      </div>
+      <div formArrayName="items" class="space-y-3">
+        @for (item of items.controls; track item; let i = $index) {
+          <div [formGroupName]="i" class="estimate-item">
+            <div>
+              <label class="field-label" [for]="'category-' + i">Category *</label
+              ><select class="form-input" [id]="'category-' + i" formControlName="category">
+                @for (category of categories; track category.value) {
+                  <option [ngValue]="category.value">{{ category.label }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="field-label" [for]="'description-' + i">Description *</label
+              ><input
+                class="form-input"
+                [id]="'description-' + i"
+                formControlName="description"
+                placeholder="e.g. Fuel system repair"
+                [attr.aria-describedby]="'description-error-' + i"
+              /><app-field-error
+                [id]="'description-error-' + i"
+                [control]="item.controls.description"
+                message="Description is required."
+              />
+            </div>
+            <div>
+              <label class="field-label" [for]="'amount-' + i">Estimated amount *</label
+              ><input
+                class="form-input"
+                [id]="'amount-' + i"
+                type="number"
+                min="0"
+                step="0.01"
+                formControlName="estimatedAmount"
+                [attr.aria-describedby]="'amount-error-' + i"
+              /><app-field-error
+                [id]="'amount-error-' + i"
+                [control]="item.controls.estimatedAmount"
+                message="Enter an amount of zero or more."
+              />
+            </div>
+            <button
+              type="button"
+              class="secondary-button self-start mt-6"
+              [disabled]="items.length === 1"
+              [attr.aria-label]="'Remove cost item ' + (i + 1)"
+              (click)="removeItem(i)"
+            >
+              Remove
+            </button>
+          </div>
+        }
+      </div>
+      <button type="button" class="secondary-button mt-4" (click)="addItem()">
+        + Add cost item
+      </button>
+      <div class="mt-5">
+        <label class="field-label" for="estimate-notes">Estimate notes</label
+        ><textarea
+          class="form-input"
+          id="estimate-notes"
+          rows="3"
+          formControlName="notes"
+          placeholder="What changed and why?"
+        ></textarea>
+      </div>
+      <div class="mt-6 flex flex-wrap justify-end gap-3">
+        <button type="button" class="secondary-button" (click)="cancelled.emit()">
+          Cancel estimate</button
+        ><button type="submit" class="primary-button" [disabled]="busy()">
+          {{ busy() ? 'Saving…' : 'Save new version' }}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+</section>

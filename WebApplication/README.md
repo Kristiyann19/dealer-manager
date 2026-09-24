@@ -1,4 +1,16 @@
-# AutoCapital frontend prototype
+# AutoCapital frontend
+
+## Candidate module and API connection
+
+The `/candidates` module uses the real WebAPI: server-side search and pagination, candidate creation, details, estimate versions, approval and rejection. The dashboard still uses sample data.
+
+Start the server from the solution root with `dotnet run --project DealerManager.WebAPI --launch-profile http`, then run `pnpm start --port 4201` from `WebApplication`. Open `/candidates` on the frontend. The existing PostgreSQL database must be configured and available.
+
+`proxy.conf.cjs` forwards `/api/**` to `http://localhost:5296`. To use another local API address, set `DEALER_API_URL` before starting Angular. **Restart `ng serve` after adding or changing proxy configuration**; hot reload does not apply it. A `404` on candidate creation, or HTML returned from `/api/candidates`, can mean an older dev server is still running without the proxy.
+
+Production hosting must reverse-proxy `/api` to WebAPI as well as serve Angular routes. `src/app/configuration/api.config.ts` contains the injectable API base URL.
+
+Run `pnpm test` for the Candidate HTTP/form tests and `pnpm build` for production compilation. Candidate estimates and financial summaries come from the API; no client estimates change capital. Purchasing, editing, deletion and photo uploads are not offered by the current API.
 
 Angular 22 standalone dealership dashboard using PrimeNG 22, Tailwind CSS 4, `@lucide/angular`, Chart.js 4 and ng2-charts 10. Angular strict TypeScript and template checking are enabled.
 
@@ -58,10 +70,10 @@ No dashboard component needs to change. Totals, profit, ROI and progress are sup
 - PrimeNG status selection filters recent candidates. Review opens a read-only dialog.
 - The chart switches between three and six months and includes an accessible data table.
 - Refresh reloads the data through the service contract.
-- All sidebar routes work; modules other than Dashboard display a placeholder.
-- New Candidate, notifications and profile show informational dialogs. They do not save data.
+- All sidebar routes work; modules other than Dashboard and Candidates display a placeholder.
+- New Candidate opens the working creation form. Notifications and profile show informational dialogs.
 
-No backend, authentication, transactions, uploads or HTTP endpoints are implemented. Estimated values do not move capital.
+Candidates are connected to the backend. Dashboard integration, authentication, transactions and uploads remain future work. Estimated values do not move capital.
 
 ## PrimeNG license
 

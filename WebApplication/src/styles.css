@@ -52,6 +52,109 @@
   }
 }
 @layer components {
+  .field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 7px;
+  }
+  .form-input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #dce3ed;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    color: #273449;
+  }
+  .form-input:focus {
+    outline: 2px solid #bfdbfe;
+    outline-offset: 1px;
+    border-color: #60a5fa;
+  }
+  .form-input.ng-invalid.ng-touched {
+    border-color: #dc2626;
+  }
+  textarea.form-input {
+    resize: vertical;
+  }
+  .field-error {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #b91c1c;
+  }
+  .error-banner,
+  .success-banner,
+  .info-banner {
+    padding: 14px 18px;
+    border: 1px solid;
+    border-radius: 7px;
+    font-size: 13px;
+  }
+  .error-banner {
+    background: #fff1f2;
+    color: #9f1239;
+    border-color: #fecdd3;
+  }
+  .success-banner {
+    background: #ecfdf5;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+  .info-banner {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #bfdbfe;
+  }
+  .candidate-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .candidate-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 13px 20px;
+    white-space: nowrap;
+  }
+  .candidate-table td {
+    padding: 17px 20px;
+    border-top: 1px solid #edf0f5;
+    font-size: 13px;
+    min-width: 100px;
+  }
+  .candidate-table tbody tr:hover {
+    background: #fafcff;
+  }
+  .candidate-facts dt {
+    color: #64748b;
+    font-size: 12px;
+    margin-bottom: 7px;
+  }
+  .candidate-facts dd {
+    font-size: 14px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+  .estimate-item {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(160px, 2fr) minmax(130px, 1fr) auto;
+    gap: 12px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 7px;
+  }
+  @media (max-width: 767px) {
+    .estimate-item {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
   .sidebar {
     position: fixed;
     inset: 0 auto 0 0;

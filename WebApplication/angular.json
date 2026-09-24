@@ -53,6 +53,10 @@
       "sourceRoot": "src",
       "prefix": "app",
       "architect": {
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": { "tsConfig": "tsconfig.spec.json" }
+        },
         "build": {
           "builder": "@angular/build:application",
           "options": {
@@ -71,9 +75,7 @@
                 "output": "/"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ]
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -101,6 +103,7 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": { "proxyConfig": "proxy.conf.cjs" },
           "configurations": {
             "production": {
               "buildTarget": "dealer-manager-client:build:production"
