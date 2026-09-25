@@ -15,8 +15,7 @@
       <div class="error-banner mb-6" role="alert">{{ error() | translate }}</div>
     }
     <fieldset [disabled]="busy()">
-      <legend class="form-section-title mb-2">{{ 'ui.vehicle_details' | translate }}</legend>
-      <p class="form-help mb-6">{{ 'ui.fields_marked_are_required' | translate }}</p>
+      <legend class="form-section-title mb-4">{{ 'ui.vehicle_details' | translate }}</legend>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <label class="field-label" for="make">{{ 'ui.make' | translate }}</label

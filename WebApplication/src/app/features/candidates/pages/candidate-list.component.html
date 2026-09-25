@@ -3,9 +3,6 @@
     <div>
       <p class="eyebrow">{{ 'ui.before_the_purchase' | translate }}</p>
       <h1>{{ 'ui.candidates' | translate }}</h1>
-      <p class="mt-2 text-xs text-slate-500">
-        {{ 'ui.evaluate_opportunities_and_keep_every_estimate_in_one_place' | translate }}
-      </p>
     </div>
     <a routerLink="/candidates/new" class="primary-button">{{
       'ui.new_candidate_3' | translate
@@ -153,11 +150,6 @@
             <h2>
               {{ query() ? ('candidate.noMatches' | translate) : ('candidate.empty' | translate) }}
             </h2>
-            <p class="text-sm text-slate-500 mt-2">
-              {{
-                query() ? ('candidate.trySearch' | translate) : ('candidate.addFirst' | translate)
-              }}
-            </p>
             @if (query()) {
               <button type="button" class="secondary-button mt-5" (click)="search.setValue('')">
                 {{ 'ui.clear_search' | translate }}
