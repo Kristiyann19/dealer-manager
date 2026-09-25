@@ -94,6 +94,40 @@ public class CandidateApiTests
     }
 
     [Fact]
+    public async Task NegotiatedPurchasePriceUpdatesDetailsAndListAndRejectsMissingOrDuplicatePurchase()
+    {
+        using var factory = new CandidateApiFactory();
+        using var client = factory.CreateInitializedClient();
+        var create = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", askingPrice = 6000 });
+        var candidate = (await create.Content.ReadFromJsonAsync<CandidateDetailsDto>())!;
+        foreach (var price in new[] { 5700m, 5500m })
+        {
+            var response = await client.PostAsJsonAsync("/api/candidates/estimates", new
+            {
+                candidateId = candidate.Id, expectedSellingPrice = 10000,
+                items = new[] { new { category = CostCategory.Purchase, description = "Purchase", estimatedAmount = price } }
+            });
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.Equal(price, (await client.GetFromJsonAsync<CandidateDetailsDto>($"/api/candidates/{candidate.Id}"))!.AskingPrice);
+            Assert.Equal(price, Assert.Single((await client.GetFromJsonAsync<CandidateListResultDto>("/api/candidates"))!.Items).AskingPrice);
+        }
+
+        foreach (var categories in new[] { new[] { CostCategory.Transport }, new[] { CostCategory.Purchase, CostCategory.Purchase } })
+        {
+            var invalid = await client.PostAsJsonAsync("/api/candidates/estimates", new
+            {
+                candidateId = candidate.Id, expectedSellingPrice = 10000,
+                items = categories.Select(category => new { category, description = "Cost", estimatedAmount = 4000m }).ToArray()
+            });
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        }
+        var details = (await client.GetFromJsonAsync<CandidateDetailsDto>($"/api/candidates/{candidate.Id}"))!;
+        Assert.Equal(5500m, details.AskingPrice);
+        Assert.Equal(2, details.EstimateHistory.Count);
+        Assert.Equal(5700m, Assert.Single(details.EstimateHistory.Single(item => item.Version == 1).Items).EstimatedAmount);
+    }
+
+    [Fact]
     public async Task ValidationReturns400WithoutWriting()
     {
         using var factory = new CandidateApiFactory();

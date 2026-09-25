@@ -43,7 +43,9 @@ Create candidate example:
 
 The create contract contains make, model, year, mileage, notes and askingPrice (the seller/intermediary's quote). Make, model and askingPrice are required. The backend assigns Id, UnderReview status and CreatedAt. Requests cannot assign system timestamps, status or an expected selling price. Year must be 1886 through the current UTC year plus one; mileage and askingPrice must be non-negative. Notes are normalized to null when empty.
 
-AskingPrice is stored independently from estimates and never moves capital. The list/details expectedSellingPrice is null until an estimate exists, then comes from its latest version. When askingPrice is present (including zero), the Angular estimate form keeps exactly one disabled, non-removable Purchase row at that price and offers only other categories for additional rows. Disabled values are included in the submitted request. Copying an earlier estimate replaces its Purchase items with the candidate's asking price in the new draft, while preserving the historical estimate. Legacy candidates without askingPrice retain an editable purchase estimate. A separate selling-price entry is required; the calculator sums the submitted items, so the offer is not counted a second time. This is a client form restriction, not a change to the API contract or historical data. Later estimate versions do not overwrite the original asking price.
+AskingPrice is the current seller/intermediary price. Every new estimate must contain exactly one Purchase item, including the first estimate and estimates for legacy candidates. Saving an estimate updates AskingPrice from that item's amount in the same serializable transaction as the new version. Missing or duplicate Purchase items return HTTP 400. Previous estimates and decision snapshots retain their own purchase prices; no capital movement is created.
+
+The Angular form prefills the Purchase amount from the current AskingPrice, allows editing it immediately, and prevents removing or recategorizing that row or adding a second Purchase. Legacy candidates with no price require the amount to be entered. Copying the latest estimate copies other costs while preserving the current purchase draft. The candidate header refreshes from the server only after a successful save; cancelling or a failed save does not change the stored price. The calculator counts the submitted Purchase item once. A separate selling price is required; list/details expectedSellingPrice is null until an estimate exists and then comes from its latest version.
 
 Apply migration `AddCandidateAskingPrice` to existing databases. It adds a nullable numeric column; legacy records retain null because their former selling price cannot safely be interpreted as a seller quote. The legacy Candidate.ExpectedSellingPrice cache is retained for data compatibility; read models use the latest estimate as the source of the selling price.
 
@@ -62,7 +64,7 @@ Create estimate example (replace candidateId with the created candidate's ID):
 }
 ```
 
-Enums retain the existing numeric JSON representation. At least one item is required. Each item needs a valid CostCategory, a description, and a non-negative amount. Zero-cost items are allowed. Version, CreatedAt, item IDs and IsDecisionSnapshot are assigned by the backend.
+Enums retain the existing numeric JSON representation. Exactly one Purchase item is required; additional cost items are optional. Each item needs a valid CostCategory, a description, and a non-negative amount. Zero-cost items are allowed. Version, CreatedAt, item IDs and IsDecisionSnapshot are assigned by the backend.
 
 Reject with an optional reason:
 

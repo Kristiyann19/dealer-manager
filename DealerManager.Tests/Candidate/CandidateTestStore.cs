@@ -1,5 +1,6 @@
 using DealerManager.Application.FilterDtos;
 using DealerManager.Application.FilterDtos.Candidate;
+using DealerManager.Application.IRepository;
 using DealerManager.Domain.Entities;
 using DealerManager.Infrastructure.Persistence;
 using DealerManager.Infrastructure.Repository;
@@ -24,7 +25,7 @@ internal sealed class CandidateTestStore : IDisposable
     public CandidateService Service { get; }
     public UnitOfWork UnitOfWork { get; }
 
-    public CandidateTestStore()
+    public CandidateTestStore(Func<IUnitOfWork, IUnitOfWork>? decorateUnitOfWork = null)
     {
         connection.Open();
         Context = new DealerManagerDbContext(new DbContextOptionsBuilder<DealerManagerDbContext>()
@@ -34,7 +35,7 @@ internal sealed class CandidateTestStore : IDisposable
         Service = new CandidateService(
             new BaseRepository<CandidateEntity, CandidateFilterDto, DealerManagerDbContext>(Context),
             new BaseRepository<CandidateEstimate, FilterDto<CandidateEstimate>, DealerManagerDbContext>(Context),
-            UnitOfWork, new CandidateFinancialCalculator(), Clock);
+            decorateUnitOfWork?.Invoke(UnitOfWork) ?? UnitOfWork, new CandidateFinancialCalculator(), Clock);
     }
 
     public void Dispose()

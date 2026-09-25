@@ -168,7 +168,7 @@ describe('Candidate module HTTP workflows', () => {
     fixture.componentInstance.saved.subscribe(saved);
     button(fixture, 'Replace draft items with latest estimate').click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(false);
     submit(fixture);
     submit(fixture);
     const request = http.expectOne('/api/candidates/estimates');
@@ -200,7 +200,7 @@ describe('Candidate module HTTP workflows', () => {
     expect(request.request.body.items[1].estimatedAmount).toBe(0);
     request.flush(estimate);
   });
-  it('keeps one locked purchase when copying a historical estimate with a different purchase amount', () => {
+  it('preserves the editable negotiated purchase when copying other costs from history', () => {
     const historical: CandidateEstimate = {
       ...estimate,
       items: [
@@ -216,10 +216,11 @@ describe('Candidate module HTTP workflows', () => {
     const fixture = TestBed.createComponent(EstimateFormComponent);
     fixture.componentRef.setInput('candidate', { ...candidate, latestEstimate: historical });
     fixture.detectChanges();
+    input(fixture, '#amount-0', '2700');
     button(fixture, 'Replace draft items with latest estimate').click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('#amount-0').value).toBe('3000');
-    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#amount-0').value).toBe('2700');
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(false);
     expect(fixture.nativeElement.querySelector('#category-0').disabled).toBe(true);
     expect(fixture.nativeElement.querySelector('#description-0').disabled).toBe(true);
     expect(fixture.nativeElement.querySelector('[aria-label="Remove cost item 1"]').disabled).toBe(
@@ -232,17 +233,17 @@ describe('Candidate module HTTP workflows', () => {
     submit(fixture);
     const request = http.expectOne('/api/candidates/estimates');
     expect(request.request.body.items).toEqual([
-      { category: CostCategory.Purchase, description: 'Purchase', estimatedAmount: 3000 },
+      { category: CostCategory.Purchase, description: 'Purchase', estimatedAmount: 2700 },
       { category: CostCategory.Transport, description: 'Delivery', estimatedAmount: 650 },
     ]);
     expect(historical.items[1].estimatedAmount).toBe(3500);
     request.flush(estimate);
   });
-  it('locks and submits a zero asking price without treating it as missing', () => {
+  it('submits a zero asking price without treating it as missing', () => {
     const fixture = TestBed.createComponent(EstimateFormComponent);
     fixture.componentRef.setInput('candidate', { ...candidate, askingPrice: 0 });
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(false);
     input(fixture, '#estimate-price', '7000');
     submit(fixture);
     const request = http.expectOne('/api/candidates/estimates');
@@ -298,6 +299,63 @@ describe('Candidate module HTTP workflows', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('€3,000.00');
     expect(fixture.nativeElement.textContent).toContain(en.candidate.sellingPricePending);
+  });
+  it('updates the candidate price only after successfully saving the first negotiated estimate', () => {
+    const fixture = TestBed.createComponent(CandidateDetailsComponent);
+    fixture.detectChanges();
+    http.expectOne('/api/candidates/12').flush(candidate);
+    fixture.detectChanges();
+    button(fixture, '+ New estimate').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(false);
+    input(fixture, '#amount-0', '2500');
+    input(fixture, '#estimate-price', '7000');
+    button(fixture, '+ Add cost item').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[aria-label="Remove cost item 1"]').disabled).toBe(
+      true,
+    );
+    fixture.nativeElement.querySelector('[aria-label="Remove cost item 2"]').click();
+    fixture.detectChanges();
+    submit(fixture);
+    const failed = http.expectOne('/api/candidates/estimates');
+    expect(failed.request.body.items[0].estimatedAmount).toBe(2500);
+    failed.flush({}, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.financial-summary').textContent).toContain(
+      '€3,000.00',
+    );
+    expect(fixture.nativeElement.querySelector('#amount-0').value).toBe('2500');
+    http.expectNone('/api/candidates/12');
+    submit(fixture);
+    const saved = { ...estimate, items: [{ ...estimate.items[0], estimatedAmount: 2500 }] };
+    http.expectOne('/api/candidates/estimates').flush(saved);
+    http
+      .expectOne('/api/candidates/12')
+      .flush({ ...candidate, askingPrice: 2500, latestEstimate: saved, estimateHistory: [saved] });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.financial-summary').textContent).toContain(
+      '€2,500.00',
+    );
+    expect(fixture.nativeElement.querySelector('#amount-0')).toBeNull();
+  });
+  it('cancels a negotiated draft without changing the candidate price or sending a request', () => {
+    const fixture = TestBed.createComponent(CandidateDetailsComponent);
+    fixture.detectChanges();
+    http.expectOne('/api/candidates/12').flush(candidate);
+    fixture.detectChanges();
+    button(fixture, '+ New estimate').click();
+    fixture.detectChanges();
+    input(fixture, '#amount-0', '2500');
+    button(fixture, 'Cancel estimate').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.financial-summary').textContent).toContain(
+      '€3,000.00',
+    );
+    button(fixture, '+ New estimate').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#amount-0').value).toBe('3000');
+    http.expectNone('/api/candidates/estimates');
   });
   it('requires an estimate before approval', () => {
     const fixture = TestBed.createComponent(CandidateDetailsComponent);

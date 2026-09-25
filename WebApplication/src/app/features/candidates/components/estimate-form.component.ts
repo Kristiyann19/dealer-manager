@@ -2,7 +2,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   DestroyRef,
   inject,
   input,
@@ -42,7 +41,6 @@ export class EstimateFormComponent implements OnInit {
   protected readonly additionalCategories = COST_CATEGORIES.filter(
     (category) => category.value !== CostCategory.Purchase,
   );
-  protected readonly hasFixedPurchase = computed(() => this.candidate().askingPrice !== null);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly form = this.fb.group({
@@ -67,7 +65,8 @@ export class EstimateFormComponent implements OnInit {
       description: this.translate.instant('cost.0'),
       estimatedAmount: candidate.askingPrice,
     });
-    if (this.hasFixedPurchase()) this.items.at(0).disable();
+    this.items.at(0).controls.category.disable();
+    this.items.at(0).controls.description.disable();
   }
   private item(value?: CreateEstimateItemRequest) {
     return this.fb.group({
@@ -84,26 +83,20 @@ export class EstimateFormComponent implements OnInit {
   protected addItem() {
     this.items.push(this.item());
   }
-  protected isFixedPurchase(index: number) {
-    return index === 0 && this.hasFixedPurchase();
+  protected isPurchaseRow(index: number) {
+    return index === 0;
   }
   protected removeItem(index: number) {
-    if (this.items.length > 1 && !this.isFixedPurchase(index)) this.items.removeAt(index);
+    if (index > 0 && !this.busy()) this.items.removeAt(index);
   }
   protected copyLatest() {
     const latest = this.candidate().latestEstimate;
     if (!latest || this.busy()) return;
-    // Copy into a new draft; the original quote remains the single purchase cost.
-    if (this.hasFixedPurchase()) {
-      while (this.items.length > 1) this.items.removeAt(this.items.length - 1);
-      latest.items
-        .filter((item) => item.category !== CostCategory.Purchase)
-        .forEach((item) => this.items.push(this.item(item)));
-    } else {
-      this.items.clear();
-      latest.items.forEach((item) => this.items.push(this.item(item)));
-      if (!this.items.length) this.items.push(this.item());
-    }
+    // Preserve the negotiated purchase price in this draft when copying other costs.
+    while (this.items.length > 1) this.items.removeAt(this.items.length - 1);
+    latest.items
+      .filter((item) => item.category !== CostCategory.Purchase)
+      .forEach((item) => this.items.push(this.item(item)));
     this.form.patchValue({ expectedSellingPrice: latest.expectedSellingPrice, notes: '' });
   }
   protected submit() {

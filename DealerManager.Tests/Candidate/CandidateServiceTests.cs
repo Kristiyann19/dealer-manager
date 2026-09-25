@@ -1,6 +1,7 @@
 using DealerManager.Application.Dtos.Candidate;
 using DealerManager.Application.FilterDtos.Candidate;
 using DealerManager.Application.IService.Candidate;
+using DealerManager.Application.IRepository;
 using DealerManager.Domain.Entities;
 using DealerManager.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -170,11 +171,14 @@ public class CandidateServiceTests
     [InlineData("category")]
     [InlineData("amount")]
     [InlineData("price")]
+    [InlineData("missingPurchase")]
+    [InlineData("duplicatePurchase")]
     public async Task InvalidEstimatesDoNotWritePartialHistory(string field)
     {
         using var store = new CandidateTestStore();
         var candidate = await store.Service.CreateCandidate(NewCandidate(), Token);
         var request = Estimate(candidate.Id);
+        request.Items[0].EstimatedAmount = 2500;
         switch (field)
         {
             case "empty": request.Items.Clear(); break;
@@ -184,11 +188,71 @@ public class CandidateServiceTests
             case "category": request.Items[0].Category = (CostCategory)999; break;
             case "amount": request.Items[0].EstimatedAmount = -1; break;
             case "price": request.ExpectedSellingPrice = -1; break;
+            case "missingPurchase": request.Items.RemoveAt(0); break;
+            case "duplicatePurchase": request.Items.Add(new() { Category = CostCategory.Purchase, Description = "Duplicate", EstimatedAmount = 100 }); break;
         }
 
         await Assert.ThrowsAsync<ValidationException>(() => store.Service.CreateCandidateEstimate(request, Token));
         Assert.Empty(await store.Context.CandidateEstimates.ToListAsync());
         Assert.Empty(await store.Context.CandidateEstimateItems.ToListAsync());
+        store.Context.ChangeTracker.Clear();
+        Assert.Equal(3000m, (await store.Service.GetCandidateDetails(candidate.Id, Token)).AskingPrice);
+    }
+
+    [Theory]
+    [InlineData(2500)]
+    [InlineData(0)]
+    public async Task PurchasePriceUpdatesFromFirstEstimateAndLaterVersionsPreserveHistory(int firstPrice)
+    {
+        using var store = new CandidateTestStore();
+        var candidate = await store.Service.CreateCandidate(NewCandidate(), Token);
+        var request = Estimate(candidate.Id);
+        request.Items[0].EstimatedAmount = firstPrice;
+        await store.Service.CreateCandidateEstimate(request, Token);
+        store.Context.ChangeTracker.Clear();
+        Assert.Equal((decimal)firstPrice, (await store.Service.GetCandidateDetails(candidate.Id, Token)).AskingPrice);
+
+        request.Items[0].EstimatedAmount = 2000;
+        await store.Service.CreateCandidateEstimate(request, Token);
+        store.Context.ChangeTracker.Clear();
+        var details = await store.Service.GetCandidateDetails(candidate.Id, Token);
+        Assert.Equal(2000m, details.AskingPrice);
+        Assert.Equal(2000m, Assert.Single((await store.Service.GetCandidates(new(), Token)).Items).AskingPrice);
+        Assert.Equal(2000m, details.LatestEstimate!.Items.Single(item => item.Category == CostCategory.Purchase).EstimatedAmount);
+        Assert.Equal((decimal)firstPrice, details.EstimateHistory.Single(item => item.Version == 1).Items.Single(item => item.Category == CostCategory.Purchase).EstimatedAmount);
+        Assert.Empty(await store.Context.FinancialTransactions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task FailedEstimateSaveRollsBackNegotiatedPriceAndHistoryTogether()
+    {
+        FailingSaveUnitOfWork failing = null!;
+        using var store = new CandidateTestStore(inner => failing = new FailingSaveUnitOfWork(inner));
+        var candidate = await store.Service.CreateCandidate(NewCandidate(), Token);
+        var first = await store.Service.CreateCandidateEstimate(Estimate(candidate.Id), Token);
+        failing.FailAfterSave = true;
+        var request = Estimate(candidate.Id);
+        request.Items[0].EstimatedAmount = 2200;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.Service.CreateCandidateEstimate(request, Token));
+        store.Context.ChangeTracker.Clear();
+        var details = await store.Service.GetCandidateDetails(candidate.Id, Token);
+        Assert.Equal(3000m, details.AskingPrice);
+        Assert.Equal(first.Id, Assert.Single(details.EstimateHistory).Id);
+        Assert.Equal(5, await store.Context.CandidateEstimateItems.CountAsync());
+        Assert.Empty(await store.Context.FinancialTransactions.ToListAsync());
+    }
+
+    private sealed class FailingSaveUnitOfWork(IUnitOfWork inner) : IUnitOfWork
+    {
+        public bool FailAfterSave { get; set; }
+        public async Task<int> SaveChanges(CancellationToken token)
+        {
+            var count = await inner.SaveChanges(token);
+            if (FailAfterSave) throw new InvalidOperationException("Simulated failure after database write");
+            return count;
+        }
+        public Task<T> ExecuteInTransaction<T>(Func<CancellationToken, Task<T>> operation, CancellationToken token)
+            => inner.ExecuteInTransaction(operation, token);
     }
 
     [Fact]

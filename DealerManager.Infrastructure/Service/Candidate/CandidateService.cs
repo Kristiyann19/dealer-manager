@@ -101,6 +101,11 @@ namespace DealerManager.Infrastructure.Service.Candidate
             foreach (var item in request.Items)
                 Validate(item);
 
+            var purchaseItems = request.Items.Where(item => item.Category == CostCategory.Purchase).ToList();
+            if (purchaseItems.Count != 1)
+                throw new ValidationException("An estimate must contain exactly one Purchase item.");
+            var purchasePrice = purchaseItems[0].EstimatedAmount;
+
             // Validate aggregate arithmetic before anything is tracked or written.
             calculator.Calculate(request.ExpectedSellingPrice, request.Items.Select(item => item.EstimatedAmount));
 
@@ -135,6 +140,8 @@ namespace DealerManager.Infrastructure.Service.Candidate
                 // Leave inverse navigations unset until AddAsync performs EF relationship fixup.
                 // BaseRepository.Create traverses the new graph before tracking it.
                 await estimates.Create(estimate);
+                // The current negotiated price and its estimate are committed together.
+                candidate.AskingPrice = purchasePrice;
                 candidate.ExpectedSellingPrice = request.ExpectedSellingPrice;
                 candidates.SetEntryModified(candidate);
                 await unitOfWork.SaveChanges(token);
