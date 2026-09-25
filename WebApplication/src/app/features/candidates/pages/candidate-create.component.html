@@ -1,22 +1,23 @@
-<div class="mx-auto max-w-4xl">
-  <a class="text-link mb-5" routerLink="/candidates">{{ 'ui.all_candidates' | translate }}</a>
+<div class="page-container page-container--form">
+  <nav [attr.aria-label]="'ui.all_candidates' | translate">
+    <a class="text-link" routerLink="/candidates">{{ 'ui.all_candidates' | translate }}</a>
+  </nav>
   <div class="page-heading">
     <div>
-      <p class="eyebrow">{{ 'ui.a_new_opportunity' | translate }}</p>
       <h1>{{ 'ui.new_candidate_2' | translate }}</h1>
-      <p class="mt-2 text-xs text-slate-500">
+      <p class="mt-3 form-help max-w-2xl">
         {{ 'ui.capture_the_vehicle_details_you_can_add_a_cost_estimate_after_saving' | translate }}
       </p>
     </div>
   </div>
-  <form class="panel p-5 sm:p-8" [formGroup]="form" (ngSubmit)="submit()">
+  <form class="panel p-6" [formGroup]="form" (ngSubmit)="submit()">
     @if (error()) {
       <div class="error-banner mb-6" role="alert">{{ error() | translate }}</div>
     }
     <fieldset [disabled]="busy()">
-      <legend class="font-semibold mb-5">{{ 'ui.vehicle_details' | translate }}</legend>
-      <p class="text-xs text-slate-500 mb-5">{{ 'ui.fields_marked_are_required' | translate }}</p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <legend class="form-section-title mb-2">{{ 'ui.vehicle_details' | translate }}</legend>
+      <p class="form-help mb-6">{{ 'ui.fields_marked_are_required' | translate }}</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <label class="field-label" for="make">{{ 'ui.make' | translate }}</label
           ><input
@@ -83,25 +84,28 @@
             [message]="'ui.mileage_must_be_a_whole_number_between_0_and_2_147_483_647' | translate"
           />
         </div>
-        <div>
+        <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-5">
           <label class="field-label" for="asking-price">{{
             'candidate.askingPriceRequired' | translate
           }}</label
           ><input
             id="asking-price"
-            class="form-input"
+            class="form-input sm:max-w-sm"
             type="number"
             min="0"
             step="0.01"
             formControlName="askingPrice"
             aria-required="true"
-            aria-describedby="price-error"
+            aria-describedby="price-help price-error"
+            [attr.aria-invalid]="fields.askingPrice.touched && fields.askingPrice.invalid"
           /><app-field-error
             id="price-error"
             [control]="fields.askingPrice"
             [message]="'candidate.askingPriceValidation' | translate"
           />
-          <p class="text-xs text-slate-500 mt-2">{{ 'candidate.askingPriceHelp' | translate }}</p>
+          <p id="price-help" class="form-help mt-2">
+            {{ 'candidate.askingPriceHelp' | translate }}
+          </p>
         </div>
         <div class="sm:col-span-2">
           <label class="field-label" for="notes">{{ 'ui.notes' | translate }}</label
@@ -116,14 +120,14 @@
           ></textarea>
         </div>
       </div>
-      <div class="mt-7 pt-5 border-t border-slate-100 flex justify-end gap-3">
+      <div class="form-actions">
         <a class="secondary-button" routerLink="/candidates">{{ 'ui.cancel' | translate }}</a
         ><button type="submit" class="primary-button" [disabled]="busy()">
           {{ busy() ? ('common.creating' | translate) : ('candidate.create' | translate) }}
         </button>
       </div>
     </fieldset>
-    <p class="text-xs text-slate-500 mt-5">
+    <p class="form-help mt-5">
       {{
         'ui.the_candidate_starts_under_review_creating_an_opportunity_does_not_move_any_ca'
           | translate

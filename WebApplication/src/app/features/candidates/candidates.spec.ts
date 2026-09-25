@@ -168,7 +168,7 @@ describe('Candidate module HTTP workflows', () => {
     fixture.componentInstance.saved.subscribe(saved);
     button(fixture, 'Replace draft items with latest estimate').click();
     fixture.detectChanges();
-    input(fixture, '#amount-0', '3100.25');
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(true);
     submit(fixture);
     submit(fixture);
     const request = http.expectOne('/api/candidates/estimates');
@@ -176,7 +176,7 @@ describe('Candidate module HTTP workflows', () => {
       candidateId: 12,
       expectedSellingPrice: 7000,
       notes: null,
-      items: [{ category: 0, description: 'Purchase', estimatedAmount: 3100.25 }],
+      items: [{ category: 0, description: 'Purchase', estimatedAmount: 3000 }],
     });
     expect(estimate.items[0].estimatedAmount).toBe(3000);
     request.flush({ ...estimate, version: 2 });
@@ -189,12 +189,78 @@ describe('Candidate module HTTP workflows', () => {
     submit(fixture);
     http.expectNone('/api/candidates/estimates');
     expect(button(fixture, 'Remove').disabled).toBe(true);
-    input(fixture, '#description-0', 'No charge');
-    input(fixture, '#amount-0', '0');
+    button(fixture, '+ Add cost item').click();
+    fixture.detectChanges();
+    input(fixture, '#description-1', 'No charge');
+    input(fixture, '#amount-1', '0');
+    input(fixture, '#estimate-price', '7000');
+    submit(fixture);
+    const request = http.expectOne('/api/candidates/estimates');
+    expect(request.request.body.items[0].estimatedAmount).toBe(3000);
+    expect(request.request.body.items[1].estimatedAmount).toBe(0);
+    request.flush(estimate);
+  });
+  it('keeps one locked purchase when copying a historical estimate with a different purchase amount', () => {
+    const historical: CandidateEstimate = {
+      ...estimate,
+      items: [
+        { id: 10, category: CostCategory.Transport, description: 'Delivery', estimatedAmount: 500 },
+        {
+          id: 11,
+          category: CostCategory.Purchase,
+          description: 'Old offer',
+          estimatedAmount: 3500,
+        },
+      ],
+    };
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', { ...candidate, latestEstimate: historical });
+    fixture.detectChanges();
+    button(fixture, 'Replace draft items with latest estimate').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#amount-0').value).toBe('3000');
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#category-0').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#description-0').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('[aria-label="Remove cost item 1"]').disabled).toBe(
+      true,
+    );
+    expect(fixture.nativeElement.querySelector('#category-1').textContent).not.toContain(
+      'Purchase',
+    );
+    input(fixture, '#amount-1', '650');
+    submit(fixture);
+    const request = http.expectOne('/api/candidates/estimates');
+    expect(request.request.body.items).toEqual([
+      { category: CostCategory.Purchase, description: 'Purchase', estimatedAmount: 3000 },
+      { category: CostCategory.Transport, description: 'Delivery', estimatedAmount: 650 },
+    ]);
+    expect(historical.items[1].estimatedAmount).toBe(3500);
+    request.flush(estimate);
+  });
+  it('locks and submits a zero asking price without treating it as missing', () => {
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', { ...candidate, askingPrice: 0 });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(true);
     input(fixture, '#estimate-price', '7000');
     submit(fixture);
     const request = http.expectOne('/api/candidates/estimates');
     expect(request.request.body.items[0].estimatedAmount).toBe(0);
+    request.flush(estimate);
+  });
+  it('allows a purchase estimate for legacy candidates without an asking price', () => {
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', { ...candidate, askingPrice: null });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#amount-0').disabled).toBe(false);
+    input(fixture, '#estimate-price', '7000');
+    submit(fixture);
+    http.expectNone('/api/candidates/estimates');
+    input(fixture, '#amount-0', '3200');
+    submit(fixture);
+    const request = http.expectOne('/api/candidates/estimates');
+    expect(request.request.body.items[0].estimatedAmount).toBe(3200);
     request.flush(estimate);
   });
   it('creates with exactly the six requested fields and no selling price', () => {

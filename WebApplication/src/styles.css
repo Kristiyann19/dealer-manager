@@ -7,10 +7,11 @@
   body {
     margin: 0;
     background: #f6f8fb;
-    color: #273449;
+    color: #0f172a;
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 16px;
     -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
   }
   button,
   a,
@@ -36,10 +37,11 @@
     outline-offset: 4px;
   }
   h2 {
-    font-size: 13px;
-    font-weight: 650;
+    font-size: 22px;
+    font-weight: 600;
     letter-spacing: -0.015em;
-    color: #263348;
+    color: #0f172a;
+    line-height: 1.35;
   }
   app-monthly-overview,
   app-financial-overview,
@@ -54,21 +56,22 @@
 @layer components {
   .field-label {
     display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 8px;
   }
   .form-input {
     display: block;
     width: 100%;
     min-width: 0;
     padding: 10px 12px;
-    border: 1px solid #dce3ed;
-    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
     background: white;
-    font-size: 13px;
-    color: #273449;
+    font-size: 16px;
+    color: #0f172a;
+    min-height: 44px;
   }
   .form-input:focus {
     outline: 2px solid #bfdbfe;
@@ -78,13 +81,20 @@
   .form-input.ng-invalid.ng-touched {
     border-color: #dc2626;
   }
+  .form-input:disabled {
+    background: #e9eef5;
+    color: #475569;
+    border-color: #cbd5e1;
+    cursor: not-allowed;
+    opacity: 1;
+  }
   textarea.form-input {
     resize: vertical;
   }
   .field-error {
     display: block;
     margin-top: 5px;
-    font-size: 12px;
+    font-size: 14px;
     color: #b91c1c;
   }
   .error-banner,
@@ -92,8 +102,8 @@
   .info-banner {
     padding: 14px 18px;
     border: 1px solid;
-    border-radius: 7px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 14px;
   }
   .error-banner {
     background: #fff1f2;
@@ -116,31 +126,36 @@
     text-align: left;
   }
   .candidate-table th {
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 11px;
+    background: #eef2f7;
+    color: #334155;
+    font-size: 14px;
     font-weight: 600;
-    padding: 13px 20px;
+    padding: 16px 24px;
     white-space: nowrap;
   }
   .candidate-table td {
-    padding: 17px 20px;
-    border-top: 1px solid #edf0f5;
-    font-size: 13px;
+    padding: 16px 24px;
+    border-top: 1px solid #dce3ec;
+    font-size: 16px;
     min-width: 100px;
+    height: 56px;
+    vertical-align: top;
+    overflow-wrap: anywhere;
   }
   .candidate-table tbody tr:hover {
-    background: #fafcff;
+    background: #f1f5f9;
   }
   .candidate-facts dt {
-    color: #64748b;
-    font-size: 12px;
-    margin-bottom: 7px;
+    color: #475569;
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 500;
   }
   .candidate-facts dd {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
     overflow-wrap: anywhere;
+    color: #0f172a;
   }
   .estimate-item {
     display: grid;
@@ -231,12 +246,13 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    padding: 9px 13px;
-    border-radius: 6px;
-    font-size: 11px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
-    white-space: nowrap;
+    white-space: normal;
     transition: background 0.15s;
+    min-height: 44px;
   }
   .primary-button {
     background: #2863d9;
@@ -249,8 +265,8 @@
   }
   .secondary-button {
     background: white;
-    color: #58667c;
-    border: 1px solid #e2e7ef;
+    color: #334155;
+    border: 1px solid #cbd5e1;
   }
   .secondary-button:hover {
     background: #f8fafc;
@@ -269,31 +285,102 @@
   }
   .panel {
     background: white;
-    border: 1px solid #e3e8f0;
-    border-radius: 9px;
-    box-shadow: 0 2px 3px #20355403;
+    border: 1px solid #dce3ec;
+    border-radius: 12px;
+    box-shadow: none;
   }
   .page-heading {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 18px;
+    gap: 24px;
     margin-bottom: 26px;
     flex-wrap: wrap;
   }
   .page-heading h1 {
-    font-size: 26px;
+    font-size: 32px;
     line-height: 1.2;
-    font-weight: 650;
-    color: #1c2b42;
-    letter-spacing: -0.035em;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.025em;
     margin-top: 7px;
+    overflow-wrap: anywhere;
   }
   .eyebrow {
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 0.13em;
-    color: #8a97aa;
+    letter-spacing: 0.06em;
+    color: #475569;
+  }
+  .page-container {
+    width: 100%;
+    max-width: 1344px;
+    margin-inline: auto;
+    display: grid;
+    gap: 28px;
+  }
+  .page-container--form {
+    max-width: 960px;
+  }
+  .page-container > *,
+  .page-heading > * {
+    min-width: 0;
+  }
+  .page-container > .page-heading {
+    margin-bottom: 0;
+  }
+  .form-section-title {
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .form-help {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+  }
+  .page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    margin-top: 28px;
+    border-top: 1px solid #e2e8f0;
+  }
+  .destructive-button {
+    color: #b91c1c;
+    border-color: #fecaca;
+    background: #fff;
+  }
+  .destructive-button:hover {
+    background: #fef2f2;
+  }
+  .primary-button.destructive-button {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+  }
+  .primary-button.destructive-button:hover {
+    background: #991b1b;
+  }
+  @media (max-width: 639px) {
+    .page-container {
+      gap: 24px;
+    }
+    .page-actions {
+      width: 100%;
+    }
+    .page-actions > *,
+    .form-actions > * {
+      flex: 1 1 auto;
+    }
   }
   .demo-pill {
     display: inline-flex;
@@ -375,20 +462,22 @@
     background: #f8fafc;
   }
   .count-pill {
-    background: #f0f3f8;
-    color: #7d8ca3;
-    font-size: 10px;
-    line-height: 18px;
+    background: #e9eef5;
+    color: #334155;
+    font-size: 14px;
+    line-height: 26px;
     min-width: 21px;
     text-align: center;
-    border-radius: 4px;
+    border-radius: 6px;
+    display: inline-block;
+    vertical-align: middle;
   }
   .text-link {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    color: #3b6fbd;
-    font-size: 11px;
+    color: #1d4ed8;
+    font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
   }
@@ -447,11 +536,19 @@
   overflow-x: auto;
 }
 .p-tag {
-  font-size: 9px !important;
-  font-weight: 500 !important;
-  padding: 3px 7px !important;
-  border-radius: 4px !important;
   white-space: nowrap;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  --p-tag-info-background: #e0efff;
+  --p-tag-info-color: #1e40af;
+  --p-tag-success-background: #dcfce7;
+  --p-tag-success-color: #166534;
+  --p-tag-danger-background: #fee2e2;
+  --p-tag-danger-color: #991b1b;
+  --p-tag-secondary-background: #e2e8f0;
+  --p-tag-secondary-color: #334155;
 }
 .p-select {
   font-size: 10px !important;
@@ -469,50 +566,6 @@
 }
 .p-dialog-title {
   font-size: 16px !important;
-}
-/* Details-only overrides for nested PrimeNG and estimate form components. */
-app-candidate-details app-candidate-status .p-tag {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  padding: 6px 12px !important;
-  border-radius: 6px !important;
-  --p-tag-info-background: #e0efff;
-  --p-tag-info-color: #1e40af;
-  --p-tag-success-background: #dcfce7;
-  --p-tag-success-color: #166534;
-  --p-tag-danger-background: #fee2e2;
-  --p-tag-danger-color: #991b1b;
-  --p-tag-secondary-background: #e2e8f0;
-  --p-tag-secondary-color: #334155;
-}
-app-candidate-details app-estimate-form .panel {
-  padding: 24px;
-  border-color: #dce3ec;
-  border-radius: 12px;
-}
-app-candidate-details app-estimate-form h2 {
-  font-size: 22px;
-}
-app-candidate-details
-  app-estimate-form
-  :is(.field-label, .text-xs, .info-banner, .error-banner, .field-error) {
-  font-size: 14px;
-}
-app-candidate-details app-estimate-form :is(.field-label, .text-slate-500) {
-  color: #475569;
-}
-app-candidate-details app-estimate-form .form-input {
-  font-size: 16px;
-  min-height: 44px;
-  border-color: #cbd5e1;
-  border-radius: 8px;
-}
-app-candidate-details app-estimate-form :is(.primary-button, .secondary-button) {
-  font-size: 14px;
-  min-height: 44px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  white-space: normal;
 }
 @media (max-width: 1279px) {
   .pipeline-stage {

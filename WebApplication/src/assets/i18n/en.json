@@ -214,6 +214,8 @@
     "km": " km"
   },
   "candidate": {
+    "fixedPurchaseHelp": "The Purchase cost is locked to the candidate’s asking price and is included once in the total. Copying an earlier estimate keeps this price. Add other costs as separate rows.",
+    "legacyPurchaseHelp": "This candidate has no recorded asking price. Enter the purchase price as a Purchase cost and add the other estimated costs.",
     "create": "Create candidate",
     "saveVersion": "Save new version",
     "noMatches": "No matching candidates",

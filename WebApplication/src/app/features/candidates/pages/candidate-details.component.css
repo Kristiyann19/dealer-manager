@@ -3,101 +3,8 @@
   min-width: 0;
 }
 
-.candidate-details {
-  max-width: 1344px;
-  margin-inline: auto;
-  display: grid;
-  gap: 28px;
-  color: #0f172a;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.candidate-details > *,
-.details-heading > *,
 .metrics-grid > * {
   min-width: 0;
-}
-
-.panel,
-.metric-card {
-  border: 1px solid #dce3ec;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: none;
-}
-
-.details-heading {
-  margin: 0;
-  align-items: center;
-  gap: 24px;
-}
-
-.details-heading h1 {
-  font-size: 32px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  overflow-wrap: anywhere;
-  color: #0f172a;
-}
-
-.eyebrow {
-  font-size: 14px;
-  color: #475569;
-  letter-spacing: 0.06em;
-}
-
-h2 {
-  font-size: 22px;
-  line-height: 1.35;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.text-link {
-  font-size: 14px;
-  color: #1d4ed8;
-}
-
-.candidate-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.primary-button,
-.secondary-button {
-  min-height: 44px;
-  padding: 10px 16px;
-  font-size: 14px;
-  border-radius: 8px;
-  white-space: normal;
-}
-
-.secondary-button {
-  color: #334155;
-  border-color: #cbd5e1;
-}
-
-.destructive-button {
-  color: #b91c1c;
-  border-color: #fecaca;
-  background: #fff;
-}
-
-.destructive-button:hover {
-  background: #fef2f2;
-}
-
-.primary-button.destructive-button {
-  background: #b91c1c;
-  border-color: #b91c1c;
-  color: #fff;
-}
-
-.primary-button.destructive-button:hover {
-  background: #991b1b;
 }
 
 .metrics-grid {
@@ -107,12 +14,13 @@ h2 {
 }
 
 .metric-card {
+  border: 1px solid #dce3ec;
+  border-radius: 12px;
+  background: #fff;
   padding: 24px;
 }
 
-.metric-card dt,
-.candidate-facts dt,
-.field-label {
+.metric-card dt {
   font-size: 14px;
   font-weight: 500;
   color: #475569;
@@ -155,12 +63,6 @@ h2 {
   color: #b91c1c;
 }
 
-.candidate-facts dd {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
 .compact-metrics {
   gap: 12px;
 }
@@ -177,31 +79,6 @@ h2 {
   font-weight: 600;
 }
 
-.count-pill {
-  display: inline-block;
-  vertical-align: middle;
-  font-size: 14px;
-  line-height: 26px;
-  color: #334155;
-  background: #e9eef5;
-  border-radius: 6px;
-}
-
-.form-input {
-  min-height: 44px;
-  font-size: 16px;
-  color: #0f172a;
-  border-color: #cbd5e1;
-  border-radius: 8px;
-}
-
-.info-banner,
-.error-banner,
-.success-banner {
-  font-size: 14px;
-  border-radius: 8px;
-}
-
 .estimate-table-scroll {
   overflow-x: auto;
 }
@@ -212,21 +89,7 @@ h2 {
 }
 
 .candidate-table th {
-  padding: 16px 24px;
-  background: #eef2f7;
-  color: #334155;
-  font-size: 14px;
-  font-weight: 600;
   white-space: normal;
-}
-
-.candidate-table td {
-  height: 56px;
-  padding: 16px 24px;
-  border-top: 1px solid #dce3ec;
-  font-size: 16px;
-  vertical-align: top;
-  overflow-wrap: anywhere;
 }
 
 .candidate-table th:first-child {
@@ -242,10 +105,6 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
-.candidate-table tbody tr:hover {
-  background: #f1f5f9;
-}
-
 @media (min-width: 1200px) {
   .metrics-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -253,23 +112,11 @@ h2 {
 }
 
 @media (max-width: 639px) {
-  .candidate-details {
-    gap: 24px;
-  }
-
   .metrics-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .metric-card {
     padding: 20px 24px;
-  }
-
-  .candidate-actions {
-    width: 100%;
-  }
-
-  .candidate-actions button {
-    flex: 1 1 auto;
   }
 }

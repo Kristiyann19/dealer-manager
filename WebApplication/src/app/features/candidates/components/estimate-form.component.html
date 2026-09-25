@@ -1,15 +1,8 @@
-<section class="panel p-5 sm:p-7" aria-labelledby="estimate-title">
+<section class="panel p-6" aria-labelledby="estimate-title">
   <div class="section-heading">
     <h2 id="estimate-title">{{ 'ui.new_estimate_version' | translate }}</h2>
   </div>
-  <p class="text-xs text-slate-500 mb-5">
-    {{
-      'ui.previous_versions_stay_unchanged_include_the_purchase_price_and_all_expected_c'
-        | translate
-    }}
-  </p>
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <p class="info-banner mb-5">{{ 'candidate.estimatePurchaseHelp' | translate }}</p>
     @if (error()) {
       <div class="error-banner mb-5" role="alert">{{ error() | translate }}</div>
     }
@@ -40,13 +33,22 @@
       </div>
       <div formArrayName="items" class="space-y-3">
         @for (item of items.controls; track item; let i = $index) {
-          <div [formGroupName]="i" class="estimate-item">
+          <div
+            [formGroupName]="i"
+            class="estimate-item"
+            [attr.aria-describedby]="isFixedPurchase(i) ? 'purchase-cost-help' : null"
+          >
             <div>
               <label class="field-label" [for]="'category-' + i">{{
                 'ui.category' | translate
               }}</label
               ><select class="form-input" [id]="'category-' + i" formControlName="category">
-                @for (category of categories; track category.value) {
+                @for (
+                  category of hasFixedPurchase() && !isFixedPurchase(i)
+                    ? additionalCategories
+                    : categories;
+                  track category.value
+                ) {
                   <option [ngValue]="category.value">{{ category.label | translate }}</option>
                 }
               </select>
@@ -88,7 +90,7 @@
             <button
               type="button"
               class="secondary-button self-start mt-6"
-              [disabled]="items.length === 1"
+              [disabled]="items.length === 1 || isFixedPurchase(i)"
               [attr.aria-label]="'candidate.removeItem' | translate: { index: i + 1 }"
               (click)="removeItem(i)"
             >
@@ -97,7 +99,7 @@
           </div>
         }
       </div>
-      <button type="button" class="secondary-button mt-4" (click)="addItem()">
+      <button type="button" class="primary-button mt-4" (click)="addItem()">
         {{ 'ui.add_cost_item' | translate }}
       </button>
       <div class="mt-5">

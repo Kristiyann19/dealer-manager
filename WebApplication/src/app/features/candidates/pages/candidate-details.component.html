@@ -1,4 +1,4 @@
-<div class="candidate-details">
+<div class="page-container">
   <nav [attr.aria-label]="'ui.all_candidates' | translate">
     <a class="text-link" routerLink="/candidates">{{ 'ui.all_candidates' | translate }}</a>
   </nav>
@@ -18,7 +18,7 @@
       </button>
     </div>
   } @else if (candidate(); as candidate) {
-    <div class="page-heading details-heading">
+    <div class="page-heading">
       <div>
         <p class="eyebrow">{{ 'ui.candidate_value' | translate: { p0: candidate.id } }}</p>
         <h1>{{ candidate.make }} {{ candidate.model }}</h1>
@@ -32,7 +32,7 @@
           >
         </div>
       </div>
-      <div class="candidate-actions">
+      <div class="page-actions">
         <button
           type="button"
           class="secondary-button"
@@ -141,6 +141,16 @@
     }
     <section class="financial-summary" [attr.aria-label]="'ui.current_expectation' | translate">
       <dl class="metrics-grid">
+         <div class="metric-card">
+          <dt>{{ 'ui.expected_sale' | translate }}</dt>
+          <dd [class.metric-pending]="candidate.expectedSellingPrice === null">
+            {{
+              candidate.expectedSellingPrice === null
+                ? ('candidate.sellingPricePending' | translate)
+                : (candidate.expectedSellingPrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
+            }}
+          </dd>
+        </div>
         <div class="metric-card">
           <dt>{{ 'candidate.askingPrice' | translate }}</dt>
           <dd [class.metric-pending]="candidate.askingPrice === null">
@@ -151,16 +161,7 @@
             }}
           </dd>
         </div>
-        <div class="metric-card">
-          <dt>{{ 'ui.expected_sale' | translate }}</dt>
-          <dd [class.metric-pending]="candidate.expectedSellingPrice === null">
-            {{
-              candidate.expectedSellingPrice === null
-                ? ('candidate.sellingPricePending' | translate)
-                : (candidate.expectedSellingPrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
-            }}
-          </dd>
-        </div>
+       
         <div
           class="metric-card"
           [class.metric-positive]="
