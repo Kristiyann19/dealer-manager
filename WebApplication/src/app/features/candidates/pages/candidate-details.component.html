@@ -33,6 +33,15 @@
         </div>
       </div>
       <div class="page-actions">
+        @if (candidate.status === statuses.Approved && !showEstimate()) {
+          <button
+            class="primary-button"
+            [disabled]="busy()"
+            (click)="decision.set(null); showPurchase.set(true)"
+          >
+            {{ 'purchase.action' | translate }}
+          </button>
+        }
         <button
           type="button"
           class="secondary-button"
@@ -63,6 +72,25 @@
         }
       </div>
     </div>
+    @if (showPurchase()) {
+      <app-purchase-dialog
+        [candidate]="candidate"
+        (closed)="showPurchase.set(false)"
+        (purchased)="purchaseSaved($event)"
+      />
+    }
+    @if (candidate.status === statuses.Purchased) {
+      <div class="info-banner">
+        <p>{{ 'purchase.purchasedInfo' | translate }}</p>
+        @if (candidate.vehicleId) {
+          <a
+            class="text-link mt-2 inline-block"
+            [routerLink]="['/vehicles', candidate.vehicleId]"
+            >{{ 'purchase.openVehicle' | translate }}</a
+          >
+        }
+      </div>
+    }
     @if (candidate.status === statuses.UnderReview && !candidate.latestEstimate) {
       <p class="info-banner">
         {{ 'ui.add_at_least_one_estimate_before_approving_this_candidate' | translate }}
@@ -141,7 +169,7 @@
     }
     <section class="financial-summary" [attr.aria-label]="'ui.current_expectation' | translate">
       <dl class="metrics-grid">
-         <div class="metric-card">
+        <div class="metric-card">
           <dt>{{ 'ui.expected_sale' | translate }}</dt>
           <dd [class.metric-pending]="candidate.expectedSellingPrice === null">
             {{
@@ -161,7 +189,7 @@
             }}
           </dd>
         </div>
-       
+
         <div
           class="metric-card"
           [class.metric-positive]="

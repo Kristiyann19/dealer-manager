@@ -1,0 +1,110 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'purchase.title' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '600px', maxWidth: '94vw' }"
+>
+  <p class="text-xl font-semibold">{{ candidate().make }} {{ candidate().model }}</p>
+  <p class="mt-2 mb-6 text-slate-600">
+    {{ 'purchase.forecast' | translate }}:
+    <strong>{{ forecastPrice() | localizedCurrency: 'EUR' }}</strong>
+  </p>
+  @if (missingYear()) {
+    <p class="error-banner mb-4" role="alert">{{ 'purchase.errors.year' | translate }}</p>
+  }
+  @if (loading()) {
+    <p role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="error-banner" role="alert">{{ loadError() | translate }}</p>
+    <button class="secondary-button mt-3" (click)="loadAccounts()">
+      {{ 'finance.retry' | translate }}
+    </button>
+  } @else if (!accounts().length) {
+    <p class="info-banner">{{ 'purchase.noAccounts' | translate }}</p>
+    <a class="text-link mt-3 block" routerLink="/finances">{{ 'nav.finances' | translate }}</a>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <fieldset [disabled]="busy()" class="grid min-w-0 gap-5">
+        <div>
+          <label class="field-label" for="purchase-price">{{
+            'purchase.actualPrice' | translate
+          }}</label
+          ><input
+            class="form-input"
+            id="purchase-price"
+            type="number"
+            step="any"
+            formControlName="actualPurchasePrice"
+          />
+          @if (
+            form.controls.actualPurchasePrice.touched && form.controls.actualPurchasePrice.invalid
+          ) {
+            <p class="field-error" role="alert">{{ 'finance.positiveAmount' | translate }}</p>
+          }
+        </div>
+        <div>
+          <label class="field-label" for="purchase-date">{{ 'purchase.date' | translate }}</label
+          ><input
+            class="form-input"
+            id="purchase-date"
+            type="date"
+            formControlName="purchaseDate"
+          />
+          <p class="form-help mt-2">{{ 'finance.dateHelp' | translate }}</p>
+          @if (form.controls.purchaseDate.touched && form.controls.purchaseDate.invalid) {
+            <p class="field-error" role="alert">{{ 'finance.invalidDate' | translate }}</p>
+          }
+        </div>
+        <div>
+          <label class="field-label" for="purchase-account">{{
+            'purchase.account' | translate
+          }}</label
+          ><select class="form-input" id="purchase-account" formControlName="capitalAccountId">
+            @for (account of accounts(); track account.id) {
+              <option [ngValue]="account.id">{{ account.name }} ({{ account.currency }})</option>
+            }
+          </select>
+        </div>
+        @if (account(); as account) {
+          <div class="panel p-5">
+            <p>
+              {{ 'finance.availableCapital' | translate }}:
+              <strong>{{ account.currentBalance | localizedCurrency: account.currency }}</strong>
+            </p>
+            <p class="mt-2">
+              {{ 'purchase.after' | translate }}:
+              <strong>{{ remaining() | localizedCurrency: account.currency }}</strong>
+            </p>
+            <p class="form-help mt-3">{{ 'purchase.previewHelp' | translate }}</p>
+          </div>
+        }
+        @if (insufficient()) {
+          <p class="error-banner" role="alert">
+            {{ 'purchase.errors.insufficientCapital' | translate }}
+          </p>
+        }
+        @if (error()) {
+          <p class="error-banner" role="alert">{{ error() | translate }}</p>
+        }
+      </fieldset>
+      <div class="form-actions">
+        <button class="secondary-button" type="button" [disabled]="busy()" (click)="close()">
+          {{ 'finance.cancel' | translate }}</button
+        ><button
+          class="primary-button"
+          type="submit"
+          [disabled]="busy() || form.invalid || insufficient() || missingYear() || !account()"
+        >
+          {{ (busy() ? 'finance.saving' : 'purchase.confirm') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</p-dialog>

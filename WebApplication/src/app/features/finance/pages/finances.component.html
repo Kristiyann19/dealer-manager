@@ -1,0 +1,327 @@
+<div class="page-container">
+  <header class="page-heading flex flex-wrap items-start justify-between gap-5">
+    <div>
+      <h1>{{ 'nav.finances' | translate }}</h1>
+      <p class="mt-2 text-slate-600">{{ 'finance.subtitle' | translate }}</p>
+    </div>
+    <div class="page-actions">
+      <button class="secondary-button" (click)="openDialog('create')">
+        {{ 'finance.newAccount' | translate }}
+      </button>
+      <button
+        class="primary-button"
+        [disabled]="loading() || !!error() || !accounts().length"
+        (click)="openDialog('contribution')"
+      >
+        {{ 'finance.addCapital' | translate }}
+      </button>
+    </div>
+  </header>
+  @if (success()) {
+    <p class="success-banner" role="status">{{ success() | translate }}</p>
+  }
+  @if (loading()) {
+    <p class="panel p-7" role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (error()) {
+    <div class="error-banner" role="alert">
+      <p>{{ error() | translate }}</p>
+      <button class="secondary-button mt-3" (click)="refreshAccounts()">
+        {{ 'finance.retry' | translate }}
+      </button>
+    </div>
+  } @else if (!accounts().length) {
+    <section class="panel p-8 text-center">
+      <h2>{{ 'finance.noAccounts' | translate }}</h2>
+      <p class="mt-3 text-slate-600">{{ 'finance.noAccountsHelp' | translate }}</p>
+      <button class="primary-button mt-6" (click)="openDialog('create')">
+        {{ 'finance.firstAccount' | translate }}
+      </button>
+    </section>
+  } @else {
+    <section class="panel p-6 sm:p-8" aria-labelledby="capital-heading">
+      <h2 id="capital-heading" class="text-slate-600">
+        {{ 'finance.availableCapital' | translate }}
+      </h2>
+      <div class="mt-4 flex flex-wrap gap-x-12 gap-y-6">
+        @for (total of totals(); track total.currency) {
+          <div>
+            <p class="text-sm font-medium text-slate-500">{{ total.currency }}</p>
+            <p class="mt-1 text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
+              {{ total.balance | localizedCurrency: total.currency }}
+            </p>
+          </div>
+        }
+      </div>
+      <p class="form-help mt-5">{{ 'finance.capitalHelp' | translate }}</p>
+    </section>
+    <section aria-labelledby="accounts-heading">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 id="accounts-heading">{{ 'finance.accounts' | translate }}</h2>
+        <button class="secondary-button" (click)="refreshAccounts()">
+          {{ 'finance.refresh' | translate }}
+        </button>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        @for (account of accounts(); track account.id) {
+          <button
+            class="panel p-6 text-left transition-colors hover:border-blue-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            [class.ring-2]="selectedId() === account.id"
+            [class.ring-blue-600]="selectedId() === account.id"
+            [attr.aria-pressed]="selectedId() === account.id"
+            (click)="selectAccount(account.id)"
+          >
+            <span class="flex items-start justify-between gap-3"
+              ><span class="break-words font-semibold">{{ account.name }}</span
+              ><span class="text-sm text-slate-500">{{ account.currency }}</span></span
+            >
+            <span class="mt-4 block text-2xl font-semibold tabular-nums">{{
+              account.currentBalance | localizedCurrency: account.currency
+            }}</span>
+            <span class="mt-3 block text-sm text-blue-700">{{
+              (selectedId() === account.id ? 'finance.selected' : 'finance.viewAccount') | translate
+            }}</span>
+          </button>
+        }
+      </div>
+    </section>
+    <section
+      class="panel overflow-hidden"
+      aria-labelledby="history-heading"
+      [attr.aria-busy]="detailLoading()"
+    >
+      <div class="border-b border-slate-200 p-6">
+        <h2 id="history-heading">{{ 'finance.history' | translate }}</h2>
+        @if (details(); as account) {
+          <p class="mt-2 break-words text-slate-600">
+            {{ account.name }} · {{ 'finance.currentBalance' | translate }}:
+            <strong class="text-slate-900">{{
+              account.currentBalance | localizedCurrency: account.currency
+            }}</strong>
+          </p>
+        }
+      </div>
+      @if (detailLoading()) {
+        <p class="p-6" role="status">{{ 'finance.loading' | translate }}</p>
+      } @else if (detailError()) {
+        <div class="m-6 error-banner" role="alert">
+          <p>{{ detailError() | translate }}</p>
+          <button class="secondary-button mt-3" (click)="selectAccount(selectedId())">
+            {{ 'finance.retry' | translate }}
+          </button>
+        </div>
+      } @else if (details(); as account) {
+        @if (!transactions().length) {
+          <p class="p-8 text-slate-600">{{ 'finance.noTransactions' | translate }}</p>
+        } @else {
+          <div
+            class="overflow-x-auto"
+            tabindex="0"
+            role="region"
+            [attr.aria-label]="'finance.history' | translate"
+          >
+            <table class="data-table min-w-[850px]">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'finance.date' | translate }}</th>
+                  <th scope="col">{{ 'finance.description' | translate }}</th>
+                  <th scope="col">{{ 'finance.type' | translate }}</th>
+                  <th scope="col">{{ 'finance.direction' | translate }}</th>
+                  <th scope="col">{{ 'finance.amount' | translate }}</th>
+                  <th scope="col">{{ 'finance.vehicle' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (transaction of transactions(); track transaction.id) {
+                  <tr>
+                    <td class="whitespace-nowrap">{{ transaction.occurredAt | localizedDate }}</td>
+                    <td class="max-w-80 break-words">{{ transaction.description }}</td>
+                    <td>{{ typeKeys[transaction.type] || 'finance.types.other' | translate }}</td>
+                    <td>
+                      {{
+                        (transaction.direction === direction.In ? 'finance.in' : 'finance.out')
+                          | translate
+                      }}
+                    </td>
+                    <td
+                      class="whitespace-nowrap font-semibold tabular-nums"
+                      [class.text-emerald-700]="transaction.direction === direction.In"
+                      [class.text-red-700]="transaction.direction === direction.Out"
+                    >
+                      {{ transaction.direction === direction.In ? '+' : '−'
+                      }}{{ transaction.amount | localizedCurrency: account.currency }}
+                    </td>
+                    <td>
+                      {{
+                        transaction.vehicleId === null
+                          ? ('finance.noVehicle' | translate)
+                          : ('finance.vehicleReference' | translate: { id: transaction.vehicleId })
+                      }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </section>
+  }
+</div>
+
+<p-dialog
+  [visible]="dialog() !== null"
+  (visibleChange)="!$event && closeDialog()"
+  [header]="(dialog() === 'create' ? 'finance.createTitle' : 'finance.addCapital') | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '560px', maxWidth: '94vw' }"
+>
+  @if (saveError()) {
+    <p class="error-banner mb-5" role="alert">{{ saveError() | translate }}</p>
+  }
+  @if (dialog() === 'create') {
+    <form [formGroup]="createForm" (ngSubmit)="createAccount()" [attr.aria-busy]="busy()">
+      <fieldset [disabled]="busy()" class="grid min-w-0 gap-5">
+        <div>
+          <label class="field-label" for="account-name">{{ 'finance.name' | translate }}</label
+          ><input
+            id="account-name"
+            class="form-input"
+            formControlName="name"
+            autocomplete="off"
+            [attr.aria-invalid]="
+              createForm.controls.name.touched && createForm.controls.name.invalid
+            "
+          />
+          @if (createForm.controls.name.touched && createForm.controls.name.invalid) {
+            <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
+          }
+        </div>
+        <div>
+          <label class="field-label" for="account-currency">{{
+            'finance.currency' | translate
+          }}</label
+          ><input
+            id="account-currency"
+            class="form-input"
+            formControlName="currency"
+            autocomplete="off"
+            [attr.aria-invalid]="
+              createForm.controls.currency.touched && createForm.controls.currency.invalid
+            "
+          />
+          @if (createForm.controls.currency.touched && createForm.controls.currency.invalid) {
+            <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
+          }
+        </div>
+      </fieldset>
+      <div class="form-actions">
+        <button type="button" class="secondary-button" [disabled]="busy()" (click)="closeDialog()">
+          {{ 'finance.cancel' | translate }}</button
+        ><button type="submit" class="primary-button" [disabled]="busy()">
+          {{ (busy() ? 'finance.saving' : 'finance.createAccount') | translate }}
+        </button>
+      </div>
+    </form>
+  } @else if (dialog() === 'contribution') {
+    <form [formGroup]="contributionForm" (ngSubmit)="addCapital()" [attr.aria-busy]="busy()">
+      <fieldset [disabled]="busy()" class="grid min-w-0 gap-5">
+        <div>
+          <label class="field-label" for="contribution-account">{{
+            'finance.account' | translate
+          }}</label
+          ><select id="contribution-account" class="form-input" formControlName="accountId">
+            @for (account of accounts(); track account.id) {
+              <option [ngValue]="account.id">{{ account.name }} ({{ account.currency }})</option>
+            }
+          </select>
+          @if (
+            contributionForm.controls.accountId.touched &&
+            contributionForm.controls.accountId.invalid
+          ) {
+            <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
+          }
+        </div>
+        @if (contributionAccount(); as account) {
+          <p class="info-banner">
+            {{ 'finance.currentBalance' | translate }}:
+            <strong>{{ account.currentBalance | localizedCurrency: account.currency }}</strong>
+          </p>
+        }
+        <div>
+          <label class="field-label" for="contribution-amount"
+            >{{ 'finance.amount' | translate }}
+            @if (contributionAccount(); as account) {
+              ({{ account.currency }})
+            }</label
+          ><input
+            id="contribution-amount"
+            class="form-input"
+            type="number"
+            step="any"
+            formControlName="amount"
+            [attr.aria-invalid]="
+              contributionForm.controls.amount.touched && contributionForm.controls.amount.invalid
+            "
+          />
+          @if (
+            contributionForm.controls.amount.touched && contributionForm.controls.amount.invalid
+          ) {
+            <p class="field-error" role="alert">{{ 'finance.positiveAmount' | translate }}</p>
+          }
+        </div>
+        <div>
+          <label class="field-label" for="contribution-description">{{
+            'finance.description' | translate
+          }}</label
+          ><textarea
+            id="contribution-description"
+            class="form-input"
+            rows="3"
+            formControlName="description"
+            [attr.aria-invalid]="
+              contributionForm.controls.description.touched &&
+              contributionForm.controls.description.invalid
+            "
+          ></textarea>
+          @if (
+            contributionForm.controls.description.touched &&
+            contributionForm.controls.description.invalid
+          ) {
+            <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
+          }
+        </div>
+        <div>
+          <label class="field-label" for="contribution-date">{{
+            'finance.optionalDate' | translate
+          }}</label
+          ><input
+            id="contribution-date"
+            class="form-input"
+            type="date"
+            formControlName="occurredAt"
+          />
+          @if (
+            contributionForm.controls.occurredAt.touched &&
+            contributionForm.controls.occurredAt.invalid
+          ) {
+            <p class="field-error" role="alert">{{ 'finance.invalidDate' | translate }}</p>
+          }
+          <p class="form-help mt-2">{{ 'finance.dateHelp' | translate }}</p>
+        </div>
+      </fieldset>
+      <div class="form-actions">
+        <button type="button" class="secondary-button" [disabled]="busy()" (click)="closeDialog()">
+          {{ 'finance.cancel' | translate }}</button
+        ><button type="submit" class="primary-button" [disabled]="busy()">
+          {{ (busy() ? 'finance.saving' : 'finance.addCapital') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</p-dialog>

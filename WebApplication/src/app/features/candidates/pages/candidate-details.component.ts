@@ -14,7 +14,9 @@ import {
 } from '@angular/core';
 
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { PurchaseDialogComponent } from '../components/purchase-dialog.component';
+import { PurchaseCandidateResult } from '../models/purchase.models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject,
@@ -47,6 +49,7 @@ import { apiError, optionalText } from '../components/candidate-form-utils';
     LocalizedNumberPipe,
     CandidateStatusComponent,
     EstimateFormComponent,
+    PurchaseDialogComponent,
   ],
   templateUrl: './candidate-details.component.html',
   styleUrl: './candidate-details.component.css',
@@ -54,6 +57,12 @@ import { apiError, optionalText } from '../components/candidate-form-utils';
 })
 export class CandidateDetailsComponent {
   private readonly api = inject(CandidateApiService);
+  private readonly router = inject(Router);
+  protected readonly showPurchase = signal(false);
+  protected purchaseSaved(result: PurchaseCandidateResult) {
+    this.showPurchase.set(false);
+    this.router.navigate(['/vehicles', result.vehicleId], { state: { purchased: true } });
+  }
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reload = new BehaviorSubject<void>(undefined);
@@ -90,6 +99,7 @@ export class CandidateDetailsComponent {
         distinctUntilChanged(),
         switchMap((id) => {
           this.showEstimate.set(false);
+          this.showPurchase.set(false);
           this.decision.set(null);
           this.selectedVersion.set(null);
           this.notice.set('');

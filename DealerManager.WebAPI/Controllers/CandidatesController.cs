@@ -49,5 +49,10 @@ namespace DealerManager.Controllers
         [HttpPost("{id:int}/reject")]
         public Task<CandidateDetailsDto> RejectCandidate(int id, RejectCandidateRequest request, CancellationToken cancellationToken)
             => candidateService.RejectCandidate(id, request, cancellationToken);
+
+        [HttpPost("{id:int}/purchase")]
+        public Task<PurchaseCandidateResultDto> PurchaseCandidate(int id, PurchaseCandidateRequest request,
+            [FromServices] IPurchaseCandidateService purchaseService, CancellationToken cancellationToken)
+            => purchaseService.PurchaseCandidate(id, request, cancellationToken);
     }
 }

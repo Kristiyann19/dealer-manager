@@ -1,4 +1,5 @@
 using DealerManager.Application.IService.Candidate;
+using DealerManager.Application.IService.Finance;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -12,8 +13,8 @@ namespace DealerManager.WebAPI.ExceptionHandling
         {
             var statusCode = exception switch
             {
-                CandidateNotFoundException => StatusCodes.Status404NotFound,
-                CandidateConflictException or DBConcurrencyException => StatusCodes.Status409Conflict,
+                CandidateNotFoundException or CapitalAccountNotFoundException or DealerManager.Application.IService.Vehicle.VehicleNotFoundException => StatusCodes.Status404NotFound,
+                CandidateConflictException or CapitalAccountConflictException or PurchaseCandidateException or DBConcurrencyException => StatusCodes.Status409Conflict,
                 ValidationException => StatusCodes.Status400BadRequest,
                 _ => 0
             };
@@ -26,13 +27,14 @@ namespace DealerManager.WebAPI.ExceptionHandling
                 Status = statusCode,
                 Title = statusCode switch
                 {
-                    404 => "Candidate not found",
-                    409 => "Candidate operation conflict",
-                    _ => "Invalid candidate request"
+                    404 => "Resource not found",
+                    409 => "Operation conflict",
+                    _ => "Invalid request"
                 },
                 Detail = exception.Message,
                 Instance = httpContext.Request.Path
             };
+            if (exception is PurchaseCandidateException purchase) problem.Extensions["code"] = purchase.Code;
             await httpContext.Response.WriteAsJsonAsync(problem, options: null,
                 contentType: "application/problem+json", cancellationToken: cancellationToken);
             return true;

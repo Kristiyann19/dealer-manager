@@ -42,7 +42,7 @@ const files = fs
 for (const file of files) {
   const source = fs.readFileSync(file, 'utf8');
   for (const match of source.matchAll(
-    /'((?:ui|language|nav|profile|common|candidate|form|errors|dashboard|status|cost|months|specs)\.[A-Za-z0-9_ ./]+)'/g,
+    /'((?:ui|language|nav|profile|common|candidate|finance|purchase|form|errors|dashboard|status|cost|months|specs)\.[A-Za-z0-9_ ./]+)'/g,
   )) {
     // Dot-only prefixes are used to map stable enum values to translation keys.
     if (!match[1].endsWith('.')) assert.ok(en[match[1]], `Missing key ${match[1]} in ${file}`);

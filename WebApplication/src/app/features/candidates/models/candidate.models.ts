@@ -71,6 +71,7 @@ export interface CandidateListResult {
   totalCount: number;
 }
 export interface CandidateDetails extends CandidateListItem {
+  vehicleId: number | null;
   vin: string | null;
   source: string | null;
   location: string | null;

@@ -120,12 +120,14 @@
     color: #1e40af;
     border-color: #bfdbfe;
   }
-  .candidate-table {
+  .candidate-table,
+  .data-table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
   }
-  .candidate-table th {
+  .candidate-table th,
+  .data-table th {
     background: #eef2f7;
     color: #334155;
     font-size: 14px;
@@ -133,7 +135,8 @@
     padding: 16px 24px;
     white-space: nowrap;
   }
-  .candidate-table td {
+  .candidate-table td,
+  .data-table td {
     padding: 16px 24px;
     border-top: 1px solid #dce3ec;
     font-size: 16px;
@@ -142,7 +145,8 @@
     vertical-align: top;
     overflow-wrap: anywhere;
   }
-  .candidate-table tbody tr:hover {
+  .candidate-table tbody tr:hover,
+  .data-table tbody tr:hover {
     background: #f1f5f9;
   }
   .candidate-facts dt {

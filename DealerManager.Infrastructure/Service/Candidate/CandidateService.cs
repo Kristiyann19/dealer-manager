@@ -211,6 +211,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
         {
             return await candidates.GetById(id, cancellationToken, query =>
                 (tracking ? query.AsTracking() : query)
+                    .Include(candidate => candidate.Vehicle)
                     .Include(candidate => candidate.CandidateEstimates)
                     .ThenInclude(estimate => estimate.CandidateEstimateItems))
                 ?? throw new CandidateNotFoundException(id);
@@ -245,6 +246,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
                 Vin = candidate.Vin, Source = candidate.Source, Location = candidate.Location,
                 Notes = candidate.Notes, RejectedAt = candidate.RejectedAt, PurchasedAt = candidate.PurchasedAt,
                 EstimateHistory = history, LatestEstimate = latest,
+                VehicleId = candidate.Vehicle?.Id,
                 EstimatedTotalCost = latest?.FinancialAnalysis.EstimatedTotalCost,
                 ExpectedProfit = latest?.FinancialAnalysis.ExpectedProfit,
                 ExpectedRoi = latest?.FinancialAnalysis.ExpectedRoi

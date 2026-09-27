@@ -36,6 +36,7 @@ const estimate: CandidateEstimate = {
   financialAnalysis: { estimatedTotalCost: 3000, expectedProfit: 4000, expectedRoi: 133.33 },
 };
 const candidate: CandidateDetails = {
+  vehicleId: null,
   id: 12,
   make: 'BMW',
   model: '320d',

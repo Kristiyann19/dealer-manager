@@ -1,0 +1,75 @@
+using DealerManager.Infrastructure.Persistence;
+using DealerManager.Tests.Candidate;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Data.Common;
+
+namespace DealerManager.Tests.Finance;
+
+internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
+{
+    private readonly SqliteConnection connection = new("Data Source=:memory:");
+    public FixedTimeProvider Clock { get; } = new();
+    public QueryRecorder Queries { get; } = new();
+    public FinanceApiFactory() => connection.Open();
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Testing");
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<DealerManagerDbContext>();
+            services.RemoveAll<DbContextOptions<DealerManagerDbContext>>();
+            services.RemoveAll<IDbContextOptionsConfiguration<DealerManagerDbContext>>();
+            services.AddScoped<DealerManagerDbContext>(_ => new FinanceTestDbContext(
+                new DbContextOptionsBuilder<DealerManagerDbContext>().UseSqlite(connection).AddInterceptors(Queries).Options));
+            services.RemoveAll<TimeProvider>();
+            services.AddSingleton<TimeProvider>(Clock);
+        });
+    }
+
+    public HttpClient CreateInitializedClient()
+    {
+        var client = CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
+        using var scope = Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>().Database.EnsureCreated();
+        return client;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing) connection.Dispose();
+    }
+}
+
+// SQLite cannot order DateTimeOffset natively. UTC ticks preserve chronological ordering
+// in this isolated test model; production PostgreSQL mappings remain unchanged.
+internal sealed class FinanceTestDbContext(DbContextOptions<DealerManagerDbContext> options) : DealerManagerDbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<DealerManager.Domain.Entities.FinancialTransaction>().Property(t => t.OccurredAt)
+            .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
+        builder.Entity<DealerManager.Domain.Entities.FinancialTransaction>().Property(t => t.CreatedAt)
+            .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
+    }
+}
+
+internal sealed class QueryRecorder : DbCommandInterceptor
+{
+    public List<string> Commands { get; } = [];
+    public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command,
+        CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+    {
+        Commands.Add(command.CommandText);
+        return ValueTask.FromResult(result);
+    }
+}

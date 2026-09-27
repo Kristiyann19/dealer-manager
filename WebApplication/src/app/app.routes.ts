@@ -31,6 +31,14 @@ export const routes: Routes = [
           import('./features/candidates/candidates.routes').then((m) => m.CANDIDATE_ROUTES),
       },
       {
+        path: 'vehicles/:id',
+        title: 'nav.vehicles',
+        loadComponent: () =>
+          import('./features/vehicles/vehicle-details.component').then(
+            (m) => m.VehicleDetailsComponent,
+          ),
+      },
+      {
         path: 'vehicles',
         title: 'nav.vehicles',
         loadComponent: placeholder,
@@ -51,8 +59,8 @@ export const routes: Routes = [
       {
         path: 'finances',
         title: 'nav.finances',
-        loadComponent: placeholder,
-        data: { title: 'nav.finances', icon: 'wallet' },
+        loadComponent: () =>
+          import('./features/finance/pages/finances.component').then((m) => m.FinancesComponent),
       },
       {
         path: 'reports',

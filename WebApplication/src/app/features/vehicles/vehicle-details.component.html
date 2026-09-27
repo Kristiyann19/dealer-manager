@@ -1,0 +1,55 @@
+<div class="page-container">
+  @if (purchased) {
+    <p class="success-banner" role="status">{{ 'purchase.success' | translate }}</p>
+  }
+  @if (loading()) {
+    <p class="panel p-8" role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (error()) {
+    <section class="panel p-8">
+      <p class="error-banner" role="alert">{{ error() | translate }}</p>
+      <button class="secondary-button mt-4" (click)="refresh()">
+        {{ 'finance.retry' | translate }}
+      </button>
+    </section>
+  } @else if (vehicle(); as vehicle) {
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">{{ 'finance.vehicleReference' | translate: { id: vehicle.id } }}</p>
+        <h1>{{ vehicle.make }} {{ vehicle.model }}</h1>
+        <p class="mt-3">
+          {{ vehicle.year }} · {{ statusKeys[vehicle.status] || 'common.unknown' | translate }}
+        </p>
+      </div>
+    </header>
+    <section class="panel p-8">
+      <h2>{{ 'purchase.vehicleSummary' | translate }}</h2>
+      <dl class="mt-6 grid gap-6 sm:grid-cols-2">
+        <div>
+          <dt class="field-label">{{ 'purchase.actualPrice' | translate }}</dt>
+          <dd class="text-3xl font-semibold">
+            {{
+              vehicle.actualPurchasePrice === null
+                ? ('finance.noVehicle' | translate)
+                : (vehicle.actualPurchasePrice | localizedCurrency: 'EUR')
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'purchase.date' | translate }}</dt>
+          <dd>{{ vehicle.purchaseDate | localizedDate }}</dd>
+        </div>
+        @if (vehicle.sourceCandidateId) {
+          <div>
+            <dt class="field-label">{{ 'purchase.sourceCandidate' | translate }}</dt>
+            <dd>
+              <a class="text-link" [routerLink]="['/candidates', vehicle.sourceCandidateId]">{{
+                'ui.candidate_value' | translate: { p0: vehicle.sourceCandidateId }
+              }}</a>
+            </dd>
+          </div>
+        }
+      </dl>
+    </section>
+    <a class="text-link" routerLink="/finances">{{ 'nav.finances' | translate }}</a>
+  }
+</div>

@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../../configuration/api.config';
+import { PurchaseCandidateRequest, PurchaseCandidateResult } from '../models/purchase.models';
 import {
   CandidateDetails,
   CandidateEstimate,
@@ -30,6 +31,9 @@ export class CandidateApiService {
   }
   approve(id: number) {
     return this.http.post<CandidateDetails>(`${this.url}/${id}/approve`, null);
+  }
+  purchase(id: number, request: PurchaseCandidateRequest) {
+    return this.http.post<PurchaseCandidateResult>(`${this.url}/${id}/purchase`, request);
   }
   reject(id: number, reason: string | null) {
     return this.http.post<CandidateDetails>(`${this.url}/${id}/reject`, { reason });
