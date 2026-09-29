@@ -496,20 +496,6 @@
   .text-link:hover {
     color: #1e40af;
   }
-  .review-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    border-radius: 5px;
-    padding: 5px 7px;
-    font-size: 10px;
-    color: #4178cb;
-    border: 1px solid #e2ebfa;
-    background: #f8fbff;
-  }
-  .review-button:hover {
-    background: #edf4ff;
-  }
   .skip-link {
     position: fixed;
     top: -80px;

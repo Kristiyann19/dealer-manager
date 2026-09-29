@@ -73,12 +73,12 @@
         <td>
           <button
             type="button"
-            class="review-button"
+            class="secondary-button"
             [attr.aria-label]="'candidate.reviewLabel' | translate: { vehicle: candidate.vehicle }"
             (click)="selectedCandidate.set(candidate)"
           >
             {{ 'ui.review_2' | translate
-            }}<svg lucideIcon="arrow-up-right" [size]="13" aria-hidden="true"></svg>
+            }}<svg lucideIcon="arrow-up-right" [size]="16" aria-hidden="true"></svg>
           </button>
         </td>
       </tr>
