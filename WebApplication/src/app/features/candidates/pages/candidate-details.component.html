@@ -96,57 +96,74 @@
         {{ 'ui.add_at_least_one_estimate_before_approving_this_candidate' | translate }}
       </p>
     }
-    @if (!canEvaluate()) {
-      <p class="info-banner">
-        {{
-          'ui.this_candidate_is_value_its_evaluation_history_is_available_for_reference'
-            | translate
-              : {
-                  p0:
-                    candidate.status === statuses.Rejected
-                      ? ('candidate.rejectedLower' | translate)
-                      : ('candidate.purchasedLower' | translate),
-                }
-        }}
-      </p>
-    }
+
     @if (actionError()) {
       <div class="error-banner" role="alert">{{ actionError() | translate }}</div>
     }
     @if (decision(); as decision) {
-      <section class="panel p-6 border-amber-200" aria-labelledby="decision-title">
-        <h2 id="decision-title">
-          {{
-            decision === 'approve'
-              ? ('candidate.approveQuestion' | translate)
-              : ('candidate.rejectQuestion' | translate)
-          }}
-        </h2>
-        <p class="text-sm text-slate-600 mt-2">
+      <p-dialog
+        [visible]="true"
+        (visibleChange)="!$event && closeDecision()"
+        [header]="
+          (decision === 'approve'
+            ? 'candidate.approveQuestion'
+            : 'candidate.rejectQuestion'
+          ) | translate
+        "
+        [closeAriaLabel]="'ui.close_dialog' | translate"
+        [modal]="true"
+        [draggable]="false"
+        [resizable]="false"
+        [closable]="!busy()"
+        [closeOnEscape]="!busy()"
+        [blockScroll]="true"
+        [style]="{ width: '520px', maxWidth: '94vw' }"
+      >
+        <p class="text-sm text-slate-600">
           {{
             decision === 'approve'
               ? ('candidate.approveHelp' | translate)
               : ('candidate.rejectHelp' | translate)
           }}
         </p>
+
         @if (decision === 'reject') {
-          <label class="field-label mt-4" for="rejection-reason">{{
-            'ui.reason_optional' | translate
-          }}</label
-          ><textarea
-            id="rejection-reason"
-            rows="3"
-            class="form-input"
-            [formControl]="reason"
-            [readOnly]="busy()"
-          ></textarea>
+          <div class="mt-5">
+            <label class="field-label" for="rejection-reason">
+              {{ 'ui.reason_optional' | translate }}
+            </label>
+
+            <textarea
+              id="rejection-reason"
+              rows="4"
+              class="form-input"
+              [formControl]="reason"
+              [readOnly]="busy()"
+            ></textarea>
+          </div>
         }
-        <div class="flex gap-3 mt-5">
+
+        @if (actionError()) {
+          <p class="error-banner mt-4" role="alert">
+            {{ actionError() | translate }}
+          </p>
+        }
+
+        <div class="form-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="busy()"
+            (click)="closeDecision()"
+          >
+            {{ 'ui.cancel' | translate }}
+          </button>
+
           <button
             type="button"
             class="primary-button"
-            [disabled]="busy()"
             [class.destructive-button]="decision === 'reject'"
+            [disabled]="busy()"
             (click)="confirmDecision()"
           >
             {{
@@ -155,17 +172,10 @@
                 : decision === 'approve'
                   ? ('candidate.confirmApproval' | translate)
                   : ('candidate.confirmRejection' | translate)
-            }}</button
-          ><button
-            type="button"
-            class="secondary-button"
-            [disabled]="busy()"
-            (click)="this.decision.set(null)"
-          >
-            {{ 'ui.cancel' | translate }}
+            }}
           </button>
         </div>
-      </section>
+      </p-dialog>
     }
     <section class="financial-summary" [attr.aria-label]="'ui.current_expectation' | translate">
       <dl class="metrics-grid">

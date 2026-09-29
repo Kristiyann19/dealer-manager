@@ -37,6 +37,7 @@ import {
 import { CandidateStatusComponent } from '../components/candidate-status.component';
 import { EstimateFormComponent } from '../components/estimate-form.component';
 import { apiError, optionalText } from '../components/candidate-form-utils';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-candidate-details',
@@ -50,6 +51,7 @@ import { apiError, optionalText } from '../components/candidate-form-utils';
     CandidateStatusComponent,
     EstimateFormComponent,
     PurchaseDialogComponent,
+    DialogModule
   ],
   templateUrl: './candidate-details.component.html',
   styleUrl: './candidate-details.component.css',
@@ -178,5 +180,12 @@ export class CandidateDetailsComponent {
           if (this.candidate()?.id === candidate.id) this.actionError.set(apiError(error, true));
         },
       });
+  }
+
+  protected closeDecision() {
+    if (this.busy()) return;
+
+    this.decision.set(null);
+    this.reason.setValue('');
   }
 }
