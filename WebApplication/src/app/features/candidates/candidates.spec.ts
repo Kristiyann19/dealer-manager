@@ -364,8 +364,23 @@ describe('Candidate module HTTP workflows', () => {
     http.expectOne('/api/candidates/12').flush(candidate);
     fixture.detectChanges();
     expect(button(fixture, 'Approve candidate').disabled).toBe(true);
+    expect(button(fixture, 'Refresh candidate')).toBeUndefined();
   });
-  it('confirms approval through the API and uses the returned status', () => {
+  it('loads fresh list data on return after a candidate mutation', () => {
+    const first = TestBed.createComponent(CandidateListComponent);
+    first.detectChanges();
+    http.expectOne(request => request.url === '/api/candidates').flush({ items: [candidate], totalCount: 1 });
+    first.detectChanges();
+    expect(button(first, 'Refresh list')).toBeUndefined();
+    first.destroy();
+    const returned = TestBed.createComponent(CandidateListComponent);
+    returned.detectChanges();
+    http.expectOne(request => request.url === '/api/candidates').flush({ items: [{ ...candidate, status: CandidateStatus.Purchased }], totalCount: 1 });
+    returned.detectChanges();
+    expect(returned.nativeElement.textContent).toContain('Purchased');
+    expect(returned.nativeElement.textContent).not.toContain('Under Review');
+  });
+  it('re-fetches candidate details after approval and preserves the success message', () => {
     const fixture = TestBed.createComponent(CandidateDetailsComponent);
     fixture.detectChanges();
     http
@@ -384,6 +399,16 @@ describe('Candidate module HTTP workflows', () => {
       latestEstimate: estimate,
       estimateHistory: [estimate],
     });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.ui.loading_candidate);
+    http
+      .expectOne('/api/candidates/12')
+      .flush({
+        ...candidate,
+        status: CandidateStatus.Approved,
+        latestEstimate: estimate,
+        estimateHistory: [estimate],
+      });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Candidate approved.');
     expect(button(fixture, 'Approve candidate')).toBeUndefined();
@@ -406,6 +431,16 @@ describe('Candidate module HTTP workflows', () => {
       notes: 'Rejection reason: Too expensive',
     });
     fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.ui.loading_candidate);
+    http
+      .expectOne('/api/candidates/12')
+      .flush({
+        ...candidate,
+        status: CandidateStatus.Rejected,
+        rejectedAt: candidate.createdAt,
+        notes: 'Rejection reason: Too expensive',
+      });
+    fixture.detectChanges();
     expect(button(fixture, '+ New estimate')).toBeUndefined();
     expect(button(fixture, 'Reject')).toBeUndefined();
     expect(fixture.nativeElement.textContent).toContain('Too expensive');
@@ -422,9 +457,7 @@ describe('Candidate module HTTP workflows', () => {
       .expectOne('/api/candidates/12/reject')
       .flush({ detail: 'Candidate was purchased.' }, { status: 409, statusText: 'Conflict' });
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain(
-      'Refresh the candidate before trying again.',
-    );
+    expect(fixture.nativeElement.textContent).toContain(en.errors.conflict);
     expect(fixture.nativeElement.textContent).toContain('Under Review');
   });
   it('handles missing candidates and route ID changes', () => {

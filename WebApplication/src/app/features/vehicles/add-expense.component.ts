@@ -33,7 +33,7 @@ import {
 export class AddExpenseComponent {
   readonly vehicleId = input.required<number>();
   readonly saved = output<void>();
-  readonly closed = output<void>();
+  readonly closed = output<boolean>();
   readonly busy = signal(false);
   readonly loading = signal(true);
   readonly error = signal('');
@@ -75,7 +75,7 @@ export class AddExpenseComponent {
       });
   }
   close() {
-    if (!this.busy()) this.closed.emit();
+    if (!this.busy()) this.closed.emit(!!this.error());
   }
   submit() {
     this.form.markAllAsTouched();

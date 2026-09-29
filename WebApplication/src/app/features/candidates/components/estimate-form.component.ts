@@ -32,7 +32,7 @@ import { apiError, optionalText, requiredText } from './candidate-form-utils';
 export class EstimateFormComponent implements OnInit {
   readonly candidate = input.required<CandidateDetails>();
   readonly saved = output<CandidateEstimate>();
-  readonly cancelled = output<void>();
+  readonly cancelled = output<boolean>();
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(CandidateApiService);
   private readonly translate = inject(TranslateService);

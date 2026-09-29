@@ -30,7 +30,7 @@ import { PurchaseCandidateResult } from '../models/purchase.models';
 })
 export class PurchaseDialogComponent {
   readonly candidate = input.required<CandidateDetails>();
-  readonly closed = output<void>();
+  readonly closed = output<boolean>();
   readonly purchased = output<PurchaseCandidateResult>();
   private readonly accountsApi = inject(CapitalAccountApiService);
   private readonly api = inject(CandidateApiService);
@@ -103,7 +103,7 @@ export class PurchaseDialogComponent {
       });
   }
   close() {
-    if (!this.busy()) this.closed.emit();
+    if (!this.busy()) this.closed.emit(!!this.error());
   }
   submit() {
     this.form.markAllAsTouched();

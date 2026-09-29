@@ -13,7 +13,7 @@
     <div class="panel p-8">
       <h1 class="text-xl font-semibold mb-3">{{ 'ui.candidate_unavailable' | translate }}</h1>
       <p class="error-banner" role="alert">{{ error() | translate }}</p>
-      <button type="button" class="secondary-button mt-4" (click)="refresh()">
+      <button type="button" class="secondary-button mt-4" (click)="refreshCandidate()">
         {{ 'ui.try_again' | translate }}
       </button>
     </div>
@@ -42,14 +42,7 @@
             {{ 'purchase.action' | translate }}
           </button>
         }
-        <button
-          type="button"
-          class="secondary-button"
-          [disabled]="busy() || showEstimate()"
-          (click)="refresh()"
-        >
-          {{ 'ui.refresh_candidate' | translate }}
-        </button>
+
         @if (canEvaluate() && !showEstimate()) {
           <button
             type="button"
@@ -75,7 +68,7 @@
     @if (showPurchase()) {
       <app-purchase-dialog
         [candidate]="candidate"
-        (closed)="showPurchase.set(false)"
+        (closed)="showPurchase.set(false); $event && refreshCandidate()"
         (purchased)="purchaseSaved($event)"
       />
     }
@@ -105,10 +98,8 @@
         [visible]="true"
         (visibleChange)="!$event && closeDecision()"
         [header]="
-          (decision === 'approve'
-            ? 'candidate.approveQuestion'
-            : 'candidate.rejectQuestion'
-          ) | translate
+          (decision === 'approve' ? 'candidate.approveQuestion' : 'candidate.rejectQuestion')
+            | translate
         "
         [closeAriaLabel]="'ui.close_dialog' | translate"
         [modal]="true"
@@ -289,7 +280,7 @@
       <app-estimate-form
         [candidate]="candidate"
         (saved)="estimateSaved($event)"
-        (cancelled)="showEstimate.set(false)"
+        (cancelled)="showEstimate.set(false); $event && refreshCandidate()"
       />
     }
     <section class="panel estimate-history overflow-hidden" aria-labelledby="history-title">

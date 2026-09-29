@@ -51,7 +51,7 @@ import { DialogModule } from 'primeng/dialog';
     CandidateStatusComponent,
     EstimateFormComponent,
     PurchaseDialogComponent,
-    DialogModule
+    DialogModule,
   ],
   templateUrl: './candidate-details.component.html',
   styleUrl: './candidate-details.component.css',
@@ -128,9 +128,8 @@ export class CandidateDetailsComponent {
         this.loading.set(false);
       });
   }
-  protected refresh() {
-    if (this.busy()) return;
-    this.actionError.set('');
+  protected refreshCandidate(clearActionError = true) {
+    if (clearActionError) this.actionError.set('');
     this.decision.set(null);
     this.showEstimate.set(false);
     this.reload.next();
@@ -145,7 +144,7 @@ export class CandidateDetailsComponent {
     this.selectedVersion.set(estimate.id);
     this.savedVersion.set(estimate.version);
     this.notice.set('candidate.versionSaved');
-    this.refresh();
+    this.refreshCandidate();
   }
   protected openDecision(decision: 'approve' | 'reject') {
     this.actionError.set('');
@@ -169,12 +168,12 @@ export class CandidateDetailsComponent {
         finalize(() => this.busy.set(false)),
       )
       .subscribe({
-        next: (updated) => {
+        next: () => {
           // Ignore a response if navigation has already moved to a different candidate.
           if (this.candidate()?.id !== candidate.id) return;
-          this.candidate.set(updated);
           this.decision.set(null);
           this.notice.set(decision === 'approve' ? 'candidate.approved' : 'candidate.rejected');
+          this.refreshCandidate();
         },
         error: (error) => {
           if (this.candidate()?.id === candidate.id) this.actionError.set(apiError(error, true));
@@ -187,5 +186,6 @@ export class CandidateDetailsComponent {
 
     this.decision.set(null);
     this.reason.setValue('');
+    if (this.actionError()) this.refreshCandidate(false);
   }
 }

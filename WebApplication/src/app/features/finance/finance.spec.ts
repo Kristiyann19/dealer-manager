@@ -116,6 +116,8 @@ describe('Finance API workflows', () => {
     const created = { ...account, id: 2, name: 'New', currentBalance: 0 };
     request.flush(created);
     expect(page.dialog()).toBeNull();
+    expect(page.loading()).toBe(true);
+    expect(page.details()).toBeNull();
     http.expectOne(base).flush([account, created]);
     details(created);
     expect(page.selectedId()).toBe(2);
@@ -133,12 +135,17 @@ describe('Finance API workflows', () => {
     const request = http.expectOne(`${base}/1/contributions`);
     expect(request.request.body).toEqual({ amount: 25, description: 'Deposit' });
     request.flush({ ...transaction, amount: 25 });
+    expect(page.loading()).toBe(true);
+    expect(page.transactions()).toEqual([]);
     const refreshed = { ...account, currentBalance: 1025 };
     http.expectOne(base).flush([refreshed]);
     details(refreshed, [transaction]);
     expect(page.details()?.currentBalance).toBe(1025);
     expect(page.totals()[0].balance).toBe(1025);
     expect(page.transactions()).toHaveLength(1);
+    expect(fixture.nativeElement.textContent).toContain(en.finance.capitalAdded);
+    expect(Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .some(button => button.textContent?.trim() === 'Refresh')).toBe(false);
   });
   it('sends an optional date as an ISO timestamp and preserves the draft on failure', () => {
     load();

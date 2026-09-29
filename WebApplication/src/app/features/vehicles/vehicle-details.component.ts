@@ -10,7 +10,12 @@ import {
   LocalizedNumberPipe,
 } from '../../shared/pipes/localized-format.pipe';
 import { VehicleApiService, VehicleDetails } from './vehicle-api.service';
-import { VehicleCostPlanItem, VehicleExpense, VehicleFinancialSummary } from './vehicle.models';
+import {
+  VehicleCostPlanItem,
+  VehicleExpense,
+  VehicleFinancialSummary,
+  VehiclePaymentAccount,
+} from './vehicle.models';
 import { EditCostPlanComponent } from './edit-cost-plan.component';
 import { AddExpenseComponent } from './add-expense.component';
 import { ConfirmPaymentComponent } from './confirm-payment.component';
@@ -42,6 +47,7 @@ export class VehicleDetailsComponent {
   readonly plan = signal<VehicleCostPlanItem[]>([]);
   readonly pendingPlan = computed(() => this.plan().filter((item) => item.remainingProjected > 0));
   readonly expenses = signal<VehicleExpense[]>([]);
+  readonly paymentAccount = signal<VehiclePaymentAccount | null>(null);
   readonly editing = signal<VehicleCostPlanItem | null>(null);
   readonly expenseDialog = signal<{ plan: VehicleCostPlanItem | null } | null>(null);
   readonly metrics: { key: keyof VehicleFinancialSummary; label: string }[] = [
@@ -76,6 +82,7 @@ export class VehicleDetailsComponent {
               this.expenseDialog.set(null);
               this.plan.set([]);
               this.expenses.set([]);
+              this.paymentAccount.set(null);
               const id = Number(params.get('id'));
               if (!Number.isInteger(id) || id < 1 || id > 2147483647)
                 return of({ data: null, error: 'errors.invalidId' });
@@ -83,6 +90,7 @@ export class VehicleDetailsComponent {
                 vehicle: this.api.details(id),
                 plan: this.api.costPlan(id),
                 expenses: this.api.expenses(id),
+                paymentAccount: this.api.paymentAccount(id).pipe(catchError(() => of(null))),
               }).pipe(
                 map((data) => ({ data, error: '' })),
                 catchError((error: unknown) =>
@@ -104,11 +112,12 @@ export class VehicleDetailsComponent {
         this.vehicle.set(result.data?.vehicle ?? null);
         this.plan.set(result.data?.plan ?? []);
         this.expenses.set(result.data?.expenses ?? []);
+        this.paymentAccount.set(result.data?.paymentAccount ?? null);
         this.error.set(result.error);
         this.loading.set(false);
       });
   }
-  refresh() {
+  refreshFinancialData() {
     this.reload.next();
   }
   openExpense(plan: VehicleCostPlanItem | null = null) {
@@ -117,6 +126,10 @@ export class VehicleDetailsComponent {
   }
   saved(kind: 'plan' | 'expense') {
     this.notice.set(kind === 'plan' ? 'vehicle.planSaved' : 'vehicle.expenseSaved');
-    this.refresh();
+    this.refreshFinancialData();
+  }
+  paymentClosed(needsReconciliation: boolean) {
+    this.expenseDialog.set(null);
+    if (needsReconciliation) this.refreshFinancialData();
   }
 }

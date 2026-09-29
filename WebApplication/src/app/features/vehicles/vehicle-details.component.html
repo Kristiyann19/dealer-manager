@@ -10,7 +10,7 @@
   } @else if (error()) {
     <section class="panel p-8">
       <p class="error-banner" role="alert">{{ error() | translate }}</p>
-      <button class="secondary-button mt-4" (click)="refresh()">
+      <button class="secondary-button mt-4" (click)="refreshFinancialData()">
         {{ 'finance.retry' | translate }}
       </button>
     </section>
@@ -22,11 +22,6 @@
         <p class="mt-3">
           {{ vehicle.year }} · {{ statusKeys[vehicle.status] || 'common.unknown' | translate }}
         </p>
-      </div>
-      <div class="page-actions">
-        <button class="secondary-button" (click)="refresh()">
-          {{ 'finance.refresh' | translate }}
-        </button>
       </div>
     </header>
     <section class="panel p-6" [attr.aria-label]="'vehicle.overview' | translate">
@@ -95,6 +90,14 @@
           {{ 'purchase.actualPrice' | translate }}:
           {{ vehicle.actualPurchasePrice | localizedCurrency: 'EUR' }}
         </p>
+        @if (paymentAccount(); as account) {
+          <p>
+            {{ 'vehicle.purchaseAccountCapital' | translate }}:
+            <strong class="tabular-nums">{{
+              account.currentBalance | localizedCurrency: account.currency
+            }}</strong>
+          </p>
+        }
         <p>
           {{ 'vehicle.projectedROI' | translate }}:
           {{
@@ -277,7 +280,7 @@
       <app-edit-cost-plan
         [vehicleId]="vehicle.id"
         [item]="item"
-        (closed)="editing.set(null)"
+        (closed)="editing.set(null); $event && refreshFinancialData()"
         (saved)="saved('plan')"
       />
     }
@@ -286,13 +289,13 @@
         <app-confirm-vehicle-payment
           [vehicleId]="vehicle.id"
           [itemId]="item.id"
-          (closed)="expenseDialog.set(null)"
+          (closed)="paymentClosed($event)"
           (saved)="saved('expense')"
         />
       } @else {
         <app-add-vehicle-expense
           [vehicleId]="vehicle.id"
-          (closed)="expenseDialog.set(null)"
+          (closed)="paymentClosed($event)"
           (saved)="saved('expense')"
         />
       }

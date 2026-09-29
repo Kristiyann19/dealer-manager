@@ -146,8 +146,8 @@ export class FinancesComponent {
         );
       });
   }
-  refreshAccounts() {
-    this.reload.next(this.selectedId());
+  refreshAccounts(preferredId = this.selectedId()) {
+    this.reload.next(preferredId);
   }
   selectAccount(id: number | null) {
     this.selectedId.set(id);
@@ -166,7 +166,9 @@ export class FinancesComponent {
     this.dialog.set(mode);
   }
   closeDialog() {
-    if (!this.busy()) this.dialog.set(null);
+    if (this.busy()) return;
+    this.dialog.set(null);
+    if (this.saveError()) this.refreshAccounts();
   }
   createAccount() {
     if (this.busy()) return;
@@ -220,7 +222,7 @@ export class FinancesComponent {
   private saved(message: string, id: number) {
     this.dialog.set(null);
     this.success.set(message);
-    this.reload.next(id);
+    this.refreshAccounts(id);
   }
   private errorKey(error: unknown, writing = false) {
     if (!(error instanceof HttpErrorResponse) || error.status === 0 || error.status >= 500)

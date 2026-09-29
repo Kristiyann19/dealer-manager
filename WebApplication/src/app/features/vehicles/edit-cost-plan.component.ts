@@ -26,7 +26,7 @@ export class EditCostPlanComponent {
   readonly vehicleId = input.required<number>();
   readonly item = input.required<VehicleCostPlanItem>();
   readonly saved = output<void>();
-  readonly closed = output<void>();
+  readonly closed = output<boolean>();
   readonly busy = signal(false);
   readonly error = signal('');
   private readonly api = inject(VehicleApiService);
@@ -41,7 +41,7 @@ export class EditCostPlanComponent {
     this.form.patchValue(this.item());
   }
   close() {
-    if (!this.busy()) this.closed.emit();
+    if (!this.busy()) this.closed.emit(!!this.error());
   }
   submit() {
     this.form.markAllAsTouched();

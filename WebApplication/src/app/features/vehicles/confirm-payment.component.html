@@ -50,9 +50,11 @@
   }
   @if (error()) {
     <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p>
-    <button class="secondary-button mt-3" (click)="load()">
-      {{ 'finance.refresh' | translate }}
-    </button>
+    @if (loadFailed()) {
+      <button class="secondary-button mt-3" (click)="load()">
+        {{ 'finance.retry' | translate }}
+      </button>
+    }
   }
   <div class="form-actions">
     <button class="secondary-button" [disabled]="busy()" (click)="close()">
@@ -60,7 +62,7 @@
     </button>
     <button
       class="primary-button"
-      [disabled]="busy() || loading() || !preview() || remaining() < 0 || !!error()"
+      [disabled]="busy() || loading() || !preview() || remaining() < 0 || loadFailed()"
       (click)="confirm()"
     >
       {{ (busy() ? 'finance.saving' : 'vehicle.confirmPayment') | translate }}

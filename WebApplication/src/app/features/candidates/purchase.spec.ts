@@ -189,6 +189,9 @@ describe('Purchase frontend', () => {
     });
     http.expectOne('/api/vehicles/1/cost-plan').flush([]);
     http.expectOne('/api/vehicles/1/expenses').flush([]);
+    http
+      .expectOne('/api/vehicles/1/payment-account')
+      .flush({ capitalAccountId: 1, currency: 'EUR', currentBalance: 13700 });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('BMW 320d');
     expect(fixture.nativeElement.querySelector('a[href="/candidates/1"]')).toBeTruthy();

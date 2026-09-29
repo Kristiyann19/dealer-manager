@@ -99,10 +99,18 @@ describe('Vehicle finances', () => {
     translate.use('en').subscribe();
   });
   afterEach(() => http.verify());
-  function load(value = details, items = [plan], history: VehicleExpense[] = []) {
+  function load(
+    value = details,
+    items = [plan],
+    history: VehicleExpense[] = [],
+    balance = account.currentBalance,
+  ) {
     http.expectOne('/api/vehicles/1').flush(value);
     http.expectOne('/api/vehicles/1/cost-plan').flush(items);
     http.expectOne('/api/vehicles/1/expenses').flush(history);
+    http
+      .expectOne('/api/vehicles/1/payment-account')
+      .flush({ ...account, currentBalance: balance });
   }
   it('displays server summary, read-only forecast and expense history in both languages', () => {
     const fixture = TestBed.createComponent(VehicleDetailsComponent);
@@ -226,13 +234,14 @@ describe('Vehicle finances', () => {
     expect(button(fixture, 'Confirm payment').disabled).toBe(true);
     fixture.componentInstance.confirm();
     http.expectNone('/api/vehicles/1/cost-plan/4/confirm-payment');
-    button(fixture, 'Refresh').click();
     http
       .expectOne('/api/vehicles/1/cost-plan/4/payment-preview')
       .flush({ ...preview, amount: 700 });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('€700.00');
     expect(button(fixture, 'Confirm payment').disabled).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain(en.vehicle.errors.paymentChanged);
+    expect(button(fixture, 'Refresh')).toBeUndefined();
   });
   it('shows missing purchase account errors without offering arbitrary accounts', () => {
     const fixture = TestBed.createComponent(AddExpenseComponent);
@@ -328,6 +337,37 @@ describe('Vehicle finances', () => {
     expect(fixture.nativeElement.textContent).toContain('No decision snapshot');
     expect(fixture.nativeElement.textContent).toContain('No upcoming expenses');
   });
+  it('keeps a successful payment notice if reloading fails and retries only GET requests', () => {
+    const fixture = TestBed.createComponent(VehicleDetailsComponent);
+    load();
+    fixture.componentInstance.saved('expense');
+    expect(fixture.componentInstance.loading()).toBe(true);
+    expect(fixture.componentInstance.vehicle()).toBeNull();
+    expect(fixture.componentInstance.paymentAccount()).toBeNull();
+    const requests = http.match(request => request.url.startsWith('/api/vehicles/1'));
+    expect(requests.every(request => request.request.method === 'GET')).toBe(true);
+    requests.find(request => request.request.url === '/api/vehicles/1')!
+      .flush({}, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.vehicle.expenseSaved);
+    button(fixture, en.finance.retry).click();
+    load({ ...details, actualExpenses: 670 }, [{ ...plan, actualPaid: 670, remainingProjected: 0 }], [{ ...expense, amount: 670 }], 4330);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.paymentAccount()?.currentBalance).toBe(4330);
+    expect(fixture.componentInstance.expenses()).toHaveLength(1);
+  });
+  it('still loads vehicle history when the purchase account is unavailable', () => {
+    const fixture = TestBed.createComponent(VehicleDetailsComponent);
+    http.expectOne('/api/vehicles/1').flush(details);
+    http.expectOne('/api/vehicles/1/cost-plan').flush([plan]);
+    http.expectOne('/api/vehicles/1/expenses').flush([expense]);
+    http.expectOne('/api/vehicles/1/payment-account')
+      .flush({ code: 'purchaseAccountMissing' }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.paymentAccount()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Transport Italy');
+    expect(fixture.nativeElement.textContent).not.toContain(en.vehicle.purchaseAccountCapital);
+  });
   it('cancels obsolete loads when navigating between vehicles', () => {
     TestBed.createComponent(VehicleDetailsComponent);
     const requests = http.match((request) => request.url.startsWith('/api/vehicles/1'));
@@ -336,6 +376,7 @@ describe('Vehicle finances', () => {
     http.expectOne('/api/vehicles/2').flush({ ...details, id: 2 });
     http.expectOne('/api/vehicles/2/cost-plan').flush([]);
     http.expectOne('/api/vehicles/2/expenses').flush([]);
+    http.expectOne('/api/vehicles/2/payment-account').flush(account);
   });
   it('confirms transport, removes it from pending, refreshes history and totals, and reloads capital', () => {
     const fixture = TestBed.createComponent(VehicleDetailsComponent);
@@ -354,12 +395,16 @@ describe('Vehicle finances', () => {
       { ...details, actualExpenses: 670, totalInvested: 6970, remainingProjectedCosts: 0 },
       [{ ...plan, currentEstimatedAmount: 670, actualPaid: 670, remainingProjected: 0 }],
       [{ ...expense, amount: 670 }],
+      4330,
     );
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('article')).toBeNull();
     expect(fixture.nativeElement.querySelector('tbody').textContent).toContain('€670.00');
     expect(fixture.nativeElement.textContent).toContain('€6,970.00');
     expect(fixture.componentInstance.plan()).toHaveLength(1);
+    expect(fixture.componentInstance.paymentAccount()?.currentBalance).toBe(4330);
+    expect(fixture.nativeElement.textContent).toContain('€4,330.00');
+    expect(button(fixture, 'Refresh')).toBeUndefined();
     button(fixture, 'Add unexpected expense').click();
     fixture.detectChanges();
     http.expectOne('/api/vehicles/1/payment-account').flush({ ...account, currentBalance: 4330 });

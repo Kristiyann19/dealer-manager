@@ -66,7 +66,6 @@
     "try_again": "Try again",
     "candidate_value": "CANDIDATE #{{p0}}",
     "created_value": "Created {{p0}}",
-    "refresh_candidate": "Refresh candidate",
     "reject": "Reject",
     "approve_candidate": "Approve candidate",
     "add_at_least_one_estimate_before_approving_this_candidate": "Add at least one estimate before approving this candidate.",
@@ -99,7 +98,6 @@
     "candidate_list": "Candidate list",
     "search_candidates": "Search candidates",
     "make_model_or_vin": "Make, model or VIN",
-    "refresh_list": "Refresh list",
     "loading_candidates": "Loading candidates…",
     "candidates_with_their_latest_financial_estimates_all_amounts_in_eur": "Candidates with their latest financial estimates. All amounts in EUR.",
     "vehicle": "Vehicle",
@@ -173,8 +171,6 @@
     "dashboard": "Dashboard",
     "a_clear_view_of_your_inventory_operations_and_capital": "A clear view of your inventory, operations and capital.",
     "demo_workspace": "Demo workspace",
-    "refresh_dashboard": "Refresh dashboard",
-    "refresh": "Refresh",
     "loading_your_dashboard": "Loading your dashboard…",
     "we_couldn_t_load_the_dashboard": "We couldn't load the dashboard.",
     "please_try_again": "Please try again.",
@@ -254,7 +250,7 @@
     "uncertainWrite": "The server did not confirm the result. Check the candidate before submitting again to avoid creating a duplicate.",
     "unavailable": "Cannot reach the server. Check that the WebAPI and database are running, then try again.",
     "notFound": "This candidate could not be found. It may no longer be available.",
-    "conflict": "The candidate has changed. Refresh the candidate before trying again.",
+    "conflict": "The candidate has changed. Close the action to load its current state before trying again.",
     "validation": "The request could not be completed. Check the values and try again.",
     "invalidId": "Invalid candidate ID."
   },
@@ -382,13 +378,12 @@
     },
     "errors": {
       "account": "Select an active account.",
-      "uncertain": "We could not confirm the save. Before trying again, close this dialog and refresh accounts and history to check whether it was saved.",
+      "uncertain": "We could not confirm the save. Close this dialog to load account balances and history before trying again.",
       "unavailable": "Unable to load data. Check your connection and try again.",
-      "notFound": "Account not found. Refresh the account list.",
+      "notFound": "Account not found. Close this dialog to load the current accounts.",
       "inactive": "This account is inactive and cannot accept contributions.",
       "validation": "Check the entered values and try again."
-    },
-    "refresh": "Refresh"
+    }
   },
   "purchase": {
     "action": "Confirm purchase",
@@ -408,17 +403,17 @@
     "sourceCandidate": "Source candidate",
     "vehicleNotFound": "Vehicle not found.",
     "errors": {
-      "status": "Only an approved candidate can be purchased. Refresh this page.",
-      "alreadyPurchased": "This candidate already has a vehicle. Refresh this page.",
+      "status": "Only an approved candidate can be purchased. Close this dialog to load its current state.",
+      "alreadyPurchased": "This candidate already has a vehicle. Close this dialog to load its current state.",
       "estimate": "Add a financial estimate before purchasing.",
       "snapshot": "A decision snapshot already exists. The purchase cannot proceed.",
       "year": "The candidate must have a valid year before purchasing.",
       "inactive": "The selected account is inactive. Reopen this dialog and select another.",
       "currency": "Select an EUR account for this purchase.",
       "insufficientCapital": "Insufficient available capital.",
-      "conflict": "Data has changed. Refresh the candidate and reopen the purchase dialog.",
-      "notFound": "The candidate or account was not found. Refresh the page.",
-      "uncertain": "We could not confirm the purchase. Close this dialog and refresh the candidate before trying again."
+      "conflict": "Data has changed. Close this dialog to load the current candidate.",
+      "notFound": "The candidate or account was not found. Close this dialog to load the current state.",
+      "uncertain": "We could not confirm the purchase. Close this dialog to check the current candidate before trying again."
     }
   },
   "vehicle": {
@@ -480,21 +475,21 @@
     "planSaved": "Estimate updated. Available capital is unchanged.",
     "expenseSaved": "Payment recorded. Totals have been refreshed.",
     "errors": {
-      "uncertain": "We could not confirm the save. Close this dialog and refresh the page to check whether it was recorded before retrying.",
-      "notFound": "The vehicle or account was not found. Refresh the page.",
-      "planMismatch": "The cost plan item was not found for this vehicle. Refresh the page.",
+      "uncertain": "We could not confirm the save. Close this dialog to check the current payment history before trying again.",
+      "notFound": "The vehicle or account was not found.",
+      "planMismatch": "The cost plan item was not found for this vehicle.",
       "sold": "Expenses cannot be added to a sold vehicle.",
       "inactive": "The selected account is inactive. Reopen this dialog and select another.",
       "currency": "Select an EUR capital account.",
       "insufficientCapital": "Insufficient available capital.",
-      "conflict": "Data has changed. Refresh the page and check the current values.",
+      "conflict": "Data has changed. Close this dialog to load the current values.",
       "purchaseAccountMissing": "The vehicle purchase account could not be determined. Check the purchase transaction.",
       "purchaseAccountMismatch": "Payment must use the vehicle purchase account.",
       "confirmationRequired": "For a planned expense, use Add payment on its forecast row.",
-      "paymentChanged": "The amount or account has changed. Refresh and review the payment again.",
+      "paymentChanged": "The amount or account has changed. Review the updated payment before confirming.",
       "cancelledPlan": "A cancelled forecast cannot be paid.",
       "invalidPlanAmount": "Set a positive forecast amount first.",
-      "alreadyPaid": "This expense has already been paid. Refresh the page.",
+      "alreadyPaid": "This expense has already been paid.",
       "partialPayment": "This expense has historical partial payments and cannot be confirmed in full."
     },
     "originalEstimatedEUR": "Pre-purchase estimate (EUR)",
@@ -506,6 +501,7 @@
     "checkOptions": "Check the values under More options.",
     "confirmPaymentTitle": "Confirm payment",
     "confirmPayment": "Confirm payment",
-    "paymentDeduction": "{{amount}} will be deducted from available capital."
+    "paymentDeduction": "{{amount}} will be deducted from available capital.",
+    "purchaseAccountCapital": "Capital in purchase account"
   }
 }

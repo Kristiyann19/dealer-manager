@@ -57,9 +57,6 @@
     <section aria-labelledby="accounts-heading">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 id="accounts-heading">{{ 'finance.accounts' | translate }}</h2>
-        <button class="secondary-button" (click)="refreshAccounts()">
-          {{ 'finance.refresh' | translate }}
-        </button>
       </div>
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         @for (account of accounts(); track account.id) {

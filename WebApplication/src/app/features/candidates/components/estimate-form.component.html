@@ -114,7 +114,7 @@
         ></textarea>
       </div>
       <div class="mt-6 flex flex-wrap justify-end gap-3">
-        <button type="button" class="secondary-button" (click)="cancelled.emit()">
+        <button type="button" class="secondary-button" (click)="cancelled.emit(!!error())">
           {{ 'ui.cancel_estimate' | translate }}</button
         ><button type="submit" class="primary-button" [disabled]="busy()">
           {{ busy() ? ('common.saving' | translate) : ('candidate.saveVersion' | translate) }}

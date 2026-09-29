@@ -11,16 +11,7 @@
       <span class="demo-pill"
         ><span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span
         >{{ 'ui.demo_workspace' | translate }}</span
-      ><button
-        type="button"
-        class="secondary-button"
-        (click)="reload.next()"
-        [disabled]="state().status === 'loading'"
-        [attr.aria-label]="'ui.refresh_dashboard' | translate"
       >
-        <svg lucideIcon="refresh-cw" [size]="14" aria-hidden="true"></svg
-        >{{ 'ui.refresh' | translate }}
-      </button>
     </div>
   </div>
   @let current = state();

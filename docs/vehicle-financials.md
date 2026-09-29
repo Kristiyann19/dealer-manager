@@ -42,7 +42,7 @@ An estimate of 500 with 300 actually paid leaves 200 projected, so projected cos
 
 `/vehicles/{id}` is a single page: five main financial values, upcoming expenses, payment history, then a collapsed original forecast. Purchase price and ROI are secondary. Upcoming expenses show only server-provided `remainingProjected > 0` items; paid/cancelled items remain in backend history. Each row shows the effective forecast, actual paid amount and remaining projection.
 
-Add payment opens a confirmation-only dialog: category, amount, deduction explanation, available capital, balance after payment, Cancel and Confirm. It has no editable fields. A fresh server preview is fetched each time; insufficient funds disable confirmation. Failed writes are never retried automatically and require refreshing the preview before another attempt. Successful writes close the dialog and reload details/summary, plan and history. Opening the next payment fetches a fresh balance.
+Add payment opens a confirmation-only dialog: category, amount, deduction explanation, available capital, balance after payment, Cancel and Confirm. It has no editable fields. A fresh server preview is fetched each time; insufficient funds disable confirmation. Failed writes are never retried automatically. The preview is re-fetched once after a failed confirmation and the user reviews the current values before explicitly confirming again. Only failed GET requests expose a retry action. Successful writes close the dialog and use the shared refreshFinancialData helper to reload details/summary, plan, history and the purchase-account balance with forkJoin. The account balance is displayed alongside the summary; unavailable purchase accounts do not prevent viewing vehicle history. Loading replaces stale figures, and success messages remain visible even if a subsequent GET fails. Closing a failed payment/edit dialog also reloads current data. Opening the next payment fetches a fresh balance.
 
 Edit estimate affects planning only. Existing commitment/cancellation remain under More options. Commitment takes precedence over the estimate; the editor explains that precedence. To change an amount, edit its current target before confirmation.
 
@@ -54,4 +54,10 @@ Automated HTTP integration tests cover forecast 670 EUR with available capital 5
 
 Angular tests cover confirmation without inputs, duplicate submissions, insufficient funds, refreshed previews after conflicts, missing purchase accounts, pending item disappearance, new history/totals, refreshed balance, unexpected expenses, translations and existing estimate editing.
 
-Validation: 95 backend tests, 58 Angular tests, matching BG/EN translation keys and backend/Angular builds passed. Angular retains its existing initial bundle budget warning (about 652 kB against 500 kB). Browser verification is read-only/cancel-only against the live API; financial write scenarios run in isolated integration tests, not the user's database.
+Validation: 95 backend tests, 61 Angular tests, matching BG/EN translation keys and backend/Angular builds passed. Angular retains its existing initial bundle budget warning (about 652 kB against 500 kB). Browser verification is read-only/cancel-only against the live API; financial write scenarios run in isolated integration tests, not the user's database.
+
+## Automatic UI reconciliation
+
+Persistent refresh buttons have been removed from Candidate list/details, Finance, Vehicle and Dashboard. Error-only GET retry actions remain. No browser reload or backend change is involved.
+
+Candidate estimate saves and approve/reject actions re-fetch details. Create and purchase navigate to the returned entity, whose component loads current data. Candidate lists fetch on every route entry (no shared list cache). Finance create/contribution saves reload the account list, then the selected account details and transaction history in parallel. Existing submit guards, loading states and localized success/error messages remain.
