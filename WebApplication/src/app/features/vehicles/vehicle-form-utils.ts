@@ -39,6 +39,9 @@ export function vehicleError(error: unknown, writing = false): string {
         'invalidPlanAmount',
         'alreadyPaid',
         'partialPayment',
+        'statusLocked',
+        'operationalStatusOnly',
+        'sameStatus',
       ].includes(code)
     )
       return 'vehicle.errors.' + code;

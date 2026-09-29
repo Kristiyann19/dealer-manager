@@ -1,4 +1,5 @@
 <div class="page-container">
+  <a class="text-link" routerLink="/vehicles">{{ 'vehicle.allVehicles' | translate }}</a>
   @if (purchased) {
     <p class="success-banner" role="status">{{ 'purchase.success' | translate }}</p>
   }
@@ -20,10 +21,19 @@
         <p class="eyebrow">{{ 'finance.vehicleReference' | translate: { id: vehicle.id } }}</p>
         <h1>{{ vehicle.make }} {{ vehicle.model }}</h1>
         <p class="mt-3">
-          {{ vehicle.year }} · {{ statusKeys[vehicle.status] || 'common.unknown' | translate }} ·
-          <time [attr.datetime]="vehicle.purchaseDate" [attr.aria-label]="'vehicle.purchaseDate' | translate">{{ vehicle.purchaseDate | localizedDate }}</time>
+          {{ vehicle.year }} · <app-vehicle-status [status]="vehicle.status" /> ·
+          <time
+            [attr.datetime]="vehicle.purchaseDate"
+            [attr.aria-label]="'vehicle.purchaseDate' | translate"
+            >{{ vehicle.purchaseDate | localizedDate }}</time
+          >
         </p>
       </div>
+      @if (canChangeStatus()) {
+        <button class="secondary-button" (click)="changingStatus.set(true)">
+          {{ 'vehicle.changeStatus' | translate }}
+        </button>
+      }
     </header>
     @if (vehicle.status === 9) {
       <p class="info-banner">{{ 'vehicle.errors.sold' | translate }}</p>
@@ -34,17 +44,22 @@
       </h2>
       <dl class="grid sm:grid-cols-2 xl:grid-cols-5">
         @for (metric of metrics; track metric.key) {
-          <div class="flex flex-col p-6" [class.bg-blue-50]="metric.key === 'projectedFinalCost'">
+          <div class="flex flex-col p-6" [class.bg-blue-50]="metric.key === 'projectedROI'">
             <dt class="field-label grow">{{ metric.label | translate }}</dt>
             <dd
               class="mt-3 text-2xl font-semibold tabular-nums"
-              [class.text-blue-800]="metric.key === 'projectedFinalCost'"
+              [class.text-blue-800]="metric.key === 'projectedROI'"
             >
-              {{
-                vehicle[metric.key] === null
-                  ? ('common.notProvided' | translate)
-                  : (vehicle[metric.key] | localizedCurrency: 'EUR')
-              }}
+              @if (vehicle[metric.key] === null) {
+                {{ 'common.notProvided' | translate }}
+              } @else if (metric.key === 'projectedROI') {
+                {{
+                  'vehicle.roiValue'
+                    | translate: { value: (vehicle.projectedROI | localizedNumber: '1.2-2') }
+                }}
+              } @else {
+                {{ vehicle[metric.key] | localizedCurrency: 'EUR' }}
+              }
             </dd>
           </div>
         }
@@ -64,15 +79,6 @@
             }}</strong>
           </p>
         }
-        <p>
-          {{ 'vehicle.projectedROI' | translate }}:
-          {{
-            vehicle.projectedROI === null
-              ? ('common.notProvided' | translate)
-              : ('vehicle.roiValue'
-                | translate: { value: (vehicle.projectedROI | localizedNumber: '1.2-2') })
-          }}
-        </p>
       </div>
     </section>
     <section class="panel overflow-hidden" aria-labelledby="cost-plan-title">
@@ -179,6 +185,40 @@
         </div>
       }
     </section>
+    <details class="panel overflow-hidden disclosure" id="status-history">
+      <summary class="p-6 text-lg font-semibold">{{ 'vehicle.statusHistory' | translate }}</summary>
+      @if (!statusHistory().length) {
+        <p class="px-6 pb-6 text-slate-600">{{ 'vehicle.noStatusHistory' | translate }}</p>
+      } @else {
+        <ol class="divide-y divide-slate-200">
+          @for (change of statusHistory(); track change.id) {
+            <li class="px-6 py-4">
+              <time class="text-sm text-slate-500" [attr.datetime]="change.changedAt">{{
+                change.changedAt | localizedDate: 'dd MMM y, HH:mm'
+              }}</time>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <app-vehicle-status [status]="change.fromStatus" /><span aria-hidden="true">→</span
+                ><span class="sr-only">{{ 'vehicle.statusTo' | translate }}</span
+                ><app-vehicle-status [status]="change.toStatus" />
+              </div>
+              @if (change.notes) {
+                <p class="mt-2 whitespace-pre-wrap break-words text-slate-600">
+                  {{ change.notes }}
+                </p>
+              }
+            </li>
+          }
+        </ol>
+      }
+    </details>
+    @if (changingStatus()) {
+      <app-change-vehicle-status
+        [vehicleId]="vehicle.id"
+        [currentStatus]="vehicle.status"
+        (saved)="saved('status')"
+        (closed)="changingStatus.set(false); $event && refreshFinancialData()"
+      />
+    }
     <details class="panel overflow-hidden disclosure" id="original-forecast">
       <summary class="p-6 text-lg font-semibold">
         {{ 'vehicle.originalForecast' | translate }}

@@ -1,0 +1,55 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'vehicle.changeStatus' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '480px', maxWidth: '94vw' }"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset [disabled]="busy()" class="grid gap-5">
+      <div>
+        <p class="field-label">{{ 'vehicle.currentStatus' | translate }}</p>
+        <app-vehicle-status [status]="currentStatus()" />
+      </div>
+      <div>
+        <label class="field-label" for="vehicle-new-status">{{
+          'vehicle.newStatus' | translate
+        }}</label>
+        <select id="vehicle-new-status" class="form-input" formControlName="status">
+          <option [ngValue]="null" disabled>{{ 'vehicle.selectStatus' | translate }}</option>
+          @for (option of options(); track option.value) {
+            <option [ngValue]="option.value">{{ option.label | translate }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="field-label" for="vehicle-status-notes">{{
+          'vehicle.statusNotes' | translate
+        }}</label>
+        <textarea
+          id="vehicle-status-notes"
+          class="form-input"
+          rows="3"
+          formControlName="notes"
+        ></textarea>
+      </div>
+      @if (error()) {
+        <p class="error-banner" role="alert">{{ error() | translate }}</p>
+      }
+    </fieldset>
+    <div class="form-actions">
+      <button type="button" class="secondary-button" [disabled]="busy()" (click)="close()">
+        {{ 'finance.cancel' | translate }}
+      </button>
+      <button type="submit" class="primary-button" [disabled]="busy() || !form.valid">
+        {{ (busy() ? 'finance.saving' : 'vehicle.confirmStatus') | translate }}
+      </button>
+    </div>
+  </form>
+</p-dialog>

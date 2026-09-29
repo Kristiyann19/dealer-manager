@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
@@ -15,15 +15,22 @@ import {
   VehicleExpense,
   VehicleFinancialSummary,
   VehiclePaymentAccount,
+  VehicleStatusHistory,
+  VehicleStatus,
 } from './vehicle.models';
 import { EditCostPlanComponent } from './edit-cost-plan.component';
 import { AddExpenseComponent } from './add-expense.component';
+import { VehicleStatusComponent } from './vehicle-status.component';
+import { ChangeStatusComponent } from './change-status.component';
 import { ConfirmPaymentComponent } from './confirm-payment.component';
 
 @Component({
   selector: 'app-vehicle-details',
   imports: [
     TranslatePipe,
+    RouterLink,
+    VehicleStatusComponent,
+    ChangeStatusComponent,
     LocalizedCurrencyPipe,
     LocalizedDatePipe,
     LocalizedNumberPipe,
@@ -49,24 +56,17 @@ export class VehicleDetailsComponent {
   readonly paymentAccount = signal<VehiclePaymentAccount | null>(null);
   readonly editing = signal<VehicleCostPlanItem | null>(null);
   readonly expenseDialog = signal<{ plan: VehicleCostPlanItem | null } | null>(null);
+  readonly statusHistory = signal<VehicleStatusHistory[]>([]);
+  readonly changingStatus = signal(false);
+  readonly canChangeStatus = computed(
+    () => this.vehicle() !== null && this.vehicle()!.status < VehicleStatus.Listed,
+  );
   readonly metrics: { key: keyof VehicleFinancialSummary; label: string }[] = [
     { key: 'totalInvested', label: 'vehicle.totalInvested' },
     { key: 'remainingProjectedCosts', label: 'vehicle.remainingProjectedCosts' },
-    { key: 'projectedFinalCost', label: 'vehicle.projectedFinalCost' },
+    { key: 'projectedROI', label: 'vehicle.projectedROI' },
     { key: 'expectedSellingPrice', label: 'vehicle.expectedSellingPrice' },
     { key: 'projectedProfit', label: 'vehicle.projectedProfit' },
-  ];
-  readonly statusKeys = [
-    'status.Purchased',
-    'status.Transporting',
-    'status.Arrived',
-    'status.Inspecting',
-    'status.Repairing',
-    'status.Preparing',
-    'status.Ready for sale',
-    'status.Listed',
-    'status.Reserved',
-    'status.Sold',
   ];
   constructor() {
     this.route.paramMap
@@ -80,6 +80,8 @@ export class VehicleDetailsComponent {
               this.editing.set(null);
               this.expenseDialog.set(null);
               this.plan.set([]);
+              this.statusHistory.set([]);
+              this.changingStatus.set(false);
               this.expenses.set([]);
               this.paymentAccount.set(null);
               const id = Number(params.get('id'));
@@ -89,6 +91,7 @@ export class VehicleDetailsComponent {
                 vehicle: this.api.details(id),
                 plan: this.api.costPlan(id),
                 expenses: this.api.expenses(id),
+                history: this.api.statusHistory(id),
                 paymentAccount: this.api.paymentAccount(id).pipe(catchError(() => of(null))),
               }).pipe(
                 map((data) => ({ data, error: '' })),
@@ -110,6 +113,7 @@ export class VehicleDetailsComponent {
       .subscribe((result) => {
         this.vehicle.set(result.data?.vehicle ?? null);
         this.plan.set(result.data?.plan ?? []);
+        this.statusHistory.set(result.data?.history ?? []);
         this.expenses.set(result.data?.expenses ?? []);
         this.paymentAccount.set(result.data?.paymentAccount ?? null);
         this.error.set(result.error);
@@ -123,8 +127,14 @@ export class VehicleDetailsComponent {
     if (this.vehicle()?.status === 9) return;
     this.expenseDialog.set({ plan });
   }
-  saved(kind: 'plan' | 'expense') {
-    this.notice.set(kind === 'plan' ? 'vehicle.planSaved' : 'vehicle.expenseSaved');
+  saved(kind: 'plan' | 'expense' | 'status') {
+    this.notice.set(
+      kind === 'status'
+        ? 'vehicle.statusSaved'
+        : kind === 'plan'
+          ? 'vehicle.planSaved'
+          : 'vehicle.expenseSaved',
+    );
     this.refreshFinancialData();
   }
   paymentClosed(needsReconciliation: boolean) {

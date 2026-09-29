@@ -10,12 +10,33 @@ import {
   VehicleFinancialSummary,
   VehiclePaymentAccount,
   VehiclePaymentPreview,
+  VehicleListResult,
+  VehicleStatus,
+  VehicleStatusHistory,
 } from './vehicle.models';
 export type { VehicleDetails } from './vehicle.models';
 @Injectable({ providedIn: 'root' })
 export class VehicleApiService {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL).replace(/\/$/, '');
+  list(textFilter: string, status: VehicleStatus | null, offset: number, limit: number) {
+    const params: Record<string, string | number> = {
+      TextFilter: textFilter,
+      Offset: offset,
+      Limit: limit,
+    };
+    if (status !== null) params['Status'] = status;
+    return this.http.get<VehicleListResult>(`${this.base}/vehicles`, { params });
+  }
+  changeStatus(id: number, status: VehicleStatus, notes: string | null) {
+    return this.http.post<VehicleStatusHistory>(`${this.base}/vehicles/${id}/status`, {
+      status,
+      notes,
+    });
+  }
+  statusHistory(id: number) {
+    return this.http.get<VehicleStatusHistory[]>(`${this.base}/vehicles/${id}/status-history`);
+  }
   details(id: number) {
     return this.http.get<VehicleDetails>(`${this.base}/vehicles/${id}`);
   }

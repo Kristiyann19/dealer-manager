@@ -15,13 +15,14 @@ using System.Linq.Expressions;
 using VehicleEntity = DealerManager.Domain.Entities.Vehicle;
 
 namespace DealerManager.Infrastructure.Service.Vehicle;
-public class VehicleService(
+public partial class VehicleService(
     IBaseRepository<VehicleEntity, FilterDto<VehicleEntity>, DealerManagerDbContext> vehicles,
     IBaseRepository<FinancialTransaction, FilterDto<FinancialTransaction>, DealerManagerDbContext> transactions,
     IBaseRepository<VehicleCostPlanItem, FilterDto<VehicleCostPlanItem>, DealerManagerDbContext> plans,
     IBaseRepository<VehicleExpense, FilterDto<VehicleExpense>, DealerManagerDbContext> expenses,
     IBaseRepository<CapitalAccount, FilterDto<CapitalAccount>, DealerManagerDbContext> accounts,
     IBaseRepository<CandidateEstimate, FilterDto<CandidateEstimate>, DealerManagerDbContext> estimates,
+    IBaseRepository<VehicleStatusHistory, FilterDto<VehicleStatusHistory>, DealerManagerDbContext> statusHistory,
     ICapitalAccountService finance, ICandidateFinancialCalculator forecastCalculator,
     IUnitOfWork unitOfWork, TimeProvider clock) : IVehicleService
 {
@@ -50,22 +51,30 @@ public class VehicleService(
                 OriginalExpectedProfit = analysis.ExpectedProfit, OriginalExpectedROI = analysis.ExpectedRoi
             };
         }
+        var summary = CalculateFinancialSummary(purchasePrice, actualExpenses, plan, snapshot?.ExpectedSellingPrice);
+        return new VehicleDetailsDto
+        {
+            Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
+            Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status,
+            SourceCandidateId = vehicle.SourceCandidateId, PurchaseDate = vehicle.PurchaseDate,
+            ActualPurchasePrice = summary.ActualPurchasePrice, ActualExpenses = summary.ActualExpenses,
+            TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
+            ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,
+            ProjectedProfit = summary.ProjectedProfit, ProjectedROI = summary.ProjectedROI, OriginalForecast = original
+        };
+    }
+
+    private static VehicleFinancialSummaryDto CalculateFinancialSummary(decimal purchase, decimal actual, IEnumerable<VehicleCostPlanItemDto> plan, decimal? selling)
+    {
         try
         {
-            var totalInvested = purchasePrice + actualExpenses;
-            var remaining = plan.Where(i => !i.IsCancelled).Sum(i => i.RemainingProjected);
-            var projected = totalInvested + remaining;
-            var profit = snapshot?.ExpectedSellingPrice - projected;
-            return new VehicleDetailsDto
-            {
-                Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
-                Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status,
-                SourceCandidateId = vehicle.SourceCandidateId, PurchaseDate = vehicle.PurchaseDate,
-                ActualPurchasePrice = purchasePrice, ActualExpenses = actualExpenses, TotalInvested = totalInvested,
-                RemainingProjectedCosts = remaining, ProjectedFinalCost = projected,
-                ExpectedSellingPrice = snapshot?.ExpectedSellingPrice, ProjectedProfit = profit,
-                ProjectedROI = projected == 0 ? 0 : profit / projected * 100m, OriginalForecast = original
-            };
+            var remaining = plan.Sum(i => i.RemainingProjected);
+            var invested = purchase + actual;
+            var projected = invested + remaining;
+            var profit = selling - projected;
+            return new() { ActualPurchasePrice = purchase, ActualExpenses = actual, TotalInvested = invested,
+                RemainingProjectedCosts = remaining, ProjectedFinalCost = projected, ExpectedSellingPrice = selling,
+                ProjectedProfit = profit, ProjectedROI = projected == 0 ? 0 : profit / projected * 100m };
         }
         catch (OverflowException) { throw new ValidationException("Financial amounts exceed the supported decimal range."); }
     }

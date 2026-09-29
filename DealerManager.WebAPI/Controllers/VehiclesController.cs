@@ -7,6 +7,18 @@ namespace DealerManager.Controllers;
 [Route("api/vehicles")]
 public class VehiclesController(IVehicleService service) : ControllerBase
 {
+    [HttpGet]
+    public Task<VehicleListResultDto> GetVehicles([FromQuery] DealerManager.Application.FilterDtos.Vehicle.VehicleFilterDto filter, CancellationToken cancellationToken)
+        => service.GetVehicles(filter, cancellationToken);
+
+    [HttpPost("{id:int}/status")]
+    public Task<VehicleStatusHistoryDto> ChangeStatus(int id, ChangeVehicleStatusRequest request, CancellationToken cancellationToken)
+        => service.ChangeStatus(id, request, cancellationToken);
+
+    [HttpGet("{id:int}/status-history")]
+    public Task<IReadOnlyList<VehicleStatusHistoryDto>> GetStatusHistory(int id, CancellationToken cancellationToken)
+        => service.GetStatusHistory(id, cancellationToken);
+
     [HttpGet("{id:int}/payment-account")]
     public Task<VehiclePaymentAccountDto> GetPaymentAccount(int id, CancellationToken cancellationToken)
         => service.GetPaymentAccount(id, cancellationToken);

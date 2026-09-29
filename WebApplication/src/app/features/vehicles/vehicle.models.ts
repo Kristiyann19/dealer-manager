@@ -26,7 +26,7 @@ export interface VehicleDetails extends VehicleFinancialSummary {
   year: number;
   mileage: number | null;
   vin: string | null;
-  status: number;
+  status: VehicleStatus;
   sourceCandidateId: number | null;
   purchaseDate: string;
   originalForecast: OriginalForecast | null;
@@ -80,4 +80,41 @@ export interface VehiclePaymentAccount {
 export interface VehiclePaymentPreview extends VehiclePaymentAccount {
   category: CostCategory;
   amount: number;
+}
+
+export enum VehicleStatus {
+  Purchased = 0,
+  Transporting = 1,
+  Arrived = 2,
+  Inspecting = 3,
+  Repairing = 4,
+  Preparing = 5,
+  ReadyForSale = 6,
+  Listed = 7,
+  Reserved = 8,
+  Sold = 9,
+}
+export const VEHICLE_STATUSES = [
+  'Purchased',
+  'Transporting',
+  'Arrived',
+  'Inspecting',
+  'Repairing',
+  'Preparing',
+  'ReadyForSale',
+  'Listed',
+  'Reserved',
+  'Sold',
+].map((key, value) => ({ value: value as VehicleStatus, label: 'vehicle.statuses.' + key }));
+export interface VehicleStatusHistory {
+  id: number;
+  fromStatus: VehicleStatus;
+  toStatus: VehicleStatus;
+  changedAt: string;
+  notes: string | null;
+}
+export type VehicleListItem = Omit<VehicleDetails, 'sourceCandidateId' | 'originalForecast'>;
+export interface VehicleListResult {
+  items: VehicleListItem[];
+  totalCount: number;
 }

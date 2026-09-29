@@ -41,8 +41,8 @@ export const routes: Routes = [
       {
         path: 'vehicles',
         title: 'nav.vehicles',
-        loadComponent: placeholder,
-        data: { title: 'nav.vehicles', icon: 'car-front' },
+        loadComponent: () =>
+          import('./features/vehicles/vehicle-list.component').then((m) => m.VehicleListComponent),
       },
       {
         path: 'sales',

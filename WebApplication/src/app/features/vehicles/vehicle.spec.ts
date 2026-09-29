@@ -108,6 +108,7 @@ describe('Vehicle finances', () => {
     http.expectOne('/api/vehicles/1').flush(value);
     http.expectOne('/api/vehicles/1/cost-plan').flush(items);
     http.expectOne('/api/vehicles/1/expenses').flush(history);
+    http.expectOne('/api/vehicles/1/status-history').flush([]);
     http
       .expectOne('/api/vehicles/1/payment-account')
       .flush({ ...account, currentBalance: balance });
@@ -117,7 +118,7 @@ describe('Vehicle finances', () => {
     load(details, [plan], [expense]);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Original forecast');
-    expect(fixture.nativeElement.textContent).toContain('€7,900.00');
+    expect(fixture.nativeElement.textContent).toContain('51.90%');
     expect(fixture.nativeElement.textContent).toContain('Transport Italy');
     expect(fixture.nativeElement.querySelector('#expenses-title').textContent).toContain(
       'Payment history',
@@ -149,11 +150,12 @@ describe('Vehicle finances', () => {
     expect(request.request.body.currentEstimatedAmount).toBe(950);
     expect(request.request.body.committedAmount).toBeNull();
     request.flush({ ...plan, committedAmount: 950 });
-    load({ ...details, remainingProjectedCosts: 1550, projectedFinalCost: 7850 }, [
-      { ...plan, committedAmount: 950, remainingProjected: 950 },
-    ]);
+    load(
+      { ...details, remainingProjectedCosts: 1550, projectedFinalCost: 7850, projectedROI: 52.87 },
+      [{ ...plan, committedAmount: 950, remainingProjected: 950 }],
+    );
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('€7,850.00');
+    expect(fixture.nativeElement.textContent).toContain('52.87%');
     http.expectNone('/api/vehicles/1/expenses', 'no expense POST');
     expect(fixture.nativeElement.querySelector('form')).toBeNull();
   });
@@ -344,14 +346,20 @@ describe('Vehicle finances', () => {
     expect(fixture.componentInstance.loading()).toBe(true);
     expect(fixture.componentInstance.vehicle()).toBeNull();
     expect(fixture.componentInstance.paymentAccount()).toBeNull();
-    const requests = http.match(request => request.url.startsWith('/api/vehicles/1'));
-    expect(requests.every(request => request.request.method === 'GET')).toBe(true);
-    requests.find(request => request.request.url === '/api/vehicles/1')!
+    const requests = http.match((request) => request.url.startsWith('/api/vehicles/1'));
+    expect(requests.every((request) => request.request.method === 'GET')).toBe(true);
+    requests
+      .find((request) => request.request.url === '/api/vehicles/1')!
       .flush({}, { status: 503, statusText: 'Unavailable' });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(en.vehicle.expenseSaved);
     button(fixture, en.finance.retry).click();
-    load({ ...details, actualExpenses: 670 }, [{ ...plan, actualPaid: 670, remainingProjected: 0 }], [{ ...expense, amount: 670 }], 4330);
+    load(
+      { ...details, actualExpenses: 670 },
+      [{ ...plan, actualPaid: 670, remainingProjected: 0 }],
+      [{ ...expense, amount: 670 }],
+      4330,
+    );
     fixture.detectChanges();
     expect(fixture.componentInstance.paymentAccount()?.currentBalance).toBe(4330);
     expect(fixture.componentInstance.expenses()).toHaveLength(1);
@@ -361,7 +369,9 @@ describe('Vehicle finances', () => {
     http.expectOne('/api/vehicles/1').flush(details);
     http.expectOne('/api/vehicles/1/cost-plan').flush([plan]);
     http.expectOne('/api/vehicles/1/expenses').flush([expense]);
-    http.expectOne('/api/vehicles/1/payment-account')
+    http.expectOne('/api/vehicles/1/status-history').flush([]);
+    http
+      .expectOne('/api/vehicles/1/payment-account')
       .flush({ code: 'purchaseAccountMissing' }, { status: 409, statusText: 'Conflict' });
     fixture.detectChanges();
     expect(fixture.componentInstance.paymentAccount()).toBeNull();
@@ -376,6 +386,7 @@ describe('Vehicle finances', () => {
     http.expectOne('/api/vehicles/2').flush({ ...details, id: 2 });
     http.expectOne('/api/vehicles/2/cost-plan').flush([]);
     http.expectOne('/api/vehicles/2/expenses').flush([]);
+    http.expectOne('/api/vehicles/2/status-history').flush([]);
     http.expectOne('/api/vehicles/2/payment-account').flush(account);
   });
   it('confirms transport, removes it from pending, refreshes history and totals, and reloads capital', () => {

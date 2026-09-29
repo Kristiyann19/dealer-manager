@@ -1,0 +1,141 @@
+<div class="page-container">
+  <header class="page-heading">
+    <div>
+      <h1>{{ 'nav.vehicles' | translate }}</h1>
+      <p class="mt-2 text-slate-600">{{ 'vehicle.inventorySubtitle' | translate }}</p>
+    </div>
+  </header>
+  <section class="panel overflow-hidden" [attr.aria-label]="'vehicle.inventory' | translate">
+    <div class="grid gap-4 p-6 sm:grid-cols-[minmax(240px,1fr)_240px]">
+      <div>
+        <label class="field-label" for="vehicle-search">{{ 'vehicle.search' | translate }}</label>
+        <input
+          id="vehicle-search"
+          class="form-input"
+          type="search"
+          [formControl]="search"
+          [placeholder]="'ui.make_model_or_vin' | translate"
+        />
+      </div>
+      <div>
+        <label class="field-label" for="vehicle-filter-status">{{
+          'vehicle.status' | translate
+        }}</label>
+        <select id="vehicle-filter-status" class="form-input" [formControl]="statusFilter">
+          <option [ngValue]="null">{{ 'vehicle.allStatuses' | translate }}</option>
+          @for (status of statuses; track status.value) {
+            <option [ngValue]="status.value">{{ status.label | translate }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    @let current = state();
+    @switch (current.status) {
+      @case ('loading') {
+        <p class="p-8" role="status">{{ 'finance.loading' | translate }}</p>
+      }
+      @case ('error') {
+        <div class="p-6">
+          <p class="error-banner" role="alert">{{ current.message | translate }}</p>
+          <button class="secondary-button mt-3" (click)="retry()">
+            {{ 'finance.retry' | translate }}
+          </button>
+        </div>
+      }
+      @case ('ready') {
+        @if (!current.data.items.length) {
+          <p class="p-8 text-slate-600">{{ 'vehicle.emptyInventory' | translate }}</p>
+        } @else {
+          <div
+            class="overflow-x-auto"
+            tabindex="0"
+            role="region"
+            [attr.aria-label]="'vehicle.inventory' | translate"
+          >
+            <table class="data-table min-w-[1250px]">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'vehicle.car' | translate }}</th>
+                  <th scope="col">{{ 'vehicle.status' | translate }}</th>
+                  <th scope="col">{{ 'vehicle.mileage' | translate }}</th>
+                  @for (column of columns; track column.key) {
+                    <th scope="col" class="text-right">{{ column.label | translate }}</th>
+                  }
+                  <th scope="col">{{ 'vehicle.action' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (vehicle of current.data.items; track vehicle.id) {
+                  <tr>
+                    <td>
+                      <a class="text-link" [routerLink]="['/vehicles', vehicle.id]"
+                        >{{ vehicle.make }} {{ vehicle.model }}</a
+                      >
+                      <p class="mt-1 text-sm text-slate-500">{{ vehicle.year }}</p>
+                    </td>
+                    <td><app-vehicle-status [status]="vehicle.status" /></td>
+                    <td class="whitespace-nowrap tabular-nums">
+                      {{
+                        vehicle.mileage === null
+                          ? ('common.notProvided' | translate)
+                          : ('vehicle.mileageValue'
+                            | translate: { value: (vehicle.mileage | localizedNumber) })
+                      }}
+                    </td>
+                    @for (column of columns; track column.key) {
+                      <td class="text-right whitespace-nowrap tabular-nums">
+                        {{
+                          vehicle[column.key] === null
+                            ? ('common.notProvided' | translate)
+                            : (vehicle[column.key] | localizedCurrency: 'EUR')
+                        }}
+                      </td>
+                    }
+                    <td>
+                      <a
+                        class="secondary-button"
+                        [routerLink]="['/vehicles', vehicle.id]"
+                        [attr.aria-label]="
+                          'vehicle.review' | translate: { name: vehicle.make + ' ' + vehicle.model }
+                        "
+                        >{{ 'ui.review' | translate }}</a
+                      >
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        @if (current.data.totalCount > 0) {
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-5"
+          >
+            <p class="text-sm text-slate-600">
+              {{
+                'vehicle.pagination'
+                  | translate
+                    : {
+                        start: current.data.items.length ? offset() + 1 : 0,
+                        end: end(current.data.totalCount),
+                        total: current.data.totalCount,
+                      }
+              }}
+            </p>
+            <div class="flex gap-2">
+              <button class="secondary-button" [disabled]="offset() === 0" (click)="page(-1)">
+                {{ 'vehicle.previous' | translate }}</button
+              ><button
+                class="secondary-button"
+                [disabled]="end(current.data.totalCount) >= current.data.totalCount"
+                (click)="page(1)"
+              >
+                {{ 'vehicle.next' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+      }
+    }
+  </section>
+</div>
