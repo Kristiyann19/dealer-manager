@@ -2,6 +2,9 @@
   @if (purchased) {
     <p class="success-banner" role="status">{{ 'purchase.success' | translate }}</p>
   }
+  @if (notice()) {
+    <p class="success-banner" role="status">{{ notice() | translate }}</p>
+  }
   @if (loading()) {
     <p class="panel p-8" role="status">{{ 'finance.loading' | translate }}</p>
   } @else if (error()) {
@@ -12,7 +15,7 @@
       </button>
     </section>
   } @else if (vehicle(); as vehicle) {
-    <header class="page-heading">
+    <header class="page-heading flex flex-wrap justify-between gap-5">
       <div>
         <p class="eyebrow">{{ 'finance.vehicleReference' | translate: { id: vehicle.id } }}</p>
         <h1>{{ vehicle.make }} {{ vehicle.model }}</h1>
@@ -20,36 +23,279 @@
           {{ vehicle.year }} · {{ statusKeys[vehicle.status] || 'common.unknown' | translate }}
         </p>
       </div>
+      <div class="page-actions">
+        <button class="secondary-button" (click)="refresh()">
+          {{ 'finance.refresh' | translate }}
+        </button>
+      </div>
     </header>
-    <section class="panel p-8">
-      <h2>{{ 'purchase.vehicleSummary' | translate }}</h2>
-      <dl class="mt-6 grid gap-6 sm:grid-cols-2">
+    <section class="panel p-6" [attr.aria-label]="'vehicle.overview' | translate">
+      <dl class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <dt class="field-label">{{ 'purchase.actualPrice' | translate }}</dt>
-          <dd class="text-3xl font-semibold">
+          <dt class="field-label">{{ 'vehicle.purchaseDate' | translate }}</dt>
+          <dd>{{ vehicle.purchaseDate | localizedDate }}</dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'vehicle.mileage' | translate }}</dt>
+          <dd>
             {{
-              vehicle.actualPurchasePrice === null
-                ? ('finance.noVehicle' | translate)
-                : (vehicle.actualPurchasePrice | localizedCurrency: 'EUR')
+              vehicle.mileage === null
+                ? ('common.notProvided' | translate)
+                : ('vehicle.mileageValue'
+                  | translate: { value: (vehicle.mileage | localizedNumber) })
             }}
           </dd>
         </div>
         <div>
-          <dt class="field-label">{{ 'purchase.date' | translate }}</dt>
-          <dd>{{ vehicle.purchaseDate | localizedDate }}</dd>
+          <dt class="field-label">{{ 'vehicle.vin' | translate }}</dt>
+          <dd class="break-words">{{ vehicle.vin || ('common.notProvided' | translate) }}</dd>
         </div>
-        @if (vehicle.sourceCandidateId) {
-          <div>
-            <dt class="field-label">{{ 'purchase.sourceCandidate' | translate }}</dt>
-            <dd>
+        <div>
+          <dt class="field-label">{{ 'purchase.sourceCandidate' | translate }}</dt>
+          <dd>
+            @if (vehicle.sourceCandidateId) {
               <a class="text-link" [routerLink]="['/candidates', vehicle.sourceCandidateId]">{{
                 'ui.candidate_value' | translate: { p0: vehicle.sourceCandidateId }
               }}</a>
+            } @else {
+              {{ 'common.notProvided' | translate }}
+            }
+          </dd>
+        </div>
+      </dl>
+    </section>
+    @if (vehicle.status === 9) {
+      <p class="info-banner">{{ 'vehicle.errors.sold' | translate }}</p>
+    }
+    <section class="panel overflow-hidden" aria-labelledby="finance-summary-title">
+      <h2 id="finance-summary-title" class="sr-only">
+        {{ 'vehicle.financialSummary' | translate }}
+      </h2>
+      <dl class="grid sm:grid-cols-2 xl:grid-cols-5">
+        @for (metric of metrics; track metric.key) {
+          <div class="flex flex-col p-6" [class.bg-blue-50]="metric.key === 'projectedFinalCost'">
+            <dt class="field-label grow">{{ metric.label | translate }}</dt>
+            <dd
+              class="mt-3 text-2xl font-semibold tabular-nums"
+              [class.text-blue-800]="metric.key === 'projectedFinalCost'"
+            >
+              {{
+                vehicle[metric.key] === null
+                  ? ('common.notProvided' | translate)
+                  : (vehicle[metric.key] | localizedCurrency: 'EUR')
+              }}
             </dd>
           </div>
         }
       </dl>
+      <div
+        class="flex flex-wrap justify-between gap-3 border-t border-slate-200 px-6 py-4 text-sm text-slate-600"
+      >
+        <p>
+          {{ 'purchase.actualPrice' | translate }}:
+          {{ vehicle.actualPurchasePrice | localizedCurrency: 'EUR' }}
+        </p>
+        <p>
+          {{ 'vehicle.projectedROI' | translate }}:
+          {{
+            vehicle.projectedROI === null
+              ? ('common.notProvided' | translate)
+              : ('vehicle.roiValue'
+                | translate: { value: (vehicle.projectedROI | localizedNumber: '1.2-2') })
+          }}
+        </p>
+      </div>
     </section>
-    <a class="text-link" routerLink="/finances">{{ 'nav.finances' | translate }}</a>
+    <section class="panel overflow-hidden" aria-labelledby="cost-plan-title">
+      <div class="flex flex-wrap items-center justify-between gap-4 p-6">
+        <h2 id="cost-plan-title">{{ 'vehicle.currentPlan' | translate }}</h2>
+        <button class="secondary-button" [disabled]="vehicle.status === 9" (click)="openExpense()">
+          {{ 'vehicle.unexpectedExpense' | translate }}
+        </button>
+      </div>
+      @if (!pendingPlan().length) {
+        <p class="px-6 pb-6 text-slate-600">{{ 'vehicle.noPlan' | translate }}</p>
+      }
+      @for (item of pendingPlan(); track item.id) {
+        <article
+          class="border-t border-slate-200 p-6"
+          [attr.aria-label]="'cost.' + item.category | translate"
+        >
+          <div class="grid items-center gap-6 lg:grid-cols-[minmax(160px,1fr)_minmax(330px,1.4fr)]">
+            <div>
+              <h3 class="text-lg font-semibold">
+                {{ 'cost.' + item.category | translate }}
+                @if (item.isCancelled) {
+                  <span class="ml-2 text-sm font-normal text-slate-500">{{
+                    'vehicle.cancelled' | translate
+                  }}</span>
+                }
+              </h3>
+              <p class="mt-1 break-words text-slate-600">{{ item.description }}</p>
+            </div>
+            <dl class="grid grid-cols-3 gap-4">
+              <div>
+                <dt class="field-label">{{ 'vehicle.estimated' | translate }}</dt>
+                <dd class="font-semibold tabular-nums">
+                  {{
+                    item.committedAmount ?? item.currentEstimatedAmount ?? 0
+                      | localizedCurrency: 'EUR'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt class="field-label">{{ 'vehicle.actualPaid' | translate }}</dt>
+                <dd class="font-semibold tabular-nums">
+                  {{ item.actualPaid | localizedCurrency: 'EUR' }}
+                </dd>
+              </div>
+              <div>
+                <dt class="field-label">{{ 'vehicle.remaining' | translate }}</dt>
+                <dd class="font-semibold tabular-nums">
+                  {{ item.remainingProjected | localizedCurrency: 'EUR' }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button
+              class="primary-button"
+              [disabled]="vehicle.status === 9"
+              (click)="openExpense(item)"
+            >
+              {{ 'vehicle.addExpense' | translate }}
+            </button>
+            <button class="secondary-button" (click)="editing.set(item)">
+              {{ 'vehicle.editPlan' | translate }}
+            </button>
+          </div>
+        </article>
+      }
+    </section>
+    <section class="panel overflow-hidden" aria-labelledby="expenses-title">
+      <h2 id="expenses-title" class="p-6">{{ 'vehicle.expenses' | translate }}</h2>
+      @if (!expenses().length) {
+        <p class="px-6 pb-6 text-slate-600">{{ 'vehicle.noExpenses' | translate }}</p>
+      } @else {
+        <div
+          class="overflow-x-auto"
+          tabindex="0"
+          role="region"
+          [attr.aria-label]="'vehicle.expenses' | translate"
+        >
+          <table class="data-table min-w-[700px]">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'finance.date' | translate }}</th>
+                <th scope="col">{{ 'vehicle.category' | translate }}</th>
+                <th scope="col">{{ 'finance.description' | translate }}</th>
+                <th scope="col">{{ 'finance.amount' | translate }}</th>
+                <th scope="col">{{ 'vehicle.paidFrom' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (expense of expenses(); track expense.id) {
+                <tr>
+                  <td class="whitespace-nowrap">{{ expense.paidAt | localizedDate }}</td>
+                  <td>{{ 'cost.' + expense.category | translate }}</td>
+                  <td>{{ expense.description }}</td>
+                  <td class="whitespace-nowrap font-semibold tabular-nums">
+                    {{ expense.amount | localizedCurrency: expense.currency }}
+                  </td>
+                  <td>{{ expense.capitalAccountName }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+    <details class="panel overflow-hidden disclosure" id="original-forecast">
+      <summary class="p-6 text-lg font-semibold">
+        {{ 'vehicle.originalForecast' | translate }}
+      </summary>
+      <p class="px-6 pb-5 text-slate-600">{{ 'vehicle.forecastHelp' | translate }}</p>
+      @if (vehicle.originalForecast; as forecast) {
+        <div
+          class="overflow-x-auto"
+          tabindex="0"
+          role="region"
+          [attr.aria-label]="'vehicle.originalForecast' | translate"
+        >
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'vehicle.category' | translate }}</th>
+                <th scope="col">{{ 'finance.description' | translate }}</th>
+                <th scope="col">{{ 'vehicle.originalEstimatedEUR' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of forecast.items; track item.id) {
+                <tr>
+                  <td>{{ 'cost.' + item.category | translate }}</td>
+                  <td>{{ item.description }}</td>
+                  <td class="whitespace-nowrap tabular-nums">
+                    {{ item.estimatedAmount | localizedCurrency: 'EUR' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <dl class="grid gap-5 border-t border-slate-200 p-6 sm:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <dt class="field-label">{{ 'vehicle.originalTotal' | translate }}</dt>
+            <dd class="text-xl font-semibold">
+              {{ forecast.originalEstimatedTotal | localizedCurrency: 'EUR' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.expectedSellingPrice' | translate }}</dt>
+            <dd class="text-xl font-semibold">
+              {{ forecast.originalExpectedSellingPrice | localizedCurrency: 'EUR' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.originalProfit' | translate }}</dt>
+            <dd class="text-xl font-semibold">
+              {{ forecast.originalExpectedProfit | localizedCurrency: 'EUR' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.originalROI' | translate }}</dt>
+            <dd class="text-xl font-semibold">
+              {{ forecast.originalExpectedROI | localizedNumber: '1.2-2' }}%
+            </dd>
+          </div>
+        </dl>
+      } @else {
+        <p class="px-6 pb-6 text-slate-600">{{ 'vehicle.noForecast' | translate }}</p>
+      }
+    </details>
+    @if (editing(); as item) {
+      <app-edit-cost-plan
+        [vehicleId]="vehicle.id"
+        [item]="item"
+        (closed)="editing.set(null)"
+        (saved)="saved('plan')"
+      />
+    }
+    @if (expenseDialog(); as dialog) {
+      @if (dialog.plan; as item) {
+        <app-confirm-vehicle-payment
+          [vehicleId]="vehicle.id"
+          [itemId]="item.id"
+          (closed)="expenseDialog.set(null)"
+          (saved)="saved('expense')"
+        />
+      } @else {
+        <app-add-vehicle-expense
+          [vehicleId]="vehicle.id"
+          (closed)="expenseDialog.set(null)"
+          (saved)="saved('expense')"
+        />
+      }
+    }
   }
 </div>

@@ -1,0 +1,131 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'vehicle.unexpectedExpense' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '560px', maxWidth: '94vw' }"
+>
+  @if (loading()) {
+    <p role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (loadError()) {
+    <p class="error-banner" role="alert">{{ loadError() | translate }}</p>
+    <button class="secondary-button mt-3" (click)="loadAccount()">
+      {{ 'finance.retry' | translate }}
+    </button>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <fieldset [disabled]="busy()" class="grid min-w-0 gap-5">
+        <div>
+          <label class="field-label" for="expense-category">{{
+            'vehicle.category' | translate
+          }}</label
+          ><select id="expense-category" class="form-input" formControlName="category">
+            @for (category of categories; track category.value) {
+              <option [ngValue]="category.value">{{ category.label | translate }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <div>
+            <label class="field-label" for="expense-amount">{{
+              'vehicle.amountEUR' | translate
+            }}</label
+            ><input
+              id="expense-amount"
+              class="form-input"
+              type="number"
+              step="any"
+              formControlName="amount"
+            />
+            @if (form.controls.amount.touched && form.controls.amount.invalid) {
+              <p class="field-error" role="alert">{{ 'finance.positiveAmount' | translate }}</p>
+            }
+          </div>
+        </div>
+        <div>
+          <label class="field-label" for="expense-description">{{
+            'finance.description' | translate
+          }}</label
+          ><input id="expense-description" class="form-input" formControlName="description" />
+          @if (form.controls.description.touched && form.controls.description.invalid) {
+            <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
+          }
+        </div>
+        @if (account(); as account) {
+          <dl class="grid grid-cols-2 gap-5 rounded-lg bg-slate-50 p-4">
+            <div>
+              <dt class="field-label">{{ 'finance.availableCapital' | translate }}</dt>
+              <dd class="font-semibold tabular-nums">
+                {{ account.currentBalance | localizedCurrency: account.currency }}
+              </dd>
+            </div>
+            <div>
+              <dt class="field-label">{{ 'vehicle.balanceAfter' | translate }}</dt>
+              <dd class="font-semibold tabular-nums">
+                {{ remaining() | localizedCurrency: account.currency }}
+              </dd>
+            </div>
+          </dl>
+        }
+        @if (insufficient()) {
+          <p class="error-banner" role="alert">
+            {{ 'vehicle.errors.insufficientCapital' | translate }}
+          </p>
+        }
+        <details class="disclosure border-t border-slate-200 pt-4" #options>
+          <summary class="font-medium text-slate-600">
+            {{ 'vehicle.moreOptions' | translate }}
+          </summary>
+          <div class="mt-4 grid gap-4">
+            <div>
+              <label class="field-label" for="expense-date">{{
+                'finance.optionalDate' | translate
+              }}</label
+              ><input id="expense-date" class="form-input" type="date" formControlName="paidAt" />
+              @if (form.controls.paidAt.touched && form.controls.paidAt.invalid) {
+                <p class="field-error" role="alert">{{ 'finance.invalidDate' | translate }}</p>
+              }
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="field-label" for="expense-supplier">{{
+                  'vehicle.supplierOptional' | translate
+                }}</label
+                ><input id="expense-supplier" class="form-input" formControlName="supplier" />
+              </div>
+              <div>
+                <label class="field-label" for="expense-document">{{
+                  'vehicle.documentOptional' | translate
+                }}</label
+                ><input id="expense-document" class="form-input" formControlName="documentNumber" />
+              </div>
+            </div>
+          </div>
+        </details>
+        @if (form.controls.paidAt.touched && form.controls.paidAt.invalid && !options.open) {
+          <p class="field-error" role="alert">{{ 'vehicle.checkOptions' | translate }}</p>
+        }
+        @if (error()) {
+          <p class="error-banner" role="alert">{{ error() | translate }}</p>
+        }
+      </fieldset>
+      <div class="form-actions">
+        <button class="secondary-button" type="button" [disabled]="busy()" (click)="close()">
+          {{ 'finance.cancel' | translate }}</button
+        ><button
+          class="primary-button"
+          type="submit"
+          [disabled]="busy() || insufficient() || !account()"
+        >
+          {{ (busy() ? 'finance.saving' : 'vehicle.saveExpense') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</p-dialog>

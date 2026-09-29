@@ -1,21 +1,57 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../configuration/api.config';
-export interface VehicleDetails {
-  id: number;
-  make: string;
-  model: string;
-  year: number;
-  status: number;
-  sourceCandidateId: number | null;
-  purchaseDate: string;
-  actualPurchasePrice: number | null;
-}
+import {
+  AddVehicleExpenseRequest,
+  UpdateVehicleCostPlanItemRequest,
+  VehicleCostPlanItem,
+  VehicleDetails,
+  VehicleExpense,
+  VehicleFinancialSummary,
+  VehiclePaymentAccount,
+  VehiclePaymentPreview,
+} from './vehicle.models';
+export type { VehicleDetails } from './vehicle.models';
 @Injectable({ providedIn: 'root' })
 export class VehicleApiService {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL).replace(/\/$/, '');
   details(id: number) {
     return this.http.get<VehicleDetails>(`${this.base}/vehicles/${id}`);
+  }
+  financialSummary(id: number) {
+    return this.http.get<VehicleFinancialSummary>(`${this.base}/vehicles/${id}/financial-summary`);
+  }
+  costPlan(id: number) {
+    return this.http.get<VehicleCostPlanItem[]>(`${this.base}/vehicles/${id}/cost-plan`);
+  }
+  updateCostPlan(id: number, itemId: number, request: UpdateVehicleCostPlanItemRequest) {
+    return this.http.put<VehicleCostPlanItem>(
+      `${this.base}/vehicles/${id}/cost-plan/${itemId}`,
+      request,
+    );
+  }
+  paymentAccount(id: number) {
+    return this.http.get<VehiclePaymentAccount>(`${this.base}/vehicles/${id}/payment-account`);
+  }
+  paymentPreview(id: number, itemId: number) {
+    return this.http.get<VehiclePaymentPreview>(
+      `${this.base}/vehicles/${id}/cost-plan/${itemId}/payment-preview`,
+    );
+  }
+  confirmPayment(id: number, itemId: number, preview: VehiclePaymentPreview) {
+    return this.http.post<VehicleExpense>(
+      `${this.base}/vehicles/${id}/cost-plan/${itemId}/confirm-payment`,
+      {
+        expectedAmount: preview.amount,
+        expectedCapitalAccountId: preview.capitalAccountId,
+      },
+    );
+  }
+  expenses(id: number) {
+    return this.http.get<VehicleExpense[]>(`${this.base}/vehicles/${id}/expenses`);
+  }
+  addExpense(id: number, request: AddVehicleExpenseRequest) {
+    return this.http.post<VehicleExpense>(`${this.base}/vehicles/${id}/expenses`, request);
   }
 }

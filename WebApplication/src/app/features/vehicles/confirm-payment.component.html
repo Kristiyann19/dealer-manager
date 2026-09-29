@@ -1,0 +1,69 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'vehicle.confirmPaymentTitle' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '480px', maxWidth: '94vw' }"
+>
+  @if (loading()) {
+    <p role="status">{{ 'finance.loading' | translate }}</p>
+  }
+  @if (preview(); as payment) {
+    <p class="text-lg font-semibold">{{ 'cost.' + payment.category | translate }}</p>
+    <dl class="my-5">
+      <dt class="field-label">{{ 'finance.amount' | translate }}</dt>
+      <dd class="text-3xl font-semibold tabular-nums">
+        {{ payment.amount | localizedCurrency: payment.currency }}
+      </dd>
+    </dl>
+    <p class="text-slate-600">
+      {{
+        'vehicle.paymentDeduction'
+          | translate: { amount: (payment.amount | localizedCurrency: payment.currency) }
+      }}
+    </p>
+    <dl class="mt-5 grid grid-cols-2 gap-5 rounded-lg bg-slate-50 p-4">
+      <div>
+        <dt class="field-label">{{ 'finance.availableCapital' | translate }}</dt>
+        <dd class="font-semibold tabular-nums">
+          {{ payment.currentBalance | localizedCurrency: payment.currency }}
+        </dd>
+      </div>
+      <div>
+        <dt class="field-label">{{ 'vehicle.balanceAfter' | translate }}</dt>
+        <dd class="font-semibold tabular-nums">
+          {{ remaining() | localizedCurrency: payment.currency }}
+        </dd>
+      </div>
+    </dl>
+    @if (remaining() < 0) {
+      <p class="error-banner mt-4" role="alert">
+        {{ 'vehicle.errors.insufficientCapital' | translate }}
+      </p>
+    }
+  }
+  @if (error()) {
+    <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p>
+    <button class="secondary-button mt-3" (click)="load()">
+      {{ 'finance.refresh' | translate }}
+    </button>
+  }
+  <div class="form-actions">
+    <button class="secondary-button" [disabled]="busy()" (click)="close()">
+      {{ 'finance.cancel' | translate }}
+    </button>
+    <button
+      class="primary-button"
+      [disabled]="busy() || loading() || !preview() || remaining() < 0 || !!error()"
+      (click)="confirm()"
+    >
+      {{ (busy() ? 'finance.saving' : 'vehicle.confirmPayment') | translate }}
+    </button>
+  </div>
+</p-dialog>

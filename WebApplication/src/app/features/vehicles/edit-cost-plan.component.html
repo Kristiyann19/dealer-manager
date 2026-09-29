@@ -1,0 +1,101 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'vehicle.editPlan' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '560px', maxWidth: '94vw' }"
+>
+  <p class="mb-4 text-lg font-semibold">{{ 'cost.' + item().category | translate }}</p>
+  <p class="info-banner mb-5">{{ 'vehicle.planHelp' | translate }}</p>
+  @if (item().committedAmount !== null) {
+    <p class="form-help mb-5">{{ 'vehicle.existingCommitment' | translate }}</p>
+  }
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset [disabled]="busy()" class="grid min-w-0 gap-5">
+      <div>
+        <label class="field-label" for="plan-estimate">{{
+          'vehicle.estimatedEUR' | translate
+        }}</label
+        ><input
+          id="plan-estimate"
+          class="form-input"
+          type="number"
+          step="any"
+          formControlName="currentEstimatedAmount"
+        />
+        @if (
+          form.controls.currentEstimatedAmount.touched &&
+          form.controls.currentEstimatedAmount.invalid
+        ) {
+          <p class="field-error" role="alert">{{ 'vehicle.nonnegative' | translate }}</p>
+        }
+      </div>
+      <div>
+        <label class="field-label" for="plan-description">{{
+          'finance.description' | translate
+        }}</label
+        ><textarea
+          id="plan-description"
+          class="form-input"
+          rows="3"
+          formControlName="description"
+        ></textarea>
+        @if (form.controls.description.touched && form.controls.description.invalid) {
+          <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
+        }
+      </div>
+      <details class="disclosure border-t border-slate-200 pt-4" #options>
+        <summary class="font-medium text-slate-600">
+          {{ 'vehicle.moreOptions' | translate }}
+        </summary>
+        <div class="mt-4 grid gap-4">
+          <div>
+            <label class="field-label" for="plan-committed">{{
+              'vehicle.committedEUR' | translate
+            }}</label
+            ><input
+              id="plan-committed"
+              class="form-input"
+              type="number"
+              step="any"
+              formControlName="committedAmount"
+            />
+            @if (form.controls.committedAmount.touched && form.controls.committedAmount.invalid) {
+              <p class="field-error" role="alert">{{ 'vehicle.nonnegative' | translate }}</p>
+            }
+            <p class="form-help mt-2">{{ 'vehicle.committedHelp' | translate }}</p>
+          </div>
+          <label class="flex items-center gap-3"
+            ><input type="checkbox" formControlName="isCancelled" />{{
+              'vehicle.cancelPlan' | translate
+            }}</label
+          >
+          <p class="form-help">{{ 'vehicle.cancelHelp' | translate }}</p>
+        </div>
+      </details>
+      @if (
+        form.controls.committedAmount.touched &&
+        form.controls.committedAmount.invalid &&
+        !options.open
+      ) {
+        <p class="field-error" role="alert">{{ 'vehicle.checkOptions' | translate }}</p>
+      }
+      @if (error()) {
+        <p class="error-banner" role="alert">{{ error() | translate }}</p>
+      }
+    </fieldset>
+    <div class="form-actions">
+      <button class="secondary-button" type="button" [disabled]="busy()" (click)="close()">
+        {{ 'finance.cancel' | translate }}</button
+      ><button class="primary-button" type="submit" [disabled]="busy()">
+        {{ (busy() ? 'finance.saving' : 'vehicle.savePlan') | translate }}
+      </button>
+    </div>
+  </form>
+</p-dialog>

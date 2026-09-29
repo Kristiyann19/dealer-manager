@@ -144,13 +144,11 @@ describe('Purchase frontend', () => {
     'hides purchase for status %s',
     (status) => {
       const fixture = TestBed.createComponent(CandidateDetailsComponent);
-      http
-        .expectOne('/api/candidates/1')
-        .flush({
-          ...candidate,
-          status,
-          vehicleId: status === CandidateStatus.Purchased ? 7 : null,
-        });
+      http.expectOne('/api/candidates/1').flush({
+        ...candidate,
+        status,
+        vehicleId: status === CandidateStatus.Purchased ? 7 : null,
+      });
       fixture.detectChanges();
       expect(fixture.nativeElement.textContent).not.toContain('Confirm purchase');
       if (status === CandidateStatus.Purchased)
@@ -179,18 +177,18 @@ describe('Purchase frontend', () => {
   });
   it('loads vehicle details from API on a direct visit', () => {
     const fixture = TestBed.createComponent(VehicleDetailsComponent);
-    http
-      .expectOne('/api/vehicles/1')
-      .flush({
-        id: 1,
-        make: 'BMW',
-        model: '320d',
-        year: 2018,
-        status: 0,
-        sourceCandidateId: 1,
-        purchaseDate: result.purchaseDate,
-        actualPurchasePrice: 6300,
-      });
+    http.expectOne('/api/vehicles/1').flush({
+      id: 1,
+      make: 'BMW',
+      model: '320d',
+      year: 2018,
+      status: 0,
+      sourceCandidateId: 1,
+      purchaseDate: result.purchaseDate,
+      actualPurchasePrice: 6300,
+    });
+    http.expectOne('/api/vehicles/1/cost-plan').flush([]);
+    http.expectOne('/api/vehicles/1/expenses').flush([]);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('BMW 320d');
     expect(fixture.nativeElement.querySelector('a[href="/candidates/1"]')).toBeTruthy();

@@ -60,6 +60,8 @@ internal sealed class FinanceTestDbContext(DbContextOptions<DealerManagerDbConte
             .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
         builder.Entity<DealerManager.Domain.Entities.FinancialTransaction>().Property(t => t.CreatedAt)
             .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
+        builder.Entity<DealerManager.Domain.Entities.VehicleExpense>().Property(e => e.PaidAt)
+            .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
     }
 }
 
