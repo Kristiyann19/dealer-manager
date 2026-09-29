@@ -55,12 +55,6 @@
                 class="form-input"
                 [id]="'description-' + i"
                 formControlName="description"
-                [placeholder]="'ui.e_g_fuel_system_repair' | translate"
-                [attr.aria-describedby]="'description-error-' + i"
-              /><app-field-error
-                [id]="'description-error-' + i"
-                [control]="item.controls.description"
-                [message]="'ui.description_is_required' | translate"
               />
             </div>
             <div>
@@ -116,7 +110,7 @@
       <div class="mt-6 flex flex-wrap justify-end gap-3">
         <button type="button" class="secondary-button" (click)="cancelled.emit(!!error())">
           {{ 'ui.cancel_estimate' | translate }}</button
-        ><button type="submit" class="primary-button" [disabled]="busy()">
+        ><button type="submit" class="primary-button" [disabled]="busy() || !form.valid">
           {{ busy() ? ('common.saving' | translate) : ('candidate.saveVersion' | translate) }}
         </button>
       </div>

@@ -1,3 +1,4 @@
+#nullable enable
 using DealerManager.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,8 +8,7 @@ namespace DealerManager.Application.Dtos.Candidate
     {
         [EnumDataType(typeof(CostCategory))]
         public CostCategory Category { get; set; }
-        [Required]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
         [Range(typeof(decimal), "0", "79228162514264337593543950335")]
         public decimal EstimatedAmount { get; set; }
     }

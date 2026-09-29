@@ -194,6 +194,6 @@ describe('Purchase frontend', () => {
       .flush({ capitalAccountId: 1, currency: 'EUR', currentBalance: 13700 });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('BMW 320d');
-    expect(fixture.nativeElement.querySelector('a[href="/candidates/1"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('header time').getAttribute('datetime')).toBe(result.purchaseDate);
   });
 });

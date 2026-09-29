@@ -8,6 +8,31 @@ namespace DealerManager.Tests.Candidate;
 
 public class CandidateApiTests
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task EstimateDescriptionsAreOptionalAndPersistAsEmptyStrings(string? description)
+    {
+        using var factory = new CandidateApiFactory();
+        using var client = factory.CreateInitializedClient();
+        var create = await client.PostAsJsonAsync("/api/candidates", new { make = "BMW", model = "X1", askingPrice = 3000 });
+        create.EnsureSuccessStatusCode();
+        var candidate = (await create.Content.ReadFromJsonAsync<CandidateDetailsDto>())!;
+        var response = await client.PostAsJsonAsync("/api/candidates/estimates", new
+        {
+            candidateId = candidate.Id, expectedSellingPrice = 7000,
+            items = new object[] {
+                new { category = CostCategory.Purchase, estimatedAmount = 3000 },
+                new { category = CostCategory.Repair, description, estimatedAmount = 500 }
+            }
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var details = (await client.GetFromJsonAsync<CandidateDetailsDto>($"/api/candidates/{candidate.Id}"))!;
+        Assert.All(details.LatestEstimate!.Items, item => Assert.Equal(string.Empty, item.Description));
+        Assert.Equal(3500m, details.EstimatedTotalCost);
+    }
+
     [Fact]
     public async Task ClientCannotSetSystemOwnedFieldsAndDtoDoesNotExposeEntities()
     {

@@ -201,6 +201,42 @@ describe('Candidate module HTTP workflows', () => {
     expect(request.request.body.items[1].estimatedAmount).toBe(0);
     request.flush(estimate);
   });
+  it('enables save only for a valid estimate and accepts an empty description without a placeholder', () => {
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', candidate);
+    fixture.detectChanges();
+    const save = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(save().disabled).toBe(true);
+    input(fixture, '#estimate-price', '7000');
+    expect(save().disabled).toBe(false);
+    button(fixture, '+ Add cost item').click();
+    fixture.detectChanges();
+    expect(save().disabled).toBe(true);
+    const description: HTMLInputElement = fixture.nativeElement.querySelector('#description-1');
+    description.dispatchEvent(new Event('focus'));
+    description.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    expect(description.hasAttribute('placeholder')).toBe(false);
+    expect(description.classList.contains('ng-invalid')).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain(en.ui.description_is_required);
+    input(fixture, '#amount-1', '100');
+    expect(save().disabled).toBe(false);
+    input(fixture, '#amount-1', '');
+    fixture.nativeElement.querySelector('#amount-1').dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    expect(save().disabled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain(en.ui.enter_an_amount_of_zero_or_more);
+    input(fixture, '#amount-1', '-1');
+    expect(save().disabled).toBe(true);
+    input(fixture, '#amount-1', '0');
+    expect(save().disabled).toBe(false);
+    save().click();
+    fixture.detectChanges();
+    expect(save().disabled).toBe(true);
+    const request = http.expectOne('/api/candidates/estimates');
+    expect(request.request.body.items[1]).toEqual({ category: CostCategory.Other, description: '', estimatedAmount: 0 });
+    request.flush(estimate);
+  });
   it('preserves the editable negotiated purchase when copying other costs from history', () => {
     const historical: CandidateEstimate = {
       ...estimate,

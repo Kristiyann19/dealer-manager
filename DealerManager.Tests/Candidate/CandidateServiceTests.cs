@@ -167,7 +167,6 @@ public class CandidateServiceTests
     [InlineData("empty")]
     [InlineData("null")]
     [InlineData("nullItem")]
-    [InlineData("description")]
     [InlineData("category")]
     [InlineData("amount")]
     [InlineData("price")]
@@ -184,7 +183,6 @@ public class CandidateServiceTests
             case "empty": request.Items.Clear(); break;
             case "null": request.Items = null!; break;
             case "nullItem": request.Items.Add(null!); break;
-            case "description": request.Items[0].Description = " "; break;
             case "category": request.Items[0].Category = (CostCategory)999; break;
             case "amount": request.Items[0].EstimatedAmount = -1; break;
             case "price": request.ExpectedSellingPrice = -1; break;

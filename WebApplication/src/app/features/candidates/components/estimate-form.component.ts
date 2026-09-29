@@ -21,7 +21,7 @@ import {
 } from '../models/candidate.models';
 import { CandidateApiService } from '../services/candidate-api.service';
 import { FieldErrorComponent } from './field-error.component';
-import { apiError, optionalText, requiredText } from './candidate-form-utils';
+import { apiError, optionalText } from './candidate-form-utils';
 
 @Component({
   selector: 'app-estimate-form',
@@ -73,7 +73,7 @@ export class EstimateFormComponent implements OnInit {
       category: this.fb.nonNullable.control(value?.category ?? CostCategory.Other, [
         Validators.required,
       ]),
-      description: this.fb.nonNullable.control(value?.description ?? '', requiredText),
+      description: this.fb.nonNullable.control(value?.description ?? ''),
       estimatedAmount: this.fb.control<number | null>(value?.estimatedAmount ?? null, [
         Validators.required,
         Validators.min(0),
@@ -102,7 +102,7 @@ export class EstimateFormComponent implements OnInit {
   protected submit() {
     if (this.busy()) return;
     this.form.markAllAsTouched();
-    if (this.form.invalid) return;
+    if (!this.form.valid) return;
     const value = this.form.getRawValue();
     this.busy.set(true);
     this.error.set('');

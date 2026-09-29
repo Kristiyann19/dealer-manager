@@ -132,7 +132,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
                     CandidateEstimateItems = request.Items.Select(item => new CandidateEstimateItem
                     {
                         Category = item.Category,
-                        Description = item.Description.Trim(),
+                        Description = item.Description?.Trim() ?? string.Empty,
                         EstimatedAmount = item.EstimatedAmount
                     }).ToList()
                 };
