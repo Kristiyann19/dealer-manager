@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
@@ -23,7 +23,6 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
 @Component({
   selector: 'app-vehicle-details',
   imports: [
-    RouterLink,
     TranslatePipe,
     LocalizedCurrencyPipe,
     LocalizedDatePipe,

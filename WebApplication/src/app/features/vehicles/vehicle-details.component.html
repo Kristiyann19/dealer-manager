@@ -20,45 +20,11 @@
         <p class="eyebrow">{{ 'finance.vehicleReference' | translate: { id: vehicle.id } }}</p>
         <h1>{{ vehicle.make }} {{ vehicle.model }}</h1>
         <p class="mt-3">
-          {{ vehicle.year }} · {{ statusKeys[vehicle.status] || 'common.unknown' | translate }}
+          {{ vehicle.year }} · {{ statusKeys[vehicle.status] || 'common.unknown' | translate }} ·
+          <time [attr.datetime]="vehicle.purchaseDate" [attr.aria-label]="'vehicle.purchaseDate' | translate">{{ vehicle.purchaseDate | localizedDate }}</time>
         </p>
       </div>
     </header>
-    <section class="panel p-6" [attr.aria-label]="'vehicle.overview' | translate">
-      <dl class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <dt class="field-label">{{ 'vehicle.purchaseDate' | translate }}</dt>
-          <dd>{{ vehicle.purchaseDate | localizedDate }}</dd>
-        </div>
-        <div>
-          <dt class="field-label">{{ 'vehicle.mileage' | translate }}</dt>
-          <dd>
-            {{
-              vehicle.mileage === null
-                ? ('common.notProvided' | translate)
-                : ('vehicle.mileageValue'
-                  | translate: { value: (vehicle.mileage | localizedNumber) })
-            }}
-          </dd>
-        </div>
-        <div>
-          <dt class="field-label">{{ 'vehicle.vin' | translate }}</dt>
-          <dd class="break-words">{{ vehicle.vin || ('common.notProvided' | translate) }}</dd>
-        </div>
-        <div>
-          <dt class="field-label">{{ 'purchase.sourceCandidate' | translate }}</dt>
-          <dd>
-            @if (vehicle.sourceCandidateId) {
-              <a class="text-link" [routerLink]="['/candidates', vehicle.sourceCandidateId]">{{
-                'ui.candidate_value' | translate: { p0: vehicle.sourceCandidateId }
-              }}</a>
-            } @else {
-              {{ 'common.notProvided' | translate }}
-            }
-          </dd>
-        </div>
-      </dl>
-    </section>
     @if (vehicle.status === 9) {
       <p class="info-banner">{{ 'vehicle.errors.sold' | translate }}</p>
     }
