@@ -24,6 +24,7 @@ import { EditCostPlanComponent } from './edit-cost-plan.component';
 import { AddExpenseComponent } from './add-expense.component';
 import { VehicleStatusComponent } from './vehicle-status.component';
 import { ChangeStatusComponent } from './change-status.component';
+import { SellVehicleComponent } from './sell-vehicle.component';
 import { ListVehicleComponent } from './list-vehicle.component';
 import { ConfirmPaymentComponent } from './confirm-payment.component';
 
@@ -36,6 +37,7 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
     VehicleStatusComponent,
     ChangeStatusComponent,
     ListVehicleComponent,
+    SellVehicleComponent,
     LocalizedCurrencyPipe,
     LocalizedDatePipe,
     LocalizedNumberPipe,
@@ -66,6 +68,8 @@ export class VehicleDetailsComponent {
   readonly statusHistory = signal<VehicleStatusHistory[]>([]);
   readonly changingStatus = signal(false);
   readonly listingDialog = signal(false);
+  readonly saleDialog = signal(false);
+  readonly canSell = computed(() => this.vehicle()?.status === VehicleStatus.Listed);
   readonly canList = computed(() => this.vehicle()?.status === VehicleStatus.ReadyForSale);
   readonly canChangeStatus = computed(
     () => this.vehicle() !== null && this.vehicle()!.status < VehicleStatus.Listed,
@@ -77,6 +81,15 @@ export class VehicleDetailsComponent {
     { key: 'expectedSellingPrice', label: 'vehicle.expectedSellingPrice' },
     { key: 'projectedProfit', label: 'vehicle.projectedProfit' },
   ];
+  readonly soldMetrics: { key: keyof VehicleFinancialSummary; label: string }[] = [
+    { key: 'totalInvested', label: 'vehicle.totalInvested' },
+    { key: 'actualSalePrice', label: 'vehicle.sale.price' },
+    { key: 'realizedProfit', label: 'vehicle.sale.profit' },
+    { key: 'realizedROI', label: 'vehicle.sale.roi' },
+  ];
+  readonly displayMetrics = computed(() =>
+    this.vehicle()?.status === VehicleStatus.Sold ? this.soldMetrics : this.metrics,
+  );
   constructor() {
     this.route.paramMap
       .pipe(
@@ -92,6 +105,7 @@ export class VehicleDetailsComponent {
               this.statusHistory.set([]);
               this.changingStatus.set(false);
               this.listingDialog.set(false);
+              this.saleDialog.set(false);
               this.expenses.set([]);
               this.paymentAccount.set(null);
               const id = Number(params.get('id'));
@@ -137,18 +151,24 @@ export class VehicleDetailsComponent {
     if (this.vehicle()?.status === 9) return;
     this.expenseDialog.set({ plan });
   }
-  saved(kind: 'plan' | 'expense' | 'status' | 'listing') {
-    if (kind === 'listing') {
-      this.messages.add({ severity: 'success', detail: 'vehicle.listing.success', life: 5000 });
+  saved(kind: 'plan' | 'expense' | 'status' | 'listing' | 'sale') {
+    if (kind === 'listing' || kind === 'sale') {
+      this.messages.add({
+        severity: 'success',
+        detail: kind === 'sale' ? 'vehicle.sale.success' : 'vehicle.listing.success',
+        life: 5000,
+      });
     }
     this.notice.set(
-      kind === 'listing'
-        ? 'vehicle.listing.success'
-        : kind === 'status'
-          ? 'vehicle.statusSaved'
-          : kind === 'plan'
-            ? 'vehicle.planSaved'
-            : 'vehicle.expenseSaved',
+      kind === 'sale'
+        ? 'vehicle.sale.success'
+        : kind === 'listing'
+          ? 'vehicle.listing.success'
+          : kind === 'status'
+            ? 'vehicle.statusSaved'
+            : kind === 'plan'
+              ? 'vehicle.planSaved'
+              : 'vehicle.expenseSaved',
     );
     this.refreshFinancialData();
   }

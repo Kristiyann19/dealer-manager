@@ -7,6 +7,9 @@ namespace DealerManager.Controllers;
 [Route("api/vehicles")]
 public class VehiclesController(IVehicleService service) : ControllerBase
 {
+    [HttpPost("{id:int}/sale")]
+    public async Task<ActionResult<VehicleSaleResultDto>> SellVehicle(int id, SellVehicleRequest request, CancellationToken cancellationToken)
+        => CreatedAtAction(nameof(GetDetails), new { id }, await service.SellVehicle(id, request, cancellationToken));
     [HttpPost("{id:int}/listing")]
     public async Task<ActionResult<VehicleListingDto>> ListVehicle(int id, ListVehicleRequest request, CancellationToken cancellationToken)
         => CreatedAtAction(nameof(GetCurrentListing), new { id }, await service.ListVehicle(id, request, cancellationToken));

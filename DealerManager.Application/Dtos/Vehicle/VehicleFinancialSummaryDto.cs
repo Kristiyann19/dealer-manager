@@ -11,4 +11,8 @@ public class VehicleFinancialSummaryDto
     public decimal? ExpectedSellingPrice { get; init; }
     public decimal? ProjectedProfit { get; init; }
     public decimal? ProjectedROI { get; init; }
+    public decimal? ActualSalePrice { get; init; }
+    public DateTimeOffset? SoldAt { get; init; }
+    public decimal? RealizedProfit { get; init; }
+    public decimal? RealizedROI { get; init; }
 }

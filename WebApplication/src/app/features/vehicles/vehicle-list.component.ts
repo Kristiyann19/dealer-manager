@@ -15,7 +15,12 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { LocalizedCurrencyPipe } from '../../shared/pipes/localized-format.pipe';
 import { VehicleApiService } from './vehicle-api.service';
-import { VEHICLE_STATUSES, VehicleListResult, VehicleStatus } from './vehicle.models';
+import {
+  VEHICLE_STATUSES,
+  VehicleListResult,
+  VehicleStatus,
+  VehicleListItem,
+} from './vehicle.models';
 import { VehicleStatusComponent } from './vehicle-status.component';
 import { vehicleError } from './vehicle-form-utils';
 type ListState =
@@ -46,8 +51,8 @@ export class VehicleListComponent {
   readonly limit = 15;
   readonly columns = [
     { key: 'totalInvested', label: 'vehicle.totalInvested' },
-    { key: 'expectedSellingPrice', label: 'vehicle.expectedSellingPrice' },
-    { key: 'projectedProfit', label: 'vehicle.projectedProfit' },
+    { key: 'expectedSellingPrice', label: 'vehicle.sale.inventoryPrice' },
+    { key: 'projectedProfit', label: 'vehicle.sale.inventoryProfit' },
   ] as const;
   readonly state = toSignal(
     this.reload.pipe(
@@ -80,6 +85,16 @@ export class VehicleListComponent {
         this.offset.set(0);
         this.reload.next();
       });
+  }
+  amount(
+    vehicle: VehicleListItem,
+    key: 'totalInvested' | 'expectedSellingPrice' | 'projectedProfit',
+  ) {
+    if (vehicle.status === VehicleStatus.Sold) {
+      if (key === 'expectedSellingPrice') return vehicle.actualSalePrice;
+      if (key === 'projectedProfit') return vehicle.realizedProfit;
+    }
+    return vehicle[key];
   }
   retry() {
     this.reload.next();

@@ -15,6 +15,8 @@ import {
   VehicleStatusHistory,
   VehicleListing,
   ListVehicleRequest,
+  SellVehicleRequest,
+  VehicleSaleResult,
 } from './vehicle.models';
 export type { VehicleDetails } from './vehicle.models';
 @Injectable({ providedIn: 'root' })
@@ -41,6 +43,9 @@ export class VehicleApiService {
   }
   listVehicle(id: number, request: ListVehicleRequest) {
     return this.http.post<VehicleListing>(`${this.base}/vehicles/${id}/listing`, request);
+  }
+  sellVehicle(id: number, request: SellVehicleRequest) {
+    return this.http.post<VehicleSaleResult>(`${this.base}/vehicles/${id}/sale`, request);
   }
   currentListing(id: number) {
     return this.http.get<VehicleListing | null>(`${this.base}/vehicles/${id}/listing`);

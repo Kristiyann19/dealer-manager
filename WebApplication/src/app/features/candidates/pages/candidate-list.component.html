@@ -48,13 +48,11 @@
                 <tr>
                   <th>{{ 'ui.vehicle' | translate }}</th>
                   <th>{{ 'ui.status' | translate }}</th>
-                  <th>{{ 'candidate.askingPrice' | translate }}</th>
                   <th>{{ 'ui.expected_sale' | translate }}</th>
                   <th>{{ 'ui.estimated_cost' | translate }}</th>
                   <th>{{ 'ui.expected_profit' | translate }}</th>
                   <th>{{ 'ui.roi' | translate }}</th>
-                  <th>{{ 'ui.created' | translate }}</th>
-                  <th>
+                  <th class="w-40 min-w-40">
                     <span class="sr-only">{{ 'ui.actions' | translate }}</span>
                   </th>
                 </tr>
@@ -78,13 +76,6 @@
                       </p>
                     </td>
                     <td><app-candidate-status [status]="candidate.status" /></td>
-                    <td>
-                      {{
-                        candidate.askingPrice === null
-                          ? ('common.notProvided' | translate)
-                          : (candidate.askingPrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
-                      }}
-                    </td>
                     <td>
                       {{
                         candidate.expectedSellingPrice === null
@@ -120,10 +111,9 @@
                           : (candidate.expectedRoi | localizedNumber: '1.0-2') + '%'
                       }}
                     </td>
-                    <td>{{ candidate.createdAt | localizedDate: 'dd MMM y' }}</td>
-                    <td>
+                    <td class="w-40 min-w-40">
                       <a
-                        class="secondary-button"
+                        class="secondary-button min-w-28 whitespace-nowrap"
                         [routerLink]="['/candidates', candidate.id]"
                         [attr.aria-label]="
                           'candidate.reviewLabel'

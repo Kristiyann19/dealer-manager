@@ -12,12 +12,20 @@ import bg from '../../../assets/i18n/bg.json';
 import { VehicleListComponent } from './vehicle-list.component';
 import { VehicleDetailsComponent } from './vehicle-details.component';
 import { ChangeStatusComponent } from './change-status.component';
+import { SellVehicleComponent } from './sell-vehicle.component';
 import { ListVehicleComponent } from './list-vehicle.component';
 import { VehicleDetails, VehicleStatus, VehicleStatusHistory } from './vehicle.models';
 
 registerLocaleData(bgLocale);
 
 const vehicle: VehicleDetails = {
+  actualSalePrice: null,
+  soldAt: null,
+  realizedProfit: null,
+  realizedROI: null,
+  listingPrice: null,
+  listedAt: null,
+  saleAccount: null,
   id: 1,
   make: 'BMW',
   model: '320d',
@@ -222,6 +230,10 @@ describe('Vehicle inventory and operational status', () => {
         (b) => b.textContent?.trim() === en.vehicle.listing.action,
       );
       expect(!!action).toBe(status === VehicleStatus.ReadyForSale);
+      const sell = Array.from(harness.routeNativeElement!.querySelectorAll('button')).find(
+        (b) => b.textContent?.trim() === en.vehicle.sale.action,
+      );
+      expect(!!sell).toBe(status === VehicleStatus.Listed);
     },
   );
 
@@ -328,5 +340,148 @@ describe('Vehicle inventory and operational status', () => {
     expect(harness.routeNativeElement!.querySelector('tbody')!.textContent).toContain(
       bg.vehicle.listing.price,
     );
+  });
+  it('previews sale profit and loss, validates price, guards double submit and preserves an errored draft', () => {
+    const fixture = TestBed.createComponent(SellVehicleComponent);
+    fixture.componentRef.setInput('vehicleId', 1);
+    fixture.componentRef.setInput('listingPrice', 7000);
+    fixture.componentRef.setInput('totalInvested', 6469);
+    fixture.detectChanges();
+    const modal = fixture.componentInstance;
+    expect(modal.form.controls.actualSalePrice.value).toBe(7000);
+    modal.form.controls.actualSalePrice.setValue(6800);
+    fixture.detectChanges();
+    expect(modal.profit()).toBe(331);
+    expect(modal.roi()).toBeCloseTo(5.1167, 3);
+    modal.form.controls.actualSalePrice.setValue(6169);
+    fixture.detectChanges();
+    expect(modal.profit()).toBe(-300);
+    expect(fixture.nativeElement.textContent).toContain(en.vehicle.sale.loss);
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(false);
+    for (const invalid of [null, 0, -1]) {
+      modal.form.controls.actualSalePrice.setValue(invalid);
+      modal.submit();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+      http.expectNone('/api/vehicles/1/sale');
+    }
+    modal.form.setValue({ actualSalePrice: 6169, soldAt: '2026-09-30' });
+    modal.submit();
+    modal.submit();
+    const request = http.expectOne('/api/vehicles/1/sale');
+    expect(request.request.body).toEqual({
+      actualSalePrice: 6169,
+      soldAt: new Date('2026-09-30T00:00:00').toISOString(),
+    });
+    request.flush({ code: 'alreadySold' }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+    expect(modal.form.value.actualSalePrice).toBe(6169);
+    expect(fixture.nativeElement.textContent).toContain(en.vehicle.errors.alreadySold);
+    fixture.componentRef.setInput('totalInvested', 0);
+    fixture.detectChanges();
+    expect(modal.roi()).toBe(0);
+    const closed = vi.fn();
+    modal.closed.subscribe(closed);
+    modal.close();
+    expect(closed).toHaveBeenCalledWith(true);
+  });
+
+  it('sells a listed vehicle, reloads realized figures and capital, and keeps sold vehicles in inventory', async () => {
+    const listing = {
+      vehicleId: 1,
+      listingId: 11,
+      listingPrice: 7000,
+      listedAt: '2026-09-29T12:00:00Z',
+      status: VehicleStatus.Listed,
+    };
+    const listed: VehicleDetails = {
+      ...vehicle,
+      status: VehicleStatus.Listed,
+      currentListing: listing,
+      listingPrice: 7000,
+      listedAt: listing.listedAt,
+      expectedSellingPrice: 6700,
+      totalInvested: 6469,
+      projectedProfit: 231,
+    };
+    const harness = await RouterTestingHarness.create('/vehicles/1');
+    details(listed);
+    harness.detectChanges();
+    const button = Array.from(harness.routeNativeElement!.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === en.vehicle.sale.action,
+    )!;
+    button.click();
+    harness.detectChanges();
+    const modal = harness.routeDebugElement!.query(By.directive(SellVehicleComponent))
+      .componentInstance as SellVehicleComponent;
+    expect(modal.form.value.actualSalePrice).toBe(7000);
+    modal.form.controls.actualSalePrice.setValue(6800);
+    modal.submit();
+    const request = http.expectOne('/api/vehicles/1/sale');
+    expect(request.request.body).toEqual({ actualSalePrice: 6800 });
+    const soldAt = '2026-09-30T12:00:00Z';
+    request.flush({
+      vehicleId: 1,
+      saleId: 1,
+      actualSalePrice: 6800,
+      soldAt,
+      capitalAccountId: 1,
+      newCapitalBalance: 13881,
+      totalInvested: 6469,
+      realizedProfit: 331,
+      realizedROI: 5.1167,
+      status: VehicleStatus.Sold,
+    });
+    const page = harness.routeDebugElement!.componentInstance as VehicleDetailsComponent;
+    expect(page.loading()).toBe(true);
+    expect(page.saleDialog()).toBe(false);
+    const sold: VehicleDetails = {
+      ...listed,
+      status: VehicleStatus.Sold,
+      currentListing: null,
+      actualSalePrice: 6800,
+      soldAt,
+      realizedProfit: 331,
+      realizedROI: 5.1167,
+      saleAccount: { capitalAccountId: 1, currency: 'EUR', currentBalance: 13881 },
+    };
+    details(sold, [
+      {
+        id: 2,
+        fromStatus: VehicleStatus.Listed,
+        toStatus: VehicleStatus.Sold,
+        changedAt: soldAt,
+        notes: null,
+      },
+    ]);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('app-sell-vehicle')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('header')!.textContent).toContain('Sold');
+    const text = harness.routeNativeElement!.textContent!;
+    for (const value of [
+      '€6,469.00',
+      '€7,000.00',
+      '€6,800.00',
+      '€331.00',
+      '5.12',
+      '€13,881.00',
+      en.vehicle.sale.success,
+    ])
+      expect(text).toContain(value);
+    expect(harness.routeNativeElement!.querySelector('#status-history')!.textContent).toContain(
+      'Sold',
+    );
+    expect(harness.routeNativeElement!.querySelector('#listing-title')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('#cost-plan-title')).toBeNull();
+    expect(text).not.toContain(en.vehicle.projectedProfit);
+    await harness.navigateByUrl('/vehicles', VehicleListComponent);
+    list([sold]);
+    harness.detectChanges();
+    const row = harness.routeNativeElement!.querySelector('tbody')!;
+    expect(row.textContent).toContain('€6,800.00');
+    expect(row.textContent).toContain('€331.00');
+    expect(row.textContent).not.toContain('€231.00');
+    expect(harness.routeNativeElement!.querySelectorAll('tbody td')).toHaveLength(6);
+    expect(row.textContent).toContain(en.vehicle.sale.actual);
   });
 });

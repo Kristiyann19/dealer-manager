@@ -76,10 +76,20 @@
                     @for (column of columns; track column.key) {
                       <td class="text-right whitespace-nowrap tabular-nums">
                         {{
-                          vehicle[column.key] === null
+                          amount(vehicle, column.key) === null
                             ? ('common.notProvided' | translate)
-                            : (vehicle[column.key] | localizedCurrency: 'EUR')
+                            : (amount(vehicle, column.key) | localizedCurrency: 'EUR')
                         }}
+                        @if (column.key !== 'totalInvested') {
+                          <p class="mt-1 text-xs text-slate-500">
+                            {{
+                              (vehicle.status === 9
+                                ? 'vehicle.sale.actual'
+                                : 'vehicle.sale.forecast'
+                              ) | translate
+                            }}
+                          </p>
+                        }
                         @if (
                           column.key === 'expectedSellingPrice' && vehicle.listingPrice != null
                         ) {

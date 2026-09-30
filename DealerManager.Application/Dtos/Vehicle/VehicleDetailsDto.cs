@@ -15,4 +15,7 @@ public class VehicleDetailsDto : VehicleFinancialSummaryDto
     public DateTimeOffset PurchaseDate { get; init; }
     public OriginalForecastDto? OriginalForecast { get; init; }
     public VehicleListingDto? CurrentListing { get; init; }
+    public decimal? ListingPrice { get; init; }
+    public DateTimeOffset? ListedAt { get; init; }
+    public VehiclePaymentAccountDto? SaleAccount { get; init; }
 }

@@ -24,6 +24,7 @@ public partial class VehicleService(
     IBaseRepository<CandidateEstimate, FilterDto<CandidateEstimate>, DealerManagerDbContext> estimates,
     IBaseRepository<VehicleStatusHistory, FilterDto<VehicleStatusHistory>, DealerManagerDbContext> statusHistory,
     IBaseRepository<VehicleListing, FilterDto<VehicleListing>, DealerManagerDbContext> listings,
+    IBaseRepository<VehicleSale, FilterDto<VehicleSale>, DealerManagerDbContext> sales,
     ICapitalAccountService finance, ICandidateFinancialCalculator forecastCalculator,
     IUnitOfWork unitOfWork, TimeProvider clock) : IVehicleService
 {
@@ -52,13 +53,25 @@ public partial class VehicleService(
                 OriginalExpectedProfit = analysis.ExpectedProfit, OriginalExpectedROI = analysis.ExpectedRoi
             };
         }
-        var summary = CalculateFinancialSummary(purchasePrice, actualExpenses, plan, snapshot?.ExpectedSellingPrice);
+        var sale = await sales.GetByProperties(s => s.VehicleId == id, cancellationToken,
+            query => query.Include(s => s.FinancialTransaction).ThenInclude(t => t.CapitalAccount));
+        var summary = CalculateFinancialSummary(purchasePrice, actualExpenses, plan, snapshot?.ExpectedSellingPrice, sale?.SalePrice, sale?.SoldAt);
+        var latestListing = await listings.GetQueryByProperties(l => l.VehicleId == id)
+            .OrderByDescending(l => l.Id).Select(ListingProjection).FirstOrDefaultAsync(cancellationToken);
         return new VehicleDetailsDto
         {
             Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
             Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status,
             SourceCandidateId = vehicle.SourceCandidateId, PurchaseDate = vehicle.PurchaseDate,
             CurrentListing = await LoadCurrentListing(id, cancellationToken),
+            ListingPrice = latestListing?.ListingPrice, ListedAt = latestListing?.ListedAt,
+            ActualSalePrice = summary.ActualSalePrice, SoldAt = summary.SoldAt,
+            RealizedProfit = summary.RealizedProfit, RealizedROI = summary.RealizedROI,
+            SaleAccount = sale == null ? null : new VehiclePaymentAccountDto {
+                CapitalAccountId = sale.FinancialTransaction.CapitalAccountId,
+                Currency = sale.FinancialTransaction.CapitalAccount.Currency,
+                CurrentBalance = await finance.GetBalance(sale.FinancialTransaction.CapitalAccountId, cancellationToken)
+            },
             ActualPurchasePrice = summary.ActualPurchasePrice, ActualExpenses = summary.ActualExpenses,
             TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
             ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,
@@ -66,7 +79,8 @@ public partial class VehicleService(
         };
     }
 
-    private static VehicleFinancialSummaryDto CalculateFinancialSummary(decimal purchase, decimal actual, IEnumerable<VehicleCostPlanItemDto> plan, decimal? selling)
+    private static VehicleFinancialSummaryDto CalculateFinancialSummary(decimal purchase, decimal actual, IEnumerable<VehicleCostPlanItemDto> plan, decimal? selling,
+        decimal? salePrice = null, DateTimeOffset? soldAt = null)
     {
         try
         {
@@ -74,9 +88,11 @@ public partial class VehicleService(
             var invested = purchase + actual;
             var projected = invested + remaining;
             var profit = selling - projected;
+            var realized = CalculateRealized(invested, salePrice);
             return new() { ActualPurchasePrice = purchase, ActualExpenses = actual, TotalInvested = invested,
                 RemainingProjectedCosts = remaining, ProjectedFinalCost = projected, ExpectedSellingPrice = selling,
-                ProjectedProfit = profit, ProjectedROI = projected == 0 ? 0 : profit / projected * 100m };
+                ProjectedProfit = profit, ProjectedROI = projected == 0 ? 0 : profit / projected * 100m,
+                ActualSalePrice = salePrice, SoldAt = soldAt, RealizedProfit = realized.Profit, RealizedROI = realized.ROI };
         }
         catch (OverflowException) { throw new ValidationException("Financial amounts exceed the supported decimal range."); }
     }

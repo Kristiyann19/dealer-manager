@@ -43,6 +43,10 @@ export function vehicleError(error: unknown, writing = false): string {
         'operationalStatusOnly',
         'sameStatus',
         'alreadyListed',
+        'alreadySold',
+        'notListedForSale',
+        'activeListingRequired',
+        'saleAccountMissing',
         'notReadyForListing',
       ].includes(code)
     )

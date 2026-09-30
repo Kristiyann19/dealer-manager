@@ -18,7 +18,7 @@ All transitions between Purchased, Transporting, Arrived, Inspecting, Repairing,
 
 `GET /api/vehicles?TextFilter=BMW&Status=4&Offset=0&Limit=15` searches make, model and VIN case-insensitively. Filters are combined. Inventory sorts by Id descending and returns a filtered total count. Offset must be nonnegative; Limit is 1–500 unless GetAllData is used, matching Candidates.
 
-For a populated inventory page there are seven SQL queries regardless of vehicle count: page, count, purchase sums, expense sums, decision snapshot sale forecasts, plans with aggregated payments and active listing prices. Shared CalculateFinancialSummary and VehicleCostPlanItemDto.RemainingProjected preserve existing formulas, commitment precedence, cancelled costs, historical payments and missing-snapshot null values. There are no per-vehicle detail requests or stored balances.
+For a populated inventory page there are eight SQL queries regardless of vehicle count: page, count, purchase sums, expense sums, decision snapshot sale forecasts, plans with aggregated payments latest listing prices and sale data. Shared CalculateFinancialSummary and VehicleCostPlanItemDto.RemainingProjected preserve existing formulas, commitment precedence, cancelled costs, historical payments and missing-snapshot null values. There are no per-vehicle detail requests or stored balances.
 
 ## Frontend
 
@@ -34,4 +34,4 @@ Backend HTTP tests cover status changes, UTC/user fields, no-ops, missing vehicl
 
 Angular tests cover translated inventory, pagination/filter cancellation, loading/errors, modal validation, duplicate submits and locked states. A routed frontend integration scenario opens inventory, opens a Purchased vehicle, changes it to Repairing, verifies closed modal/current badge/history/success message and returns to inventory with updated state. HTTP writes run against isolated SQLite integration databases; browser inspection against the live API does not change real vehicle history.
 
-ListVehicle is now implemented as a [dedicated business action](vehicle-listing.md). Listing price edits/history, reservation, sale, customers, revenue and realized profit remain deferred. Dashboard data remains unchanged.
+ListVehicle is now implemented as a [dedicated business action](vehicle-listing.md). [SellVehicle](vehicle-sale.md) now handles sales and realized profit. Listing price edits/history, reservation and customers remain deferred. Dashboard data remains unchanged.

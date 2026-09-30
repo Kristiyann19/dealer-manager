@@ -9,6 +9,10 @@ export interface VehicleFinancialSummary {
   expectedSellingPrice: number | null;
   projectedProfit: number | null;
   projectedROI: number | null;
+  actualSalePrice: number | null;
+  soldAt: string | null;
+  realizedProfit: number | null;
+  realizedROI: number | null;
 }
 export interface OriginalForecast {
   estimateId: number;
@@ -31,6 +35,9 @@ export interface VehicleDetails extends VehicleFinancialSummary {
   purchaseDate: string;
   originalForecast: OriginalForecast | null;
   currentListing: VehicleListing | null;
+  listingPrice: number | null;
+  listedAt: string | null;
+  saleAccount: VehiclePaymentAccount | null;
 }
 export interface VehicleCostPlanItem {
   id: number;
@@ -116,7 +123,7 @@ export interface VehicleStatusHistory {
 }
 export type VehicleListItem = Omit<
   VehicleDetails,
-  'sourceCandidateId' | 'originalForecast' | 'currentListing'
+  'sourceCandidateId' | 'originalForecast' | 'currentListing' | 'listedAt' | 'saleAccount'
 > & { listingPrice: number | null };
 export interface VehicleListing {
   vehicleId: number;
@@ -132,4 +139,22 @@ export interface ListVehicleRequest {
 export interface VehicleListResult {
   items: VehicleListItem[];
   totalCount: number;
+}
+
+export interface SellVehicleRequest {
+  actualSalePrice: number;
+  soldAt?: string;
+  capitalAccountId?: number;
+}
+export interface VehicleSaleResult {
+  vehicleId: number;
+  saleId: number;
+  actualSalePrice: number;
+  soldAt: string;
+  capitalAccountId: number;
+  newCapitalBalance: number;
+  totalInvested: number;
+  realizedProfit: number;
+  realizedROI: number;
+  status: VehicleStatus;
 }

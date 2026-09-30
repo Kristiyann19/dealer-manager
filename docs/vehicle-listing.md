@@ -19,7 +19,7 @@ Vehicle must exist, be ReadyForSale, have no active listing, and the price must 
 
 The response is 201 with a Location header and VehicleId, ListingId, ListingPrice, ListedAt, Status. `GET /api/vehicles/{id}/listing` returns the active listing (200), 204 when the vehicle has none, or 404 for an unknown vehicle. Generic status changes still cannot set Listed.
 
-ExpectedSellingPrice continues to come from the immutable candidate decision snapshot. ListingPrice lives only in VehicleListing. No actual sale price is added. Details includes CurrentListing and inventory adds nullable ListingPrice through one batched page query (seven queries for a populated inventory page, no N+1).
+ExpectedSellingPrice continues to come from the immutable candidate decision snapshot. ListingPrice lives only in VehicleListing. Actual sale price is handled separately by the subsequent [SellVehicle feature](vehicle-sale.md). Details includes CurrentListing and inventory adds nullable ListingPrice through one batched page query (eight queries for a populated inventory page including sale data, no N+1).
 
 ## UI
 
@@ -37,4 +37,4 @@ The routed Angular integration test opens the modal on ReadyForSale, enters 6200
 
 The additive migration has been applied to the local DealerManager database. Other environments need `dotnet ef database update --project DealerManager.Infrastructure --startup-project DealerManager.WebAPI` before running the new build.
 
-SellVehicle remains separate: actual sale price, customer, incoming payment, VehicleSale and realized profit are not implemented. Reservation, listing price edits/history, revenue and dashboard integration are also outside this feature.
+[SellVehicle](vehicle-sale.md) now handles actual sale price, incoming payment, VehicleSale and realized profit separately. Customer management, reservation, listing price edits/history and dashboard integration remain outside scope.

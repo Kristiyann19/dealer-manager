@@ -27,6 +27,13 @@ const plan: VehicleCostPlanItem = {
   isCancelled: false,
 };
 const details: VehicleDetails = {
+  actualSalePrice: null,
+  soldAt: null,
+  realizedProfit: null,
+  realizedROI: null,
+  listingPrice: null,
+  listedAt: null,
+  saleAccount: null,
   currentListing: null,
   id: 1,
   make: 'BMW',
@@ -336,9 +343,9 @@ describe('Vehicle finances', () => {
       [],
     );
     fixture.detectChanges();
-    expect(button(fixture, 'Add unexpected expense').disabled).toBe(true);
+    expect(fixture.nativeElement.textContent).not.toContain('Add unexpected expense');
     expect(fixture.nativeElement.textContent).toContain('No decision snapshot');
-    expect(fixture.nativeElement.textContent).toContain('No upcoming expenses');
+    expect(fixture.nativeElement.querySelector('#cost-plan-title')).toBeNull();
   });
   it('keeps a successful payment notice if reloading fails and retries only GET requests', () => {
     const fixture = TestBed.createComponent(VehicleDetailsComponent);

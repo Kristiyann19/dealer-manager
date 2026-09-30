@@ -3,6 +3,7 @@ using DealerManager.Application.Dtos.Vehicle;
 namespace DealerManager.Application.IService.Vehicle;
 public interface IVehicleService
 {
+    Task<VehicleSaleResultDto> SellVehicle(int vehicleId, SellVehicleRequest request, CancellationToken cancellationToken);
     Task<VehicleListingDto> ListVehicle(int vehicleId, ListVehicleRequest request, CancellationToken cancellationToken);
     Task<VehicleListingDto?> GetCurrentListing(int vehicleId, CancellationToken cancellationToken);
     Task<VehicleListResultDto> GetVehicles(DealerManager.Application.FilterDtos.Vehicle.VehicleFilterDto filter, CancellationToken cancellationToken);

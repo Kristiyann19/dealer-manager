@@ -1,5 +1,4 @@
 import {
-  LocalizedDatePipe,
   LocalizedNumberPipe,
   LocalizedCurrencyPipe,
 } from '../../../shared/pipes/localized-format.pipe';
@@ -35,7 +34,6 @@ type ListState =
     RouterLink,
     ReactiveFormsModule,
     LocalizedCurrencyPipe,
-    LocalizedDatePipe,
     LocalizedNumberPipe,
     CandidateStatusComponent,
   ],

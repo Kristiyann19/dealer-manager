@@ -74,21 +74,27 @@ public partial class VehicleService
                 IsCancelled = i.IsCancelled, ActualPaid = i.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
             } }).ToListAsync(cancellationToken);
         var plansByVehicle = costPlans.ToLookup(i => i.VehicleId, i => i.Plan);
-        var listingPrices = await listings.GetQueryByProperties(l => ids.Contains(l.VehicleId) && l.IsActive)
+        var listingPrices = await listings.GetQueryByProperties(l => ids.Contains(l.VehicleId)
+                && !l.Vehicle.VehicleListings.Any(newer => newer.Id > l.Id))
             .ToDictionaryAsync(l => l.VehicleId, l => (decimal?)l.ListingPrice, cancellationToken);
+        var soldVehicles = await sales.GetQueryByProperties(s => ids.Contains(s.VehicleId))
+            .Select(s => new { s.VehicleId, s.SalePrice, s.SoldAt }).ToDictionaryAsync(s => s.VehicleId, cancellationToken);
         return new()
         {
             TotalCount = total,
             Items = page.Select(vehicle =>
             {
                 decimal? selling = vehicle.SourceCandidateId is { } source && forecasts.TryGetValue(source, out var price) ? price : null;
+                var sale = soldVehicles.GetValueOrDefault(vehicle.Id);
                 var summary = CalculateFinancialSummary(purchases.GetValueOrDefault(vehicle.Id), paid.GetValueOrDefault(vehicle.Id),
-                    plansByVehicle[vehicle.Id], selling);
+                    plansByVehicle[vehicle.Id], selling, sale?.SalePrice, sale?.SoldAt);
                 return new VehicleListItemDto
                 {
                     Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
                     Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status, PurchaseDate = vehicle.PurchaseDate,
                     ListingPrice = listingPrices.GetValueOrDefault(vehicle.Id),
+                    ActualSalePrice = summary.ActualSalePrice, SoldAt = summary.SoldAt,
+                    RealizedProfit = summary.RealizedProfit, RealizedROI = summary.RealizedROI,
                     ActualPurchasePrice = summary.ActualPurchasePrice, ActualExpenses = summary.ActualExpenses,
                     TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
                     ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,

@@ -1,0 +1,87 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'vehicle.sale.title' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '560px', maxWidth: '94vw' }"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset [disabled]="busy()" class="grid gap-5">
+      <dl class="grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4">
+        <div>
+          <dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt>
+          <dd class="text-xl font-semibold">{{ listingPrice() | localizedCurrency: 'EUR' }}</dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'vehicle.totalInvested' | translate }}</dt>
+          <dd class="text-xl font-semibold">{{ totalInvested() | localizedCurrency: 'EUR' }}</dd>
+        </div>
+      </dl>
+      <div>
+        <label class="field-label" for="sale-price">{{
+          'vehicle.sale.priceEUR' | translate
+        }}</label>
+        <input
+          id="sale-price"
+          class="form-input"
+          type="number"
+          step="any"
+          formControlName="actualSalePrice"
+        />
+        @if (form.controls.actualSalePrice.touched && form.controls.actualSalePrice.invalid) {
+          <p class="field-error" role="alert">{{ 'finance.positiveAmount' | translate }}</p>
+        }
+      </div>
+      <div>
+        <label class="field-label" for="sale-date">{{
+          'vehicle.sale.optionalDate' | translate
+        }}</label>
+        <input id="sale-date" class="form-input" type="date" formControlName="soldAt" />
+        @if (form.controls.soldAt.touched && form.controls.soldAt.invalid) {
+          <p class="field-error" role="alert">{{ 'finance.invalidDate' | translate }}</p>
+        }
+      </div>
+      <dl class="grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4" aria-live="polite">
+        <div>
+          <dt class="field-label">
+            {{ ((profit() ?? 0) < 0 ? 'vehicle.sale.loss' : 'vehicle.sale.profit') | translate }}
+          </dt>
+          <dd class="text-xl font-semibold" [class.text-red-700]="(profit() ?? 0) < 0">
+            @if (profit() === null) {
+              {{ 'common.notProvided' | translate }}
+            } @else {
+              {{ profit() | localizedCurrency: 'EUR' }}
+            }
+          </dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'vehicle.sale.roi' | translate }}</dt>
+          <dd class="text-xl font-semibold">
+            @if (roi() === null) {
+              {{ 'common.notProvided' | translate }}
+            } @else {
+              {{ 'vehicle.roiValue' | translate: { value: (roi() | localizedNumber: '1.2-2') } }}
+            }
+          </dd>
+        </div>
+      </dl>
+      @if (error()) {
+        <p class="error-banner" role="alert">{{ error() | translate }}</p>
+      }
+    </fieldset>
+    <div class="form-actions">
+      <button type="button" class="secondary-button" [disabled]="busy()" (click)="close()">
+        {{ 'finance.cancel' | translate }}
+      </button>
+      <button type="submit" class="primary-button" [disabled]="busy() || !form.valid">
+        {{ (busy() ? 'finance.saving' : 'vehicle.sale.confirm') | translate }}
+      </button>
+    </div>
+  </form>
+</p-dialog>

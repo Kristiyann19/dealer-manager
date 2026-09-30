@@ -495,7 +495,11 @@
       "operationalStatusOnly": "Only operational statuses up to Ready for sale are allowed here.",
       "sameStatus": "The vehicle already has this status.",
       "alreadyListed": "This vehicle already has an active listing.",
-      "notReadyForListing": "The vehicle must be Ready for sale before listing."
+      "notReadyForListing": "The vehicle must be Ready for sale before listing.",
+      "alreadySold": "This vehicle has already been sold.",
+      "notListedForSale": "Only a listed vehicle can be sold.",
+      "activeListingRequired": "An active listing is required for sale.",
+      "saleAccountMissing": "The sale account could not be found."
     },
     "originalEstimatedEUR": "Pre-purchase estimate (EUR)",
     "paymentFor": "Cost",
@@ -554,6 +558,25 @@
       "potentialProfit": "Potential profit at listing price",
       "profitHelp": "Listing price minus the amount invested so far. This is not realized profit and excludes future costs.",
       "success": "Vehicle listed successfully."
+    },
+    "sale": {
+      "action": "Sell vehicle",
+      "title": "Vehicle sale",
+      "confirm": "Confirm sale",
+      "price": "Actual sale price",
+      "priceEUR": "Actual sale price (EUR)",
+      "optionalDate": "Sale date (optional)",
+      "soldAt": "Sale date",
+      "profit": "Realized profit",
+      "loss": "Loss",
+      "roi": "Realized return",
+      "success": "Vehicle sold successfully.",
+      "history": "Listing and sale",
+      "accountCapital": "Sale account capital",
+      "inventoryPrice": "Selling price",
+      "inventoryProfit": "Profit",
+      "actual": "Actual",
+      "forecast": "Projected"
     }
   }
 }
