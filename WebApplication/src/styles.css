@@ -171,7 +171,7 @@
   }
   .estimate-item {
     display: grid;
-    grid-template-columns: minmax(120px, 1fr) minmax(160px, 2fr) minmax(130px, 1fr) auto;
+    grid-template-columns: minmax(120px, 1fr) minmax(130px, 1fr) minmax(160px, 2fr) auto;
     gap: 12px;
     padding: 16px;
     background: #f8fafc;

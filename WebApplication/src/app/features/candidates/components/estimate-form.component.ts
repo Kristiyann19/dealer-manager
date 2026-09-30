@@ -1,13 +1,5 @@
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  input,
-  OnInit,
-  output,
-  signal,
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, OnInit, output, signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,7 +13,7 @@ import {
 } from '../models/candidate.models';
 import { CandidateApiService } from '../services/candidate-api.service';
 import { FieldErrorComponent } from './field-error.component';
-import { apiError, optionalText } from './candidate-form-utils';
+import { apiError } from './candidate-form-utils';
 
 @Component({
   selector: 'app-estimate-form',
@@ -48,7 +40,6 @@ export class EstimateFormComponent implements OnInit {
       Validators.required,
       Validators.min(0),
     ]),
-    notes: this.fb.nonNullable.control(''),
     items: this.fb.array([this.item()], Validators.minLength(1)),
   });
   protected get items() {
@@ -97,7 +88,7 @@ export class EstimateFormComponent implements OnInit {
     latest.items
       .filter((item) => item.category !== CostCategory.Purchase)
       .forEach((item) => this.items.push(this.item(item)));
-    this.form.patchValue({ expectedSellingPrice: latest.expectedSellingPrice, notes: '' });
+    this.form.patchValue({ expectedSellingPrice: latest.expectedSellingPrice });
   }
   protected submit() {
     if (this.busy()) return;
@@ -110,7 +101,7 @@ export class EstimateFormComponent implements OnInit {
       .createEstimate({
         candidateId: this.candidate().id,
         expectedSellingPrice: value.expectedSellingPrice!,
-        notes: optionalText(value.notes),
+        notes: null,
         items: value.items.map((item) => ({
           category: item.category,
           description: item.description.trim(),

@@ -188,6 +188,14 @@
                 ? ('common.notProvided' | translate)
                 : (candidate.askingPrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
             }}
+            <span class="mt-2 block text-sm font-normal text-slate-500">
+              {{ 'ui.estimated_total_cost' | translate }}:
+              {{
+                candidate.estimatedTotalCost === null
+                  ? ('common.notProvided' | translate)
+                  : (candidate.estimatedTotalCost | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
+              }}
+            </span>
           </dd>
         </div>
 

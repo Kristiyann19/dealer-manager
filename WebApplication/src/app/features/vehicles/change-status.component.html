@@ -28,17 +28,6 @@
           }
         </select>
       </div>
-      <div>
-        <label class="field-label" for="vehicle-status-notes">{{
-          'vehicle.statusNotes' | translate
-        }}</label>
-        <textarea
-          id="vehicle-status-notes"
-          class="form-input"
-          rows="3"
-          formControlName="notes"
-        ></textarea>
-      </div>
       @if (error()) {
         <p class="error-banner" role="alert">{{ error() | translate }}</p>
       }

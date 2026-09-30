@@ -37,7 +37,6 @@ export class ChangeStatusComponent {
   );
   readonly form = inject(FormBuilder).group({
     status: [null as VehicleStatus | null, Validators.required],
-    notes: [''],
   });
   private readonly api = inject(VehicleApiService);
   private readonly destroyRef = inject(DestroyRef);
@@ -57,7 +56,7 @@ export class ChangeStatusComponent {
     this.busy.set(true);
     this.error.set('');
     this.api
-      .changeStatus(this.vehicleId(), value.status!, value.notes?.trim() || null)
+      .changeStatus(this.vehicleId(), value.status!, null)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.busy.set(false)),

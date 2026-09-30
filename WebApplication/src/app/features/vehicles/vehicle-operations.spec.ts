@@ -151,16 +151,15 @@ describe('Vehicle inventory and operational status', () => {
     expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
     fixture.componentInstance.form.setValue({
       status: VehicleStatus.Repairing,
-      notes: ' In workshop ',
     });
     fixture.componentInstance.submit();
     fixture.componentInstance.submit();
     const request = http.expectOne('/api/vehicles/1/status');
-    expect(request.request.body).toEqual({ status: 4, notes: 'In workshop' });
+    expect(request.request.body).toEqual({ status: 4, notes: null });
     request.flush({ code: 'sameStatus' }, { status: 409, statusText: 'Conflict' });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(en.vehicle.errors.sameStatus);
-    expect(fixture.componentInstance.form.value.notes).toBe(' In workshop ');
+    expect(fixture.componentInstance.form.value.status).toBe(VehicleStatus.Repairing);
   });
   it.each([VehicleStatus.Listed, VehicleStatus.Reserved, VehicleStatus.Sold])(
     'hides generic status action for status %s',
@@ -189,7 +188,7 @@ describe('Vehicle inventory and operational status', () => {
     harness.detectChanges();
     const modal = harness.routeDebugElement!.query(By.directive(ChangeStatusComponent))
       .componentInstance as ChangeStatusComponent;
-    modal.form.setValue({ status: VehicleStatus.Repairing, notes: 'In workshop' });
+    modal.form.setValue({ status: VehicleStatus.Repairing });
     modal.submit();
     http.expectOne('/api/vehicles/1/status').flush(change);
     expect(page.loading()).toBe(true);
