@@ -1,0 +1,28 @@
+<div class="page-container page-container--form">
+  <header class="page-heading">
+    <h1>{{ 'nav.settings' | translate }}</h1>
+  </header>
+  <section class="panel p-6 sm:p-8" aria-labelledby="appearance-title">
+    <h2 id="appearance-title">{{ 'settings.appearance' | translate }}</h2>
+    <div class="mt-6 flex items-center justify-between gap-6">
+      <div>
+        <label for="dark-mode" class="block font-semibold">
+          {{ 'settings.darkMode' | translate }}
+        </label>
+        <p id="theme-description" class="form-help mt-2">
+          {{ 'settings.themeDescription' | translate }}
+        </p>
+      </div>
+      <input
+        #darkMode
+        id="dark-mode"
+        type="checkbox"
+        role="switch"
+        class="theme-switch"
+        aria-describedby="theme-description"
+        [checked]="theme.isDark()"
+        (change)="theme.setDark(darkMode.checked)"
+      />
+    </div>
+  </section>
+</div>

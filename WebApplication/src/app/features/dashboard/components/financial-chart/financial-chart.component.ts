@@ -1,3 +1,4 @@
+import { ThemeService } from '../../../../core/services/theme.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -40,6 +41,7 @@ import { MonthlyFinancialData } from '../../models/dashboard.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FinancialChartComponent {
+  private readonly theme = inject(ThemeService);
   private readonly translate = inject(TranslateService);
   private text(key: string): string {
     this.translate.currentLang();
@@ -87,7 +89,7 @@ export class FinancialChartComponent {
       },
     ],
   }));
-  protected readonly options: ChartOptions<'bar' | 'line'> = {
+  protected readonly options = computed<ChartOptions<'bar' | 'line'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
@@ -112,14 +114,14 @@ export class FinancialChartComponent {
       x: {
         grid: { display: false },
         border: { display: false },
-        ticks: { color: '#8290a5', font: { size: 11 } },
+        ticks: { color: this.theme.isDark() ? '#a3b1c6' : '#8290a5', font: { size: 11 } },
       },
       y: {
         beginAtZero: true,
         border: { display: false },
-        grid: { color: '#edf1f6' },
+        grid: { color: this.theme.isDark() ? '#334155' : '#edf1f6' },
         ticks: {
-          color: '#8290a5',
+          color: this.theme.isDark() ? '#a3b1c6' : '#8290a5',
           font: { size: 10 },
           callback: (value) =>
             new Intl.NumberFormat(this.translate.currentLang() === 'bg' ? 'bg-BG' : 'en-IE', {
@@ -130,5 +132,5 @@ export class FinancialChartComponent {
         },
       },
     },
-  };
+  }));
 }

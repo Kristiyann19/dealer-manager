@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+import { ThemeService } from './core/services/theme.service';
 import { LanguageService } from './core/services/language.service';
 import { registerLocaleData } from '@angular/common';
 import bgLocale from '@angular/common/locales/bg';
@@ -69,6 +70,7 @@ const AutoCapitalTheme = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
+    provideAppInitializer(() => inject(ThemeService).initialize()),
     provideTranslateService({
       fallbackLang: 'en',
       loader: provideTranslateHttpLoader({
@@ -85,7 +87,7 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: AutoCapitalTheme,
         options: {
-          darkModeSelector: false,
+          darkModeSelector: '.app-dark',
           cssLayer: { name: 'primeng', order: 'theme, base, primeng, components, utilities' },
         },
       },

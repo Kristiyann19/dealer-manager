@@ -578,5 +578,10 @@
       "actual": "Actual",
       "forecast": "Projected"
     }
+  },
+  "settings": {
+    "appearance": "Appearance",
+    "darkMode": "Dark mode",
+    "themeDescription": "Your preference applies throughout the app and is saved in this browser."
   }
 }

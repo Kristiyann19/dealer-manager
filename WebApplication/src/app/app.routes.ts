@@ -77,8 +77,8 @@ export const routes: Routes = [
       {
         path: 'settings',
         title: 'nav.settings',
-        loadComponent: placeholder,
-        data: { title: 'nav.settings', icon: 'settings' },
+        loadComponent: () =>
+          import('./features/settings/settings.component').then((m) => m.SettingsComponent),
       },
       { path: '**', redirectTo: 'dashboard' },
     ],

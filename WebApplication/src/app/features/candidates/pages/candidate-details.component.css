@@ -14,16 +14,16 @@
 }
 
 .metric-card {
-  border: 1px solid #dce3ec;
+  border: 1px solid var(--app-border, #dce3ec);
   border-radius: 12px;
-  background: #fff;
+  background: var(--app-surface, #fff);
   padding: 24px;
 }
 
 .metric-card dt {
   font-size: 14px;
   font-weight: 500;
-  color: #475569;
+  color: var(--app-muted, #475569);
   margin-bottom: 8px;
 }
 
@@ -39,28 +39,28 @@
 .metric-card .metric-pending {
   font-size: 18px;
   font-weight: 500;
-  color: #475569;
+  color: var(--app-muted, #475569);
   letter-spacing: normal;
 }
 
 .metric-positive {
-  background: #f0fdf6;
-  border-color: #bbdfca;
+  background: var(--app-green-bg, #f0fdf6);
+  border-color: var(--app-green-border, #bbdfca);
 }
 
 .metric-positive dd,
 .positive-value {
-  color: #166534;
+  color: var(--app-green-text, #166534);
 }
 
 .metric-negative {
-  background: #fff7f7;
-  border-color: #fecaca;
+  background: var(--app-red-bg, #fff7f7);
+  border-color: var(--app-red-border, #fecaca);
 }
 
 .metric-negative dd,
 .negative-value {
-  color: #b91c1c;
+  color: var(--app-red-text, #b91c1c);
 }
 
 .compact-metrics {
@@ -69,8 +69,8 @@
 
 .compact-metrics .metric-card {
   padding: 16px;
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: var(--app-subtle, #f8fafc);
+  border-color: var(--app-border, #e2e8f0);
   border-radius: 8px;
 }
 
