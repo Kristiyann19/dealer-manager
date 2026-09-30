@@ -33,16 +33,20 @@
             >{{ vehicle.purchaseDate | localizedDate }}</time
           >
         </p>
+        @if (canChangeStatus()) {
+          <button
+            type="button"
+            class="primary-button mt-5 min-h-12 px-6 text-base whitespace-nowrap"
+            (click)="changingStatus.set(true)"
+          >
+            {{ 'vehicle.changeStatus' | translate }}
+          </button>
+        }
       </div>
       <div class="flex flex-wrap items-center gap-3">
         @if (canList()) {
           <button class="primary-button" (click)="listingDialog.set(true)">
             {{ 'vehicle.listing.action' | translate }}
-          </button>
-        }
-        @if (canChangeStatus()) {
-          <button class="secondary-button" (click)="changingStatus.set(true)">
-            {{ 'vehicle.changeStatus' | translate }}
           </button>
         }
       </div>
