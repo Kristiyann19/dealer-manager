@@ -20,4 +20,5 @@ public class Vehicle : Entity
     public ICollection<VehicleCostPlanItem> VehicleCostPlanItems { get; set; } = new List<VehicleCostPlanItem>();
     public ICollection<VehicleExpense> VehicleExpenses { get; set; } = new List<VehicleExpense>();
     public VehicleSale? VehicleSale { get; set; }
+    public ICollection<VehicleListing> VehicleListings { get; set; } = new List<VehicleListing>();
 }

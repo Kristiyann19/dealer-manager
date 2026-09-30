@@ -12,6 +12,7 @@ import bg from '../../../assets/i18n/bg.json';
 import { VehicleListComponent } from './vehicle-list.component';
 import { VehicleDetailsComponent } from './vehicle-details.component';
 import { ChangeStatusComponent } from './change-status.component';
+import { ListVehicleComponent } from './list-vehicle.component';
 import { VehicleDetails, VehicleStatus, VehicleStatusHistory } from './vehicle.models';
 
 registerLocaleData(bgLocale);
@@ -27,6 +28,7 @@ const vehicle: VehicleDetails = {
   sourceCandidateId: 1,
   purchaseDate: '2026-09-29T10:00:00Z',
   originalForecast: null,
+  currentListing: null,
   actualPurchasePrice: 5000,
   actualExpenses: 210,
   totalInvested: 5210,
@@ -65,7 +67,10 @@ describe('Vehicle inventory and operational status', () => {
     translate.use('en').subscribe();
   });
   afterEach(() => http.verify());
-  function list(items = [vehicle], totalCount = items.length) {
+  function list(
+    items: (VehicleDetails & { listingPrice?: number | null })[] = [vehicle],
+    totalCount = items.length,
+  ) {
     const request = http.expectOne((r) => r.url === '/api/vehicles');
     request.flush({ items, totalCount });
     return request;
@@ -85,7 +90,7 @@ describe('Vehicle inventory and operational status', () => {
     fixture.detectChanges();
     expect(request.request.params.get('Limit')).toBe('15');
     expect(fixture.nativeElement.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(fixture.nativeElement.querySelectorAll('tbody td')).toHaveLength(9);
+    expect(fixture.nativeElement.querySelectorAll('tbody td')).toHaveLength(6);
     expect(fixture.nativeElement.textContent).toContain('€5,210.00');
     expect(fixture.nativeElement.textContent).toContain('Purchased');
     expect(fixture.nativeElement.querySelector('a[href="/vehicles/1"]')).toBeTruthy();
@@ -206,5 +211,123 @@ describe('Vehicle inventory and operational status', () => {
     harness.detectChanges();
     expect(harness.routeNativeElement!.querySelector('tbody')!.textContent).toContain('Repairing');
     expect(harness.routeNativeElement!.textContent).not.toContain('Refresh');
+  });
+
+  it.each(Object.values(VehicleStatus).filter((s): s is VehicleStatus => typeof s === 'number'))(
+    'shows listing action only for ReadyForSale (status %s)',
+    async (status) => {
+      const harness = await RouterTestingHarness.create('/vehicles/1');
+      details({ ...vehicle, status });
+      harness.detectChanges();
+      const action = Array.from(harness.routeNativeElement!.querySelectorAll('button')).find(
+        (b) => b.textContent?.trim() === en.vehicle.listing.action,
+      );
+      expect(!!action).toBe(status === VehicleStatus.ReadyForSale);
+    },
+  );
+
+  it('requires a positive listing price, guards double submit and preserves the draft on conflict', () => {
+    const fixture = TestBed.createComponent(ListVehicleComponent);
+    fixture.componentRef.setInput('vehicleId', 1);
+    fixture.componentRef.setInput('expectedSellingPrice', 6000);
+    fixture.detectChanges();
+    const modal = fixture.componentInstance;
+    const submit = () =>
+      fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(submit().disabled).toBe(true);
+    for (const invalid of [null, 0, -1]) {
+      modal.form.controls.listingPrice.setValue(invalid);
+      modal.submit();
+      fixture.detectChanges();
+      expect(submit().disabled).toBe(true);
+      http.expectNone('/api/vehicles/1/listing');
+    }
+    modal.form.setValue({ listingPrice: 6200, listedAt: '2026-09-29' });
+    fixture.detectChanges();
+    expect(submit().disabled).toBe(false);
+    modal.submit();
+    modal.submit();
+    fixture.detectChanges();
+    expect(submit().disabled).toBe(true);
+    const request = http.expectOne('/api/vehicles/1/listing');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      listingPrice: 6200,
+      listedAt: new Date('2026-09-29T00:00:00').toISOString(),
+    });
+    request.flush({ code: 'alreadyListed' }, { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.vehicle.errors.alreadyListed);
+    expect(modal.form.value.listingPrice).toBe(6200);
+    const close = vi.fn();
+    modal.closed.subscribe(close);
+    modal.close();
+    expect(close).toHaveBeenCalledWith(true);
+  });
+
+  it('lists a ready vehicle and automatically shows separate prices, potential profit, history and updated inventory', async () => {
+    const harness = await RouterTestingHarness.create('/vehicles/1');
+    details({ ...vehicle, status: VehicleStatus.ReadyForSale });
+    harness.detectChanges();
+    const button = Array.from(harness.routeNativeElement!.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === en.vehicle.listing.action,
+    )!;
+    button.click();
+    harness.detectChanges();
+    const modal = harness.routeDebugElement!.query(By.directive(ListVehicleComponent))
+      .componentInstance as ListVehicleComponent;
+    expect(modal.expectedSellingPrice()).toBe(6000);
+    expect(harness.routeNativeElement!.querySelector('app-list-vehicle')!.textContent).toContain(
+      '€6,000.00',
+    );
+    modal.form.controls.listingPrice.setValue(6200);
+    modal.submit();
+    const listing = {
+      vehicleId: 1,
+      listingId: 11,
+      listingPrice: 6200,
+      listedAt: '2026-09-29T12:00:00Z',
+      status: VehicleStatus.Listed,
+    };
+    const request = http.expectOne('/api/vehicles/1/listing');
+    expect(request.request.body).toEqual({ listingPrice: 6200 });
+    request.flush(listing);
+    const page = harness.routeDebugElement!.componentInstance as VehicleDetailsComponent;
+    expect(page.loading()).toBe(true);
+    expect(page.listingDialog()).toBe(false);
+    details({ ...vehicle, status: VehicleStatus.Listed, currentListing: listing }, [
+      {
+        ...change,
+        fromStatus: VehicleStatus.ReadyForSale,
+        toStatus: VehicleStatus.Listed,
+        notes: null,
+      },
+    ]);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('app-list-vehicle')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('header')!.textContent).toContain('Listed');
+    const text = harness.routeNativeElement!.textContent!;
+    expect(text).toContain('€6,000.00');
+    expect(text).toContain('€6,200.00');
+    expect(text).toContain('€990.00');
+    expect(text).toContain(en.vehicle.listing.potentialProfit);
+    expect(text).toContain(en.vehicle.listing.success);
+    expect(page.paymentAccount()!.currentBalance).toBe(5000);
+    expect(harness.routeNativeElement!.querySelector('#status-history')!.textContent).toContain(
+      'Ready for sale',
+    );
+    expect(harness.routeNativeElement!.querySelector('#status-history')!.textContent).toContain(
+      'Listed',
+    );
+    TestBed.inject(TranslateService).use('bg').subscribe();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.textContent).toContain(bg.vehicle.listing.potentialProfit);
+    await harness.navigateByUrl('/vehicles', VehicleListComponent);
+    list([{ ...vehicle, status: VehicleStatus.Listed, listingPrice: 6200 }]);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelectorAll('tbody td')).toHaveLength(6);
+    expect(harness.routeNativeElement!.querySelector('tbody')!.textContent).toContain(
+      bg.vehicle.listing.price,
+    );
   });
 });

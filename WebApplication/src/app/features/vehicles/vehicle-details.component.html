@@ -1,9 +1,14 @@
 <div class="page-container">
+  <p-toast position="top-right">
+    <ng-template #message let-message>
+      <p role="status">{{ message.detail | translate }}</p>
+    </ng-template>
+  </p-toast>
   <a class="text-link" routerLink="/vehicles">{{ 'vehicle.allVehicles' | translate }}</a>
   @if (purchased) {
     <p class="success-banner" role="status">{{ 'purchase.success' | translate }}</p>
   }
-  @if (notice()) {
+  @if (notice() && notice() !== 'vehicle.listing.success') {
     <p class="success-banner" role="status">{{ notice() | translate }}</p>
   }
   @if (loading()) {
@@ -29,11 +34,18 @@
           >
         </p>
       </div>
-      @if (canChangeStatus()) {
-        <button class="secondary-button" (click)="changingStatus.set(true)">
-          {{ 'vehicle.changeStatus' | translate }}
-        </button>
-      }
+      <div class="flex flex-wrap items-center gap-3">
+        @if (canList()) {
+          <button class="primary-button" (click)="listingDialog.set(true)">
+            {{ 'vehicle.listing.action' | translate }}
+          </button>
+        }
+        @if (canChangeStatus()) {
+          <button class="secondary-button" (click)="changingStatus.set(true)">
+            {{ 'vehicle.changeStatus' | translate }}
+          </button>
+        }
+      </div>
     </header>
     @if (vehicle.status === 9) {
       <p class="info-banner">{{ 'vehicle.errors.sold' | translate }}</p>
@@ -81,6 +93,32 @@
         }
       </div>
     </section>
+    @if (vehicle.currentListing; as listing) {
+      <section class="panel p-6" aria-labelledby="listing-title">
+        <h2 id="listing-title" class="mb-5">{{ 'vehicle.listing.current' | translate }}</h2>
+        <dl class="grid gap-6 sm:grid-cols-3">
+          <div>
+            <dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt>
+            <dd class="text-2xl font-semibold tabular-nums">
+              {{ listing.listingPrice | localizedCurrency: 'EUR' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.listing.listedAt' | translate }}</dt>
+            <dd class="text-lg font-medium">
+              <time [attr.datetime]="listing.listedAt">{{ listing.listedAt | localizedDate }}</time>
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.listing.potentialProfit' | translate }}</dt>
+            <dd class="text-2xl font-semibold tabular-nums">
+              {{ listing.listingPrice - vehicle.totalInvested | localizedCurrency: 'EUR' }}
+            </dd>
+          </div>
+        </dl>
+        <p class="mt-5 text-sm text-slate-500">{{ 'vehicle.listing.profitHelp' | translate }}</p>
+      </section>
+    }
     <section class="panel overflow-hidden" aria-labelledby="cost-plan-title">
       <div class="flex flex-wrap items-center justify-between gap-4 p-6">
         <h2 id="cost-plan-title">{{ 'vehicle.currentPlan' | translate }}</h2>
@@ -211,6 +249,14 @@
         </ol>
       }
     </details>
+    @if (listingDialog()) {
+      <app-list-vehicle
+        [vehicleId]="vehicle.id"
+        [expectedSellingPrice]="vehicle.expectedSellingPrice"
+        (saved)="saved('listing')"
+        (closed)="listingDialog.set(false); $event && refreshFinancialData()"
+      />
+    }
     @if (changingStatus()) {
       <app-change-vehicle-status
         [vehicleId]="vehicle.id"

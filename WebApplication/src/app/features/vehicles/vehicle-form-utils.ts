@@ -42,6 +42,8 @@ export function vehicleError(error: unknown, writing = false): string {
         'statusLocked',
         'operationalStatusOnly',
         'sameStatus',
+        'alreadyListed',
+        'notReadyForListing',
       ].includes(code)
     )
       return 'vehicle.errors.' + code;

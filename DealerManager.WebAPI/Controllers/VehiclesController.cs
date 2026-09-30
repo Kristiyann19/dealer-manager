@@ -7,6 +7,16 @@ namespace DealerManager.Controllers;
 [Route("api/vehicles")]
 public class VehiclesController(IVehicleService service) : ControllerBase
 {
+    [HttpPost("{id:int}/listing")]
+    public async Task<ActionResult<VehicleListingDto>> ListVehicle(int id, ListVehicleRequest request, CancellationToken cancellationToken)
+        => CreatedAtAction(nameof(GetCurrentListing), new { id }, await service.ListVehicle(id, request, cancellationToken));
+
+    [HttpGet("{id:int}/listing")]
+    public async Task<ActionResult<VehicleListingDto>> GetCurrentListing(int id, CancellationToken cancellationToken)
+    {
+        var listing = await service.GetCurrentListing(id, cancellationToken);
+        return listing is null ? NoContent() : Ok(listing);
+    }
     [HttpGet]
     public Task<VehicleListResultDto> GetVehicles([FromQuery] DealerManager.Application.FilterDtos.Vehicle.VehicleFilterDto filter, CancellationToken cancellationToken)
         => service.GetVehicles(filter, cancellationToken);

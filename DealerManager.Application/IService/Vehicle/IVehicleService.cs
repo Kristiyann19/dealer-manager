@@ -1,7 +1,10 @@
+#nullable enable
 using DealerManager.Application.Dtos.Vehicle;
 namespace DealerManager.Application.IService.Vehicle;
 public interface IVehicleService
 {
+    Task<VehicleListingDto> ListVehicle(int vehicleId, ListVehicleRequest request, CancellationToken cancellationToken);
+    Task<VehicleListingDto?> GetCurrentListing(int vehicleId, CancellationToken cancellationToken);
     Task<VehicleListResultDto> GetVehicles(DealerManager.Application.FilterDtos.Vehicle.VehicleFilterDto filter, CancellationToken cancellationToken);
     Task<VehicleStatusHistoryDto> ChangeStatus(int vehicleId, ChangeVehicleStatusRequest request, CancellationToken cancellationToken);
     Task<IReadOnlyList<VehicleStatusHistoryDto>> GetStatusHistory(int vehicleId, CancellationToken cancellationToken);

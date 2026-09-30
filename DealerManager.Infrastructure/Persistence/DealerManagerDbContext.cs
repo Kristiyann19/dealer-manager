@@ -23,6 +23,7 @@ namespace DealerManager.Infrastructure.Persistence
         public DbSet<VehicleCostPlanItem> VehicleCostPlanItems { get; set; }
         public DbSet<VehicleExpense> VehicleExpenses { get; set; }
         public DbSet<VehicleSale> VehicleSales { get; set; }
+        public DbSet<VehicleListing> VehicleListings { get; set; }
         public DbSet<VehicleStatusHistory> VehicleStatusHistories { get; set; }
         #endregion
 
@@ -37,6 +38,10 @@ namespace DealerManager.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
 
             ApplyConfigurations(modelBuilder);
+            modelBuilder.Entity<VehicleListing>().HasIndex(x => x.VehicleId)
+                .IsUnique().HasFilter("\"IsActive\" = TRUE");
+            modelBuilder.Entity<VehicleListing>().ToTable(t =>
+                t.HasCheckConstraint("CK_VehicleListings_PositivePrice", "\"ListingPrice\" > 0"));
             // Match the required text columns in the initial schema independently of nullable compiler settings.
             modelBuilder.Entity<Candidate>().Property(x => x.Make).IsRequired();
             modelBuilder.Entity<Candidate>().Property(x => x.Model).IsRequired();

@@ -13,10 +13,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
-import {
-  LocalizedCurrencyPipe,
-  LocalizedNumberPipe,
-} from '../../shared/pipes/localized-format.pipe';
+import { LocalizedCurrencyPipe } from '../../shared/pipes/localized-format.pipe';
 import { VehicleApiService } from './vehicle-api.service';
 import { VEHICLE_STATUSES, VehicleListResult, VehicleStatus } from './vehicle.models';
 import { VehicleStatusComponent } from './vehicle-status.component';
@@ -32,7 +29,6 @@ type ListState =
     ReactiveFormsModule,
     RouterLink,
     LocalizedCurrencyPipe,
-    LocalizedNumberPipe,
     VehicleStatusComponent,
   ],
   templateUrl: './vehicle-list.component.html',
@@ -50,8 +46,6 @@ export class VehicleListComponent {
   readonly limit = 15;
   readonly columns = [
     { key: 'totalInvested', label: 'vehicle.totalInvested' },
-    { key: 'remainingProjectedCosts', label: 'vehicle.remainingProjectedCosts' },
-    { key: 'projectedFinalCost', label: 'vehicle.projectedFinalCost' },
     { key: 'expectedSellingPrice', label: 'vehicle.expectedSellingPrice' },
     { key: 'projectedProfit', label: 'vehicle.projectedProfit' },
   ] as const;

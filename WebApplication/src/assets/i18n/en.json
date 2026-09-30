@@ -493,7 +493,9 @@
       "partialPayment": "This expense has historical partial payments and cannot be confirmed in full.",
       "statusLocked": "Listed, reserved or sold vehicles require a dedicated status action.",
       "operationalStatusOnly": "Only operational statuses up to Ready for sale are allowed here.",
-      "sameStatus": "The vehicle already has this status."
+      "sameStatus": "The vehicle already has this status.",
+      "alreadyListed": "This vehicle already has an active listing.",
+      "notReadyForListing": "The vehicle must be Ready for sale before listing."
     },
     "originalEstimatedEUR": "Pre-purchase estimate (EUR)",
     "paymentFor": "Cost",
@@ -540,6 +542,18 @@
       "Listed": "Listed",
       "Reserved": "Reserved",
       "Sold": "Sold"
+    },
+    "listing": {
+      "action": "List vehicle",
+      "title": "List vehicle for sale",
+      "price": "Listing price",
+      "priceEUR": "Listing price (EUR)",
+      "optionalDate": "Listing date (optional)",
+      "listedAt": "Listing date",
+      "current": "Current listing",
+      "potentialProfit": "Potential profit at listing price",
+      "profitHelp": "Listing price minus the amount invested so far. This is not realized profit and excludes future costs.",
+      "success": "Vehicle listed successfully."
     }
   }
 }

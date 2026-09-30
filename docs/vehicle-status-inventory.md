@@ -1,6 +1,6 @@
 # Vehicle status and inventory
 
-No domain/schema changes or migrations. Existing int IDs, IBaseRepository, serializable IUnitOfWork and TimeProvider are reused.
+The status/inventory feature reuses existing int IDs, IBaseRepository, serializable IUnitOfWork and TimeProvider. Its original implementation required no schema changes; the subsequent [Vehicle Listing feature](vehicle-listing.md) adds its own minimal table/migration.
 
 ## Backend
 
@@ -18,7 +18,7 @@ All transitions between Purchased, Transporting, Arrived, Inspecting, Repairing,
 
 `GET /api/vehicles?TextFilter=BMW&Status=4&Offset=0&Limit=15` searches make, model and VIN case-insensitively. Filters are combined. Inventory sorts by Id descending and returns a filtered total count. Offset must be nonnegative; Limit is 1–500 unless GetAllData is used, matching Candidates.
 
-For a populated inventory page there are six SQL queries regardless of vehicle count: page, count, purchase sums, expense sums, decision snapshot sale forecasts and plans with aggregated payments. Shared CalculateFinancialSummary and VehicleCostPlanItemDto.RemainingProjected preserve existing formulas, commitment precedence, cancelled costs, historical payments and missing-snapshot null values. There are no per-vehicle detail requests or stored balances.
+For a populated inventory page there are seven SQL queries regardless of vehicle count: page, count, purchase sums, expense sums, decision snapshot sale forecasts, plans with aggregated payments and active listing prices. Shared CalculateFinancialSummary and VehicleCostPlanItemDto.RemainingProjected preserve existing formulas, commitment precedence, cancelled costs, historical payments and missing-snapshot null values. There are no per-vehicle detail requests or stored balances.
 
 ## Frontend
 
@@ -34,4 +34,4 @@ Backend HTTP tests cover status changes, UTC/user fields, no-ops, missing vehicl
 
 Angular tests cover translated inventory, pagination/filter cancellation, loading/errors, modal validation, duplicate submits and locked states. A routed frontend integration scenario opens inventory, opens a Purchased vehicle, changes it to Repairing, verifies closed modal/current badge/history/success message and returns to inventory with updated state. HTTP writes run against isolated SQLite integration databases; browser inspection against the live API does not change real vehicle history.
 
-Listing is intentionally deferred: ListVehicle, listing price/history, reservation, sale, customers, revenue and realized profit require dedicated later business actions. Dashboard data remains unchanged.
+ListVehicle is now implemented as a [dedicated business action](vehicle-listing.md). Listing price edits/history, reservation, sale, customers, revenue and realized profit remain deferred. Dashboard data remains unchanged.

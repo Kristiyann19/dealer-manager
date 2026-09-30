@@ -52,16 +52,15 @@
             role="region"
             [attr.aria-label]="'vehicle.inventory' | translate"
           >
-            <table class="data-table min-w-[1250px]">
+            <table class="data-table min-w-[950px]">
               <thead>
                 <tr>
                   <th scope="col">{{ 'vehicle.car' | translate }}</th>
                   <th scope="col">{{ 'vehicle.status' | translate }}</th>
-                  <th scope="col">{{ 'vehicle.mileage' | translate }}</th>
                   @for (column of columns; track column.key) {
                     <th scope="col" class="text-right">{{ column.label | translate }}</th>
                   }
-                  <th scope="col">{{ 'vehicle.action' | translate }}</th>
+                  <th scope="col" class="w-40 min-w-40">{{ 'vehicle.action' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,14 +73,6 @@
                       <p class="mt-1 text-sm text-slate-500">{{ vehicle.year }}</p>
                     </td>
                     <td><app-vehicle-status [status]="vehicle.status" /></td>
-                    <td class="whitespace-nowrap tabular-nums">
-                      {{
-                        vehicle.mileage === null
-                          ? ('common.notProvided' | translate)
-                          : ('vehicle.mileageValue'
-                            | translate: { value: (vehicle.mileage | localizedNumber) })
-                      }}
-                    </td>
                     @for (column of columns; track column.key) {
                       <td class="text-right whitespace-nowrap tabular-nums">
                         {{
@@ -89,11 +80,19 @@
                             ? ('common.notProvided' | translate)
                             : (vehicle[column.key] | localizedCurrency: 'EUR')
                         }}
+                        @if (
+                          column.key === 'expectedSellingPrice' && vehicle.listingPrice != null
+                        ) {
+                          <p class="mt-1 text-sm text-slate-500">
+                            {{ 'vehicle.listing.price' | translate }}:
+                            {{ vehicle.listingPrice | localizedCurrency: 'EUR' }}
+                          </p>
+                        }
                       </td>
                     }
-                    <td>
+                    <td class="w-40 min-w-40">
                       <a
-                        class="secondary-button"
+                        class="secondary-button min-w-28 whitespace-nowrap"
                         [routerLink]="['/vehicles', vehicle.id]"
                         [attr.aria-label]="
                           'vehicle.review' | translate: { name: vehicle.make + ' ' + vehicle.model }

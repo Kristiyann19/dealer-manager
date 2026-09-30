@@ -1,0 +1,66 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [header]="'vehicle.listing.title' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [blockScroll]="true"
+  [style]="{ width: '480px', maxWidth: '94vw' }"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset [disabled]="busy()" class="grid gap-5">
+      <div>
+        <p class="field-label">{{ 'vehicle.expectedSellingPrice' | translate }}</p>
+        <p class="text-xl font-semibold tabular-nums">
+          @if (expectedSellingPrice() === null) {
+            {{ 'common.notProvided' | translate }}
+          } @else {
+            {{ expectedSellingPrice() | localizedCurrency: 'EUR' }}
+          }
+        </p>
+      </div>
+      <div>
+        <label class="field-label" for="listing-price">{{
+          'vehicle.listing.priceEUR' | translate
+        }}</label>
+        <input
+          id="listing-price"
+          class="form-input"
+          type="number"
+          step="any"
+          formControlName="listingPrice"
+          [attr.aria-invalid]="
+            form.controls.listingPrice.touched && form.controls.listingPrice.invalid
+          "
+        />
+        @if (form.controls.listingPrice.touched && form.controls.listingPrice.invalid) {
+          <p class="field-error" role="alert">{{ 'finance.positiveAmount' | translate }}</p>
+        }
+      </div>
+      <div>
+        <label class="field-label" for="listing-date">{{
+          'vehicle.listing.optionalDate' | translate
+        }}</label>
+        <input id="listing-date" class="form-input" type="date" formControlName="listedAt" />
+        @if (form.controls.listedAt.touched && form.controls.listedAt.invalid) {
+          <p class="field-error" role="alert">{{ 'finance.invalidDate' | translate }}</p>
+        }
+      </div>
+      @if (error()) {
+        <p class="error-banner" role="alert">{{ error() | translate }}</p>
+      }
+    </fieldset>
+    <div class="form-actions">
+      <button type="button" class="secondary-button" [disabled]="busy()" (click)="close()">
+        {{ 'finance.cancel' | translate }}
+      </button>
+      <button type="submit" class="primary-button" [disabled]="busy() || !form.valid">
+        {{ (busy() ? 'finance.saving' : 'vehicle.listing.action') | translate }}
+      </button>
+    </div>
+  </form>
+</p-dialog>

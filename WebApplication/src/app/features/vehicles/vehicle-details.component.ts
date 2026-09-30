@@ -4,6 +4,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import {
   LocalizedCurrencyPipe,
   LocalizedDatePipe,
@@ -22,15 +24,18 @@ import { EditCostPlanComponent } from './edit-cost-plan.component';
 import { AddExpenseComponent } from './add-expense.component';
 import { VehicleStatusComponent } from './vehicle-status.component';
 import { ChangeStatusComponent } from './change-status.component';
+import { ListVehicleComponent } from './list-vehicle.component';
 import { ConfirmPaymentComponent } from './confirm-payment.component';
 
 @Component({
   selector: 'app-vehicle-details',
   imports: [
     TranslatePipe,
+    ToastModule,
     RouterLink,
     VehicleStatusComponent,
     ChangeStatusComponent,
+    ListVehicleComponent,
     LocalizedCurrencyPipe,
     LocalizedDatePipe,
     LocalizedNumberPipe,
@@ -39,10 +44,12 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
     ConfirmPaymentComponent,
   ],
   templateUrl: './vehicle-details.component.html',
+  providers: [MessageService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VehicleDetailsComponent {
   private readonly api = inject(VehicleApiService);
+  private readonly messages = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly reload = new BehaviorSubject<void>(undefined);
   readonly purchased = !!inject(Router).currentNavigation()?.extras.state?.['purchased'];
@@ -58,6 +65,8 @@ export class VehicleDetailsComponent {
   readonly expenseDialog = signal<{ plan: VehicleCostPlanItem | null } | null>(null);
   readonly statusHistory = signal<VehicleStatusHistory[]>([]);
   readonly changingStatus = signal(false);
+  readonly listingDialog = signal(false);
+  readonly canList = computed(() => this.vehicle()?.status === VehicleStatus.ReadyForSale);
   readonly canChangeStatus = computed(
     () => this.vehicle() !== null && this.vehicle()!.status < VehicleStatus.Listed,
   );
@@ -82,6 +91,7 @@ export class VehicleDetailsComponent {
               this.plan.set([]);
               this.statusHistory.set([]);
               this.changingStatus.set(false);
+              this.listingDialog.set(false);
               this.expenses.set([]);
               this.paymentAccount.set(null);
               const id = Number(params.get('id'));
@@ -127,13 +137,18 @@ export class VehicleDetailsComponent {
     if (this.vehicle()?.status === 9) return;
     this.expenseDialog.set({ plan });
   }
-  saved(kind: 'plan' | 'expense' | 'status') {
+  saved(kind: 'plan' | 'expense' | 'status' | 'listing') {
+    if (kind === 'listing') {
+      this.messages.add({ severity: 'success', detail: 'vehicle.listing.success', life: 5000 });
+    }
     this.notice.set(
-      kind === 'status'
-        ? 'vehicle.statusSaved'
-        : kind === 'plan'
-          ? 'vehicle.planSaved'
-          : 'vehicle.expenseSaved',
+      kind === 'listing'
+        ? 'vehicle.listing.success'
+        : kind === 'status'
+          ? 'vehicle.statusSaved'
+          : kind === 'plan'
+            ? 'vehicle.planSaved'
+            : 'vehicle.expenseSaved',
     );
     this.refreshFinancialData();
   }

@@ -93,7 +93,7 @@ public partial class VehicleFinanceTests
         }
         factory.Queries.Commands.Clear();
         var all = (await client.GetFromJsonAsync<VehicleListResultDto>("/api/vehicles?Limit=30"))!;
-        Assert.Equal(26, all.TotalCount); Assert.Equal(26, all.Items.Count); Assert.InRange(factory.Queries.Commands.Count, 1, 6);
+        Assert.Equal(26, all.TotalCount); Assert.Equal(26, all.Items.Count); Assert.InRange(factory.Queries.Commands.Count, 1, 7);
         var bmw = all.Items.Single(v => v.Id == ids.Vehicle);
         Assert.Equal(expected.TotalInvested, bmw.TotalInvested); Assert.Equal(expected.RemainingProjectedCosts, bmw.RemainingProjectedCosts);
         Assert.Equal(expected.ProjectedFinalCost, bmw.ProjectedFinalCost); Assert.Equal(expected.ProjectedProfit, bmw.ProjectedProfit);

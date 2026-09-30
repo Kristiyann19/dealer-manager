@@ -74,6 +74,8 @@ public partial class VehicleService
                 IsCancelled = i.IsCancelled, ActualPaid = i.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
             } }).ToListAsync(cancellationToken);
         var plansByVehicle = costPlans.ToLookup(i => i.VehicleId, i => i.Plan);
+        var listingPrices = await listings.GetQueryByProperties(l => ids.Contains(l.VehicleId) && l.IsActive)
+            .ToDictionaryAsync(l => l.VehicleId, l => (decimal?)l.ListingPrice, cancellationToken);
         return new()
         {
             TotalCount = total,
@@ -86,6 +88,7 @@ public partial class VehicleService
                 {
                     Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
                     Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status, PurchaseDate = vehicle.PurchaseDate,
+                    ListingPrice = listingPrices.GetValueOrDefault(vehicle.Id),
                     ActualPurchasePrice = summary.ActualPurchasePrice, ActualExpenses = summary.ActualExpenses,
                     TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
                     ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,

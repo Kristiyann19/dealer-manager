@@ -23,6 +23,7 @@ public partial class VehicleService(
     IBaseRepository<CapitalAccount, FilterDto<CapitalAccount>, DealerManagerDbContext> accounts,
     IBaseRepository<CandidateEstimate, FilterDto<CandidateEstimate>, DealerManagerDbContext> estimates,
     IBaseRepository<VehicleStatusHistory, FilterDto<VehicleStatusHistory>, DealerManagerDbContext> statusHistory,
+    IBaseRepository<VehicleListing, FilterDto<VehicleListing>, DealerManagerDbContext> listings,
     ICapitalAccountService finance, ICandidateFinancialCalculator forecastCalculator,
     IUnitOfWork unitOfWork, TimeProvider clock) : IVehicleService
 {
@@ -57,6 +58,7 @@ public partial class VehicleService(
             Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
             Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status,
             SourceCandidateId = vehicle.SourceCandidateId, PurchaseDate = vehicle.PurchaseDate,
+            CurrentListing = await LoadCurrentListing(id, cancellationToken),
             ActualPurchasePrice = summary.ActualPurchasePrice, ActualExpenses = summary.ActualExpenses,
             TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
             ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,

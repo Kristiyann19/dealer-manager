@@ -30,6 +30,7 @@ export interface VehicleDetails extends VehicleFinancialSummary {
   sourceCandidateId: number | null;
   purchaseDate: string;
   originalForecast: OriginalForecast | null;
+  currentListing: VehicleListing | null;
 }
 export interface VehicleCostPlanItem {
   id: number;
@@ -113,7 +114,21 @@ export interface VehicleStatusHistory {
   changedAt: string;
   notes: string | null;
 }
-export type VehicleListItem = Omit<VehicleDetails, 'sourceCandidateId' | 'originalForecast'>;
+export type VehicleListItem = Omit<
+  VehicleDetails,
+  'sourceCandidateId' | 'originalForecast' | 'currentListing'
+> & { listingPrice: number | null };
+export interface VehicleListing {
+  vehicleId: number;
+  listingId: number;
+  listingPrice: number;
+  listedAt: string;
+  status: VehicleStatus;
+}
+export interface ListVehicleRequest {
+  listingPrice: number;
+  listedAt?: string;
+}
 export interface VehicleListResult {
   items: VehicleListItem[];
   totalCount: number;

@@ -16,4 +16,5 @@ public class VehicleListItemDto : VehicleFinancialSummaryDto
     public string? Vin { get; init; }
     public VehicleStatus Status { get; init; }
     public DateTimeOffset PurchaseDate { get; init; }
+    public decimal? ListingPrice { get; init; }
 }

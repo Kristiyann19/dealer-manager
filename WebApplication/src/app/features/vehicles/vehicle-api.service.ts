@@ -13,6 +13,8 @@ import {
   VehicleListResult,
   VehicleStatus,
   VehicleStatusHistory,
+  VehicleListing,
+  ListVehicleRequest,
 } from './vehicle.models';
 export type { VehicleDetails } from './vehicle.models';
 @Injectable({ providedIn: 'root' })
@@ -36,6 +38,12 @@ export class VehicleApiService {
   }
   statusHistory(id: number) {
     return this.http.get<VehicleStatusHistory[]>(`${this.base}/vehicles/${id}/status-history`);
+  }
+  listVehicle(id: number, request: ListVehicleRequest) {
+    return this.http.post<VehicleListing>(`${this.base}/vehicles/${id}/listing`, request);
+  }
+  currentListing(id: number) {
+    return this.http.get<VehicleListing | null>(`${this.base}/vehicles/${id}/listing`);
   }
   details(id: number) {
     return this.http.get<VehicleDetails>(`${this.base}/vehicles/${id}`);

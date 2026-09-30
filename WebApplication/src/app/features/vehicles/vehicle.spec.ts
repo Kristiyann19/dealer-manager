@@ -27,6 +27,7 @@ const plan: VehicleCostPlanItem = {
   isCancelled: false,
 };
 const details: VehicleDetails = {
+  currentListing: null,
   id: 1,
   make: 'BMW',
   model: '320d',

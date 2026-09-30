@@ -14,4 +14,5 @@ public class VehicleDetailsDto : VehicleFinancialSummaryDto
     public int? SourceCandidateId { get; init; }
     public DateTimeOffset PurchaseDate { get; init; }
     public OriginalForecastDto? OriginalForecast { get; init; }
+    public VehicleListingDto? CurrentListing { get; init; }
 }
