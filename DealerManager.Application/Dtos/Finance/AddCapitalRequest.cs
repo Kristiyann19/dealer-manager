@@ -10,8 +10,7 @@ namespace DealerManager.Application.Dtos.Finance
         public int? CapitalAccountId { get; set; }
         [Range(typeof(decimal), "0", "79228162514264337593543950335", MinimumIsExclusive = true)]
         public decimal Amount { get; set; }
-        [Required]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public DateTimeOffset? OccurredAt { get; set; }
     }
 }

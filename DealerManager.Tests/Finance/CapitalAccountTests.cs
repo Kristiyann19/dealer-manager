@@ -14,6 +14,24 @@ namespace DealerManager.Tests.Finance;
 
 public class CapitalAccountTests
 {
+    [Theory]
+    [InlineData("{\"amount\":25}")]
+    [InlineData("{\"amount\":25,\"description\":null}")]
+    [InlineData("{\"amount\":25,\"description\":\"\"}")]
+    [InlineData("{\"amount\":25,\"description\":\"   \"}")]
+    public async Task ContributionDescriptionIsOptional(string body)
+    {
+        using var factory = new FinanceApiFactory();
+        using var client = factory.CreateInitializedClient();
+        var account = await Create(client);
+        var response = await client.PostAsync($"/api/capital-accounts/{account.Id}/contributions",
+            new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(string.Empty, (await response.Content.ReadFromJsonAsync<FinancialTransactionDto>())!.Description);
+        var details = (await client.GetFromJsonAsync<CapitalAccountDetailsDto>($"/api/capital-accounts/{account.Id}"))!;
+        Assert.Equal(25m, details.CurrentBalance);
+        Assert.Single(details.LatestTransactions);
+    }
     private static async Task<CapitalAccountDto> Create(HttpClient client, string name = "Main", string currency = "EUR")
     {
         var response = await client.PostAsJsonAsync("/api/capital-accounts", new { name, currency, isActive = false, currentBalance = 999 });
@@ -191,7 +209,7 @@ public class CapitalAccountTests
     }
 
     [Fact]
-    public async Task ContributionUsesSuppliedDateAndRejectsRouteMismatchOrBlankDescription()
+    public async Task ContributionUsesSuppliedDateAndRejectsRouteMismatch()
     {
         using var factory = new FinanceApiFactory();
         using var client = factory.CreateInitializedClient();
@@ -202,7 +220,6 @@ public class CapitalAccountTests
         var transaction = (await response.Content.ReadFromJsonAsync<FinancialTransactionDto>())!;
         Assert.Equal(occurredAt.ToUniversalTime(), transaction.OccurredAt);
         Assert.Equal(factory.Clock.Now, transaction.CreatedAt);
-        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync($"/api/capital-accounts/{account.Id}/contributions", new { amount = 5, description = " " })).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync($"/api/capital-accounts/{account.Id}/contributions", new { capitalAccountId = account.Id + 1, amount = 5, description = "Test" })).StatusCode);
         Assert.Single((await client.GetFromJsonAsync<List<FinancialTransactionDto>>($"/api/capital-accounts/{account.Id}/transactions"))!);
     }

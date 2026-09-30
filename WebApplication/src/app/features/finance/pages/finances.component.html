@@ -281,17 +281,7 @@
             class="form-input"
             rows="3"
             formControlName="description"
-            [attr.aria-invalid]="
-              contributionForm.controls.description.touched &&
-              contributionForm.controls.description.invalid
-            "
           ></textarea>
-          @if (
-            contributionForm.controls.description.touched &&
-            contributionForm.controls.description.invalid
-          ) {
-            <p class="field-error" role="alert">{{ 'finance.required' | translate }}</p>
-          }
         </div>
         <div>
           <label class="field-label" for="contribution-date">{{

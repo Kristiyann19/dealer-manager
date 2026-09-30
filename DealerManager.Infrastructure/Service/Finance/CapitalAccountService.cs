@@ -71,7 +71,7 @@ namespace DealerManager.Infrastructure.Service.Finance
                 {
                     CapitalAccountId = accountId, Type = TransactionType.CapitalContribution,
                     Direction = TransactionDirection.In, Amount = request.Amount,
-                    Description = request.Description.Trim(), OccurredAt = request.OccurredAt?.ToUniversalTime() ?? now,
+                    Description = request.Description?.Trim() ?? string.Empty, OccurredAt = request.OccurredAt?.ToUniversalTime() ?? now,
                     CreatedAt = now
                 };
                 await transactions.Create(transaction);

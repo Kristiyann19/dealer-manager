@@ -126,14 +126,14 @@ describe('Finance API workflows', () => {
   it('rejects nonpositive contributions and refreshes balances and full history after saving', () => {
     load();
     page.openDialog('contribution');
-    page.contributionForm.patchValue({ amount: 0, description: ' Deposit ' });
+    page.contributionForm.patchValue({ amount: 0, description: '' });
     page.addCapital();
     http.expectNone(`${base}/1/contributions`);
     page.contributionForm.patchValue({ amount: 25 });
     page.addCapital();
     page.addCapital();
     const request = http.expectOne(`${base}/1/contributions`);
-    expect(request.request.body).toEqual({ amount: 25, description: 'Deposit' });
+    expect(request.request.body).toEqual({ amount: 25, description: '' });
     request.flush({ ...transaction, amount: 25 });
     expect(page.loading()).toBe(true);
     expect(page.transactions()).toEqual([]);

@@ -75,7 +75,7 @@ export class FinancesComponent {
   readonly contributionForm = this.fb.group({
     accountId: [null as number | null, Validators.required],
     amount: [null as number | null, positiveAmount],
-    description: ['', requiredText],
+    description: [''],
     occurredAt: ['', validDate],
   });
   private readonly contributionAccountId = toSignal(
