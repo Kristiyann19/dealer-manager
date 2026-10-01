@@ -10,6 +10,6 @@ public class VehicleCostPlanItemDto
     public decimal? CurrentEstimatedAmount { get; init; }
     public decimal? CommittedAmount { get; init; }
     public decimal ActualPaid { get; init; }
-    public decimal RemainingProjected => IsCancelled ? 0m : Math.Max((CommittedAmount ?? CurrentEstimatedAmount ?? 0m) - ActualPaid, 0m);
+    public decimal RemainingProjected => CostPlanCalculation.Remaining(this);
     public bool IsCancelled { get; init; }
 }

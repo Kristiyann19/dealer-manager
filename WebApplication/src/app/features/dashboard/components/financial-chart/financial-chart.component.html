@@ -27,7 +27,8 @@
       >{{ 'ui.sales_revenue' | translate }}</span
     >
     <span class="flex items-center gap-2"
-      ><span class="h-0.5 w-3 bg-[#159b73]"></span>{{ 'ui.net_profit' | translate }}</span
+      ><span class="h-0.5 w-3 bg-[#159b73]"></span
+      >{{ 'dashboard.realizedProfit' | translate }}</span
     >
   </div>
   <div class="h-[285px]">
@@ -65,10 +66,10 @@
         <tbody>
           @for (month of visibleData(); track month.month) {
             <tr>
-              <th scope="row" class="text-left py-1">{{ 'months.' + month.month | translate }}</th>
+              <th scope="row" class="text-left py-1">{{ monthLabel(month.month) }}</th>
               <td>{{ month.capitalInvested }}</td>
               <td>{{ month.salesRevenue }}</td>
-              <td>{{ month.netProfit }}</td>
+              <td>{{ month.realizedProfit }}</td>
             </tr>
           }
         </tbody>

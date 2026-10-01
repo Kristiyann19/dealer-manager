@@ -19,6 +19,7 @@ namespace DealerManager.WebAPI.Extensions
 
         public static void ConfigureServices(this IServiceCollection services)
         {
+            services.AddScoped<DealerManager.Application.IService.Dashboard.IDashboardService, DealerManager.Infrastructure.Service.Dashboard.DashboardService>();
             services.AddScoped<IPurchaseCandidateService, PurchaseCandidateService>();
             services.AddScoped<DealerManager.Application.IService.Vehicle.IVehicleService, DealerManager.Infrastructure.Service.Vehicle.VehicleService>();
             services.AddSingleton(TimeProvider.System);

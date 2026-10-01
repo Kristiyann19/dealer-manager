@@ -1,3 +1,4 @@
+using DealerManager.Infrastructure.Service.Finance;
 #nullable enable
 using DealerManager.Application.Dtos.Vehicle;
 using DealerManager.Application.FilterDtos.Vehicle;
@@ -59,13 +60,8 @@ public partial class VehicleService
         var candidateIds = page.Where(v => v.SourceCandidateId.HasValue).Select(v => v.SourceCandidateId!.Value).ToArray();
 
         // Batch aggregates for the selected page: query count does not grow with inventory size.
-        var purchases = await transactions.GetQueryByProperties(t => t.VehicleId.HasValue && ids.Contains(t.VehicleId.Value)
-                && t.Type == TransactionType.VehiclePurchase && t.Direction == TransactionDirection.Out)
-            .GroupBy(t => t.VehicleId!.Value).Select(g => new { Id = g.Key, Amount = g.Sum(t => t.Amount) })
-            .ToDictionaryAsync(x => x.Id, x => x.Amount, cancellationToken);
-        var paid = await expenses.GetQueryByProperties(e => ids.Contains(e.VehicleId))
-            .GroupBy(e => e.VehicleId).Select(g => new { Id = g.Key, Amount = g.Sum(e => e.Amount) })
-            .ToDictionaryAsync(x => x.Id, x => x.Amount, cancellationToken);
+        var investments = await FinancialQueries.Investments(vehicles.GetQueryByProperties(v => ids.Contains(v.Id)),
+            transactions.GetQueryByProperties(_ => true)).ToDictionaryAsync(v => v.VehicleId, cancellationToken);
         var forecasts = await estimates.GetQueryByProperties(e => candidateIds.Contains(e.CandidateId) && e.IsDecisionSnapshot)
             .Select(e => new { e.CandidateId, e.ExpectedSellingPrice }).ToDictionaryAsync(e => e.CandidateId, e => e.ExpectedSellingPrice, cancellationToken);
         var costPlans = await plans.GetQueryByProperties(i => ids.Contains(i.VehicleId))
@@ -86,7 +82,7 @@ public partial class VehicleService
             {
                 decimal? selling = vehicle.SourceCandidateId is { } source && forecasts.TryGetValue(source, out var price) ? price : null;
                 var sale = soldVehicles.GetValueOrDefault(vehicle.Id);
-                var summary = CalculateFinancialSummary(purchases.GetValueOrDefault(vehicle.Id), paid.GetValueOrDefault(vehicle.Id),
+                var summary = CalculateFinancialSummary(investments[vehicle.Id].ActualPurchasePrice, investments[vehicle.Id].ActualExpenses,
                     plansByVehicle[vehicle.Id], selling, sale?.SalePrice, sale?.SoldAt);
                 return new VehicleListItemDto
                 {

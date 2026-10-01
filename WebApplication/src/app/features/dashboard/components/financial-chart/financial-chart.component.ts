@@ -47,6 +47,13 @@ export class FinancialChartComponent {
     this.translate.currentLang();
     return this.translate.instant(key);
   }
+  protected monthLabel(value: string): string {
+    return new Intl.DateTimeFormat(this.translate.currentLang() === 'bg' ? 'bg-BG' : 'en-IE', {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(value));
+  }
   readonly data = input.required<MonthlyFinancialData[]>();
   protected readonly months = signal(6);
   protected readonly periods = computed(() => [
@@ -55,7 +62,7 @@ export class FinancialChartComponent {
   ]);
   protected readonly visibleData = computed(() => this.data().slice(-this.months()));
   protected readonly chartData = computed<ChartData<'bar' | 'line'>>(() => ({
-    labels: this.visibleData().map((month) => this.text('months.' + month.month)),
+    labels: this.visibleData().map((month) => this.monthLabel(month.month)),
     datasets: [
       {
         type: 'bar',
@@ -77,8 +84,8 @@ export class FinancialChartComponent {
       },
       {
         type: 'line',
-        label: this.text('ui.net_profit'),
-        data: this.visibleData().map((month) => month.netProfit),
+        label: this.text('dashboard.realizedProfit'),
+        data: this.visibleData().map((month) => month.realizedProfit),
         borderColor: '#159b73',
         backgroundColor: '#159b73',
         tension: 0.35,

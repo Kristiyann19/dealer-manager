@@ -1,3 +1,4 @@
+using DealerManager.Infrastructure.Service.Finance;
 #nullable enable
 using DealerManager.Application.Dtos.Candidate;
 using DealerManager.Application.Dtos.Vehicle;
@@ -31,11 +32,10 @@ public partial class VehicleService(
     public async Task<VehicleDetailsDto> GetDetails(int id, CancellationToken cancellationToken)
     {
         var vehicle = await LoadVehicle(id, cancellationToken);
-        var purchasePrice = await transactions.GetQueryByProperties(t => t.VehicleId == id
-                && t.Type == TransactionType.VehiclePurchase && t.Direction == TransactionDirection.Out)
-            .SumAsync(t => (decimal?)t.Amount, cancellationToken) ?? 0m;
-        var actualExpenses = await expenses.GetQueryByProperties(e => e.VehicleId == id)
-            .SumAsync(e => (decimal?)e.Amount, cancellationToken) ?? 0m;
+        var investment = await FinancialQueries.Investments(vehicles.GetQueryByProperties(v => v.Id == id),
+            transactions.GetQueryByProperties(_ => true)).SingleAsync(cancellationToken);
+        var purchasePrice = investment.ActualPurchasePrice;
+        var actualExpenses = investment.ActualExpenses;
         var plan = await LoadCostPlan(id, cancellationToken);
         var snapshot = vehicle.SourceCandidateId is { } candidateId
             ? await estimates.GetByProperties(e => e.CandidateId == candidateId && e.IsDecisionSnapshot,

@@ -7,12 +7,6 @@
         {{ 'ui.a_clear_view_of_your_inventory_operations_and_capital' | translate }}
       </p>
     </div>
-    <div class="flex flex-wrap items-center gap-3">
-      <span class="demo-pill"
-        ><span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span
-        >{{ 'ui.demo_workspace' | translate }}</span
-      >
-    </div>
   </div>
   @let current = state();
   @switch (current.status) {
@@ -33,7 +27,7 @@
     }
     @case ('ready') {
       <div class="space-y-6">
-        <app-monthly-overview [data]="current.data.monthly" [period]="current.data.periodLabel" />
+        <app-monthly-overview [data]="current.data.monthly" [period]="current.data.asOf" />
         <app-financial-overview [data]="current.data.financial" />
         <app-operational-pipeline [data]="current.data.pipeline" />
         @if (workspace.searchQuery()) {
@@ -64,7 +58,7 @@
       <footer class="mt-6 flex flex-wrap justify-between gap-2 text-[10px] text-slate-400">
         <span>{{ 'ui.autocapital_dealership_workspace' | translate }}</span
         ><span>{{
-          'ui.sample_data_as_of_value_all_amounts_in_eur'
+          'dashboard.asOf'
             | translate: { p0: (current.data.asOf | localizedDate: 'd MMM y' : 'UTC') }
         }}</span>
       </footer>

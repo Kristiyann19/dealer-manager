@@ -29,19 +29,19 @@ import { FinancialOverview } from '../../models/dashboard.models';
         [context]="'ui.capital_currently_in_vehicles' | translate"
       />
       <app-kpi-card
-        [label]="'ui.committed_costs' | translate"
-        [value]="data().committedCosts"
+        [label]="'dashboard.upcomingCosts' | translate"
+        [value]="data().upcomingProjectedCosts"
         icon="receipt-text"
         tone="amber"
         [money]="true"
-        [context]="'ui.planned_and_agreed_costs' | translate"
+        [context]="'dashboard.upcomingHelp' | translate"
       />
       <app-kpi-card
-        [label]="'ui.inventory_value' | translate"
-        [value]="data().inventoryValue"
+        [label]="'dashboard.netWorth' | translate"
+        [value]="data().netWorthAtCost"
         icon="warehouse"
         [money]="true"
-        [context]="'ui.expected_selling_value' | translate"
+        [context]="'dashboard.netWorthHelp' | translate"
       />
     </div>
   </section>`,

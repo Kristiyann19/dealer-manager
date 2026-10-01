@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   selector: 'app-money-display',
   imports: [LocalizedCurrencyPipe],
   template: `<span class="tabular-nums whitespace-nowrap">{{
-    amount() | localizedCurrency: 'EUR' : 'symbol' : '1.0-0'
+    amount() | localizedCurrency: 'EUR' : 'symbol' : '1.2-2'
   }}</span>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

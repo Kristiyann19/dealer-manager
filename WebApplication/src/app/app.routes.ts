@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import { DashboardService } from './features/dashboard/services/dashboard.service';
-import { MockDashboardService } from './features/dashboard/services/mock-dashboard.service';
 
 const placeholder = () =>
   import('./shared/components/module-placeholder/module-placeholder.component').then(
@@ -23,7 +21,6 @@ export const routes: Routes = [
           import('./features/dashboard/pages/dashboard/dashboard.component').then(
             (module) => module.DashboardComponent,
           ),
-        providers: [{ provide: DashboardService, useClass: MockDashboardService }],
       },
       {
         path: 'candidates',

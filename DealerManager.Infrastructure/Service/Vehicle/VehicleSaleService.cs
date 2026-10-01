@@ -1,3 +1,4 @@
+using DealerManager.Infrastructure.Service.Finance;
 #nullable enable
 using DealerManager.Application.Dtos.Vehicle;
 using DealerManager.Application.IService.Vehicle;
@@ -29,13 +30,8 @@ public partial class VehicleService
             if (!account.IsActive) throw Conflict("inactive", "The capital account is inactive.");
             if (!string.Equals(account.Currency.Trim(), "EUR", StringComparison.OrdinalIgnoreCase))
                 throw Conflict("currency", "Vehicle sales require an EUR account.");
-            var purchase = await transactions.GetQueryByProperties(t => t.VehicleId == vehicleId
-                && t.Type == TransactionType.VehiclePurchase && t.Direction == TransactionDirection.Out)
-                .SumAsync(t => (decimal?)t.Amount, token) ?? 0m;
-            var spent = await expenses.GetQueryByProperties(e => e.VehicleId == vehicleId).SumAsync(e => (decimal?)e.Amount, token) ?? 0m;
-            decimal invested;
-            try { invested = purchase + spent; }
-            catch (OverflowException) { throw new ValidationException("Financial amounts exceed the supported decimal range."); }
+            var invested = await FinancialQueries.Investments(vehicles.GetQueryByProperties(v => v.Id == vehicleId),
+                transactions.GetQueryByProperties(_ => true)).Select(v => v.TotalInvested).SingleAsync(token);
             var realized = CalculateRealized(invested, request.ActualSalePrice);
             var now = clock.GetUtcNow();
             var soldAt = request.SoldAt?.ToUniversalTime() ?? now;

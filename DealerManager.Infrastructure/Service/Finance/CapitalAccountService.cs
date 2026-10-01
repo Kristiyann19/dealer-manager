@@ -93,18 +93,7 @@ namespace DealerManager.Infrastructure.Service.Finance
                 ?? throw new CapitalAccountNotFoundException(capitalAccountId);
 
         private IQueryable<CapitalAccountDto> AccountBalances(IQueryable<CapitalAccount> query)
-        {
-            var movements = transactions.GetQueryByProperties(_ => true);
-            // Correlated SUMs are evaluated in one SQL query, never one round trip per account.
-            return query.Select(account => new CapitalAccountDto
-            {
-                Id = account.Id, Name = account.Name, Currency = account.Currency, IsActive = account.IsActive,
-                CurrentBalance = (movements.Where(t => t.CapitalAccountId == account.Id && t.Direction == TransactionDirection.In)
-                    .Sum(t => (decimal?)t.Amount) ?? 0m)
-                    - (movements.Where(t => t.CapitalAccountId == account.Id && t.Direction == TransactionDirection.Out)
-                    .Sum(t => (decimal?)t.Amount) ?? 0m)
-            });
-        }
+            => FinancialQueries.AccountBalances(query, transactions.GetQueryByProperties(_ => true));
 
         private IOrderedQueryable<FinancialTransaction> TransactionHistory(int id)
             => transactions.GetQueryByProperties(t => t.CapitalAccountId == id)

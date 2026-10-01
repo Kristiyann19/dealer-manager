@@ -692,3 +692,14 @@
     transform: translateX(22px);
   }
 }
+
+@layer components {
+  [data-tone='red'] {
+    color: var(--app-red-text, #b91c1c);
+  }
+  .metric-icon[data-tone='red'],
+  [data-tone='red'] > .metric-icon {
+    background: var(--app-red-bg, #fee2e2);
+    color: var(--app-red-text, #b91c1c);
+  }
+}

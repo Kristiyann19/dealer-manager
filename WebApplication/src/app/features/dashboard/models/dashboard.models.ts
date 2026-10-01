@@ -1,20 +1,18 @@
-import { CandidateStatus, VehicleStatus } from '../../../shared/models/ui.models';
+import { CandidateStatus } from '../../candidates/models/candidate.models';
+import { VehicleStatus } from '../../vehicles/vehicle.models';
 
 export interface MonthlyOverview {
   carsInStock: number;
   carsInRepair: number;
   soldThisMonth: number;
   profitThisMonth: number;
-  stockChange: number;
-  overdueRepairs: number;
-  salesGrowthPercent: number;
-  profitGrowthPercent: number;
 }
 export interface FinancialOverview {
   availableCash: number;
   capitalInvested: number;
-  committedCosts: number;
-  inventoryValue: number;
+  upcomingProjectedCosts: number;
+  netWorthAtCost: number;
+  currency: string;
 }
 export interface PipelineSummary {
   candidates: number;
@@ -25,37 +23,38 @@ export interface PipelineSummary {
 }
 export interface CandidateSummary {
   id: number;
-  vehicle: string;
-  year: number;
-  mileage: number;
-  specs: string;
-  vin: string;
-  estimatedTotalCost: number;
-  expectedSale: number;
-  expectedProfit: number;
-  expectedRoi: number;
+  make: string;
+  model: string;
+  year: number | null;
+  mileage: number | null;
+  estimatedTotalCost: number | null;
+  expectedSellingPrice: number | null;
+  expectedProfit: number | null;
+  expectedRoi: number | null;
+  createdAt: string;
   status: CandidateStatus;
 }
 export interface ActiveVehicleSummary {
   id: number;
-  vehicle: string;
-  vin: string;
+  make: string;
+  model: string;
+  year: number;
   status: VehicleStatus;
-  spentSoFar: number;
-  projectedTotal: number;
-  isFinalCost: boolean;
-  expectedSale: number;
-  projectedProfit: number;
-  spendingPercent: number;
+  totalInvested: number;
+  remainingProjectedCosts: number;
+  projectedFinalCost: number;
+  expectedSellingPrice: number | null;
+  listingPrice: number | null;
+  projectedProfit: number | null;
 }
 export interface MonthlyFinancialData {
   month: string;
   capitalInvested: number;
   salesRevenue: number;
-  netProfit: number;
+  realizedProfit: number;
+  salesCount: number;
 }
 export interface DashboardSummary {
-  periodLabel: string;
   asOf: string;
   monthly: MonthlyOverview;
   financial: FinancialOverview;

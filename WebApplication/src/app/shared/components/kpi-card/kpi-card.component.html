@@ -8,6 +8,7 @@
   <div
     class="mt-2 text-[27px] leading-tight font-semibold tracking-tight tabular-nums"
     [class.text-emerald-700]="tone() === 'green'"
+    [class.text-red-700]="tone() === 'red'"
   >
     @if (money()) {
       <app-money-display [amount]="value()" />
