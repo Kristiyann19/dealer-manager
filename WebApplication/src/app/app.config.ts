@@ -1,3 +1,4 @@
+import { authInterceptor } from './interceptors/auth.interceptor';
 import {
   ApplicationConfig,
   inject,
@@ -12,7 +13,7 @@ import { registerLocaleData } from '@angular/common';
 import bgLocale from '@angular/common/locales/bg';
 
 registerLocaleData(bgLocale);
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { provideRouter, TitleStrategy, withInMemoryScrolling } from '@angular/router';
 import { TranslatedTitleStrategy } from './core/services/translated-title.strategy';
 import { providePrimeNG } from 'primeng/config';
@@ -69,7 +70,10 @@ const AutoCapitalTheme = definePreset(Aura, {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([authInterceptor]),
+      withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
+    ),
     provideAppInitializer(() => inject(ThemeService).initialize()),
     provideTranslateService({
       fallbackLang: 'en',

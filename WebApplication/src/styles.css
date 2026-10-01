@@ -703,3 +703,9 @@
     color: var(--app-red-text, #b91c1c);
   }
 }
+
+@layer components {
+  .auth-layout { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  .auth-card { width: 100%; max-width: 480px; padding: clamp(20px, 4vw, 36px); border: 1px solid var(--app-border, #e2e8f0); border-radius: 16px; background: var(--app-surface, #fff); box-shadow: 0 12px 40px #0f172a08; }
+  .auth-notice { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1200; width: min(560px, 94vw); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+}

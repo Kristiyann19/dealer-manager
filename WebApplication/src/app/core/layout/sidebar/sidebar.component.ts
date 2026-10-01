@@ -1,8 +1,8 @@
+import { AuthService } from '../../services/auth.service';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
-import { WorkspaceService } from '../../services/workspace.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,7 +11,7 @@ import { WorkspaceService } from '../../services/workspace.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarComponent {
-  protected readonly workspace = inject(WorkspaceService);
+  readonly auth = inject(AuthService);
   readonly navigate = output<void>();
   protected readonly links = [
     { label: 'ui.dashboard', path: '/dashboard', icon: 'layout-dashboard' },

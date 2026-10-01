@@ -68,14 +68,14 @@
       <svg lucideIcon="bell" [size]="19" aria-hidden="true"></svg>
     </button>
     <span class="h-5 w-px bg-slate-200 hidden sm:block"></span>
-  
+
     <button
       type="button"
       class="avatar bg-blue-50 text-blue-700 border border-blue-100"
       [attr.aria-label]="'ui.view_profile' | translate"
       (click)="dialog.set('profile')"
     >
-      {{ workspace.user.initials }}
+      {{ auth.initials() }}
     </button>
   </div>
 </header>
@@ -98,11 +98,16 @@
       </p>
     }
     @case ('profile') {
-      <p class="font-semibold">{{ workspace.user.name }}</p>
-      <p class="mt-1 text-sm text-slate-500">{{ 'profile.role' | translate }}</p>
+      <p class="font-semibold">{{ auth.currentUser()?.email }}</p>
+      <p class="mt-1 text-sm text-slate-500">{{ auth.currentUser()?.dealership?.name }}</p>
       <p class="mt-5 text-xs text-slate-500">
-        {{ 'ui.temporary_demo_profile_authentication_is_not_enabled' | translate }}
+        @for (role of auth.currentUser()?.roles; track role) {
+          <span>{{ auth.roleLabel(role) | translate }}</span>
+        }
       </p>
+      <button class="primary-button mt-6" [disabled]="auth.busy()" (click)="auth.logoutFromMenu()">
+        {{ (auth.busy() ? 'auth.working' : 'auth.logout') | translate }}
+      </button>
     }
   }
 </p-dialog>

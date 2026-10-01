@@ -1,1 +1,22 @@
-<router-outlet />
+@if (auth.initializationError()) {
+  <main class="auth-layout">
+    <div class="auth-card" role="alert">
+      <p>{{ 'auth.errors.generic' | translate }}</p>
+      <button class="primary-button mt-4" (click)="retry()">{{ 'auth.retry' | translate }}</button>
+    </div>
+  </main>
+} @else if (!auth.initialized()) {
+  <main class="auth-layout" role="status" aria-live="polite">
+    <p>{{ 'auth.loading' | translate }}</p>
+  </main>
+} @else {
+  @if (auth.notice()) {
+    <div class="error-banner auth-notice" role="alert">
+      {{ auth.notice()! | translate }}
+      <button type="button" class="secondary-button" (click)="auth.notice.set(null)">
+        {{ 'auth.dismiss' | translate }}
+      </button>
+    </div>
+  }
+  <router-outlet />
+}

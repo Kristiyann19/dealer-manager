@@ -44,14 +44,17 @@
       >{{ 'ui.settings' | translate }}</a
     >
     <div class="mx-3 mt-5 border-t border-slate-100 pt-5 flex items-center gap-3">
-      <span class="avatar bg-slate-100 text-slate-600">{{ workspace.user.initials }}</span>
-      <div>
-        <p class="text-xs font-semibold text-slate-800">{{ workspace.user.name }}</p>
-        <p class="text-[10px] text-slate-400 mt-1">{{ 'profile.role' | translate }}</p>
+      <span class="avatar bg-slate-100 text-slate-600">{{ auth.initials() }}</span>
+      <div class="min-w-0 break-words">
+        <p class="text-xs font-semibold text-slate-800">{{ auth.currentUser()?.email }}</p>
+        <p class="text-[10px] text-slate-400 mt-1">{{ auth.currentUser()?.dealership?.name }}</p>
+        @for (role of auth.currentUser()?.roles; track role) {
+          <p class="text-xs text-slate-500">{{ auth.roleLabel(role) | translate }}</p>
+        }
       </div>
       <span
         class="ml-auto h-2 w-2 rounded-full bg-emerald-500"
-        [attr.aria-label]="'ui.demo_profile' | translate"
+        [attr.aria-label]="'auth.activeSession' | translate"
       ></span>
     </div>
   </div>

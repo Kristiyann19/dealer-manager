@@ -1,0 +1,139 @@
+<main class="auth-layout">
+  <div class="auth-card">
+    <div class="flex justify-between items-center gap-3 mb-6">
+      <span class="font-bold text-xl">{{ 'auth.brand' | translate }}</span>
+      <div class="flex gap-2" role="group" [attr.aria-label]="'language.choose' | translate">
+        @for (lang of ['bg', 'en']; track lang) {
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="language.loading()"
+            [attr.aria-pressed]="language.current() === lang"
+            (click)="language.change($any(lang))"
+          >
+            {{ 'language.' + lang | translate }}
+          </button>
+        }
+      </div>
+    </div>
+    <h1 class="text-2xl font-semibold mb-6">
+      {{ (registering ? 'auth.register.title' : 'auth.login.title') | translate }}
+    </h1>
+    @if (language.error()) {
+      <p role="alert" class="error-banner">{{ 'language.loadError' | translate }}</p>
+    }
+    @if (error()) {
+      <p role="alert" class="error-banner">{{ error()! | translate }}</p>
+    }
+    @if (backendError()) {
+      <p role="alert" class="error-banner">{{ backendError() }}</p>
+    }
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" [attr.aria-busy]="pending()">
+      <fieldset [disabled]="pending()" class="space-y-5 min-w-0">
+        @if (registering) {
+          <div>
+            <label for="dealer" class="field-label">{{
+              'auth.register.dealershipName' | translate
+            }}</label>
+            <input
+              id="dealer"
+              class="form-input"
+              formControlName="dealershipName"
+              autocomplete="organization"
+              maxlength="200"
+            />
+            @if (invalid('dealershipName')) {
+              <p class="text-red-600 text-sm mt-1">{{ 'auth.validation.required' | translate }}</p>
+            }
+          </div>
+        }
+        <div>
+          <label for="email" class="field-label">{{ 'auth.login.email' | translate }}</label>
+          <input
+            id="email"
+            class="form-input"
+            type="email"
+            formControlName="email"
+            autocomplete="username"
+            maxlength="256"
+          />
+          @if (invalid('email')) {
+            <p class="text-red-600 text-sm mt-1">{{ 'auth.validation.email' | translate }}</p>
+          }
+        </div>
+        <div>
+          <label for="password" class="field-label">{{ 'auth.login.password' | translate }}</label>
+          <input
+            id="password"
+            class="form-input"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            [autocomplete]="registering ? 'new-password' : 'current-password'"
+            maxlength="256"
+          />
+          @if (invalid('password')) {
+            <p class="text-red-600 text-sm mt-1">
+              {{
+                (registering ? 'auth.validation.password' : 'auth.validation.required') | translate
+              }}
+            </p>
+          }
+          @if (registering) {
+            <p class="text-sm text-slate-500 mt-2">
+              {{ 'auth.validation.passwordHint' | translate }}
+            </p>
+          }
+        </div>
+        @if (registering) {
+          <div>
+            <label for="confirm" class="field-label">{{
+              'auth.register.confirmPassword' | translate
+            }}</label>
+            <input
+              id="confirm"
+              class="form-input"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+              maxlength="256"
+            />
+            @if (
+              form.controls.confirmPassword.touched &&
+              (form.hasError('mismatch') || invalid('confirmPassword'))
+            ) {
+              <p class="text-red-600 text-sm mt-1">{{ 'auth.validation.match' | translate }}</p>
+            }
+          </div>
+        }
+        <button
+          type="button"
+          class="text-sm text-blue-600"
+          [attr.aria-pressed]="showPassword()"
+          (click)="showPassword.set(!showPassword())"
+        >
+          {{ (showPassword() ? 'auth.hidePassword' : 'auth.showPassword') | translate }}
+        </button>
+        <button
+          type="submit"
+          class="primary-button w-full justify-center"
+          [disabled]="form.invalid || pending()"
+        >
+          {{
+            (pending()
+              ? 'auth.working'
+              : registering
+                ? 'auth.register.submit'
+                : 'auth.login.submit'
+            ) | translate
+          }}
+        </button>
+      </fieldset>
+    </form>
+    <p class="mt-6 text-sm text-slate-500">
+      {{ (registering ? 'auth.hasAccount' : 'auth.noAccount') | translate }}
+      <a class="text-blue-600 font-semibold" [routerLink]="registering ? '/login' : '/register'">{{
+        (registering ? 'auth.login.submit' : 'auth.register.link') | translate
+      }}</a>
+    </p>
+  </div>
+</main>

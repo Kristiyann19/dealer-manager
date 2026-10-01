@@ -597,5 +597,47 @@
     "appearance": "Appearance",
     "darkMode": "Dark mode",
     "themeDescription": "Your preference applies throughout the app and is saved in this browser."
+  },
+  "auth": {
+    "brand": "DealerManager",
+    "login": {
+      "title": "Sign in to DealerManager",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "invalidCredentials": "Invalid email or password."
+    },
+    "register": {
+      "title": "Create your dealership",
+      "dealershipName": "Dealership name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Create account",
+      "link": "Create a dealership",
+      "duplicate": "An account with this email already exists."
+    },
+    "logout": "Sign out",
+    "noAccount": "No account yet?",
+    "hasAccount": "Already have an account?",
+    "errors": {
+      "forbidden": "You do not have permission for this action.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "validation": {
+      "required": "This field is required.",
+      "email": "Enter a valid email address.",
+      "password": "Use at least 12 characters.",
+      "passwordHint": "Use at least 12 characters, including uppercase and lowercase letters, a number and a special character.",
+      "match": "Passwords must match."
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "working": "Please wait…",
+    "loading": "Loading your session…",
+    "retry": "Try again",
+    "dismiss": "Dismiss",
+    "owner": "Owner",
+    "activeSession": "Signed in"
   }
 }

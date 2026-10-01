@@ -1,21 +1,23 @@
+import { AuthService } from '../../services/auth.service';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { WorkspaceService } from '../../services/workspace.service';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-topbar',
-  imports: [TranslatePipe, LucideDynamicIcon, DialogModule, TooltipModule, RouterLink],
+  imports: [TranslatePipe, LucideDynamicIcon, DialogModule, TooltipModule],
   templateUrl: './topbar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TopbarComponent {
+  readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   protected readonly isDashboard = toSignal(

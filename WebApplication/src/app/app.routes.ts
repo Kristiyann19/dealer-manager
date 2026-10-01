@@ -1,3 +1,4 @@
+import { authGuard, guestGuard } from './auth-guards/auth.guard';
 import { Routes } from '@angular/router';
 
 const placeholder = () =>
@@ -7,7 +8,24 @@ const placeholder = () =>
 
 export const routes: Routes = [
   {
+    path: 'login',
+    title: 'auth.login.title',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/auth-page.component').then((m) => m.AuthPageComponent),
+  },
+  {
+    path: 'register',
+    title: 'auth.register.title',
+    canActivate: [guestGuard],
+    data: { register: true },
+    loadComponent: () =>
+      import('./features/auth/auth-page.component').then((m) => m.AuthPageComponent),
+  },
+  {
     path: '',
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     loadComponent: () =>
       import('./core/layout/app-shell/app-shell.component').then(
         (module) => module.AppShellComponent,
@@ -77,6 +95,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
       },
+      { path: 'finance', redirectTo: 'finances', pathMatch: 'full' },
       { path: '**', redirectTo: 'dashboard' },
     ],
   },
