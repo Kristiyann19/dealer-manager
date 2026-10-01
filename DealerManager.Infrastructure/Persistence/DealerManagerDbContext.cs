@@ -1,11 +1,18 @@
+using DealerManager.Application.IService.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 ﻿using DealerManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace DealerManager.Infrastructure.Persistence
 {
-    public class DealerManagerDbContext : DbContext
+    public partial class DealerManagerDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
     {
+        public DbSet<Dealership> Dealerships { get; set; }
+        private readonly ICurrentUserContext currentUser;
+        private int? CurrentTenantId => currentUser?.IsAuthenticated == true ? currentUser.DealershipId : null;
+
         #region Candidate
         public DbSet<Candidate> Candidates { get; set; }
         public DbSet<CandidateEstimate> CandidateEstimates { get; set; }
@@ -27,9 +34,10 @@ namespace DealerManager.Infrastructure.Persistence
         public DbSet<VehicleStatusHistory> VehicleStatusHistories { get; set; }
         #endregion
 
-        public DealerManagerDbContext(DbContextOptions<DealerManagerDbContext> options)
+        public DealerManagerDbContext(DbContextOptions<DealerManagerDbContext> options, ICurrentUserContext currentUser = null)
             : base(options)
         {
+            this.currentUser = currentUser;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
@@ -38,6 +46,7 @@ namespace DealerManager.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
 
             ApplyConfigurations(modelBuilder);
+            ConfigureTenancy(modelBuilder);
             modelBuilder.Entity<VehicleListing>().HasIndex(x => x.VehicleId)
                 .IsUnique().HasFilter("\"IsActive\" = TRUE");
             modelBuilder.Entity<VehicleListing>().ToTable(t =>

@@ -14,8 +14,9 @@ namespace DealerManager.WebAPI.ExceptionHandling
         {
             var statusCode = exception switch
             {
-                CandidateNotFoundException or CapitalAccountNotFoundException or DealerManager.Application.IService.Vehicle.VehicleNotFoundException => StatusCodes.Status404NotFound,
+                DealerManager.Application.IService.Identity.TenantAccessException or CandidateNotFoundException or CapitalAccountNotFoundException or DealerManager.Application.IService.Vehicle.VehicleNotFoundException => StatusCodes.Status404NotFound,
                 CandidateConflictException or CapitalAccountConflictException or PurchaseCandidateException or VehicleConflictException or DBConcurrencyException => StatusCodes.Status409Conflict,
+                DealerManager.Application.IService.Identity.AuthRequestException auth => auth.StatusCode,
                 ValidationException => StatusCodes.Status400BadRequest,
                 _ => 0
             };

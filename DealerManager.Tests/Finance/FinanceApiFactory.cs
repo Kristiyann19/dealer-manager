@@ -1,3 +1,5 @@
+using DealerManager.Tests.Identity;
+using DealerManager.Application.IService.Identity;
 using DealerManager.Infrastructure.Persistence;
 using DealerManager.Tests.Candidate;
 using Microsoft.AspNetCore.Hosting;
@@ -24,11 +26,12 @@ internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
+            TestOwnerSession.Configure(services);
             services.RemoveAll<DealerManagerDbContext>();
             services.RemoveAll<DbContextOptions<DealerManagerDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<DealerManagerDbContext>>();
-            services.AddScoped<DealerManagerDbContext>(_ => new FinanceTestDbContext(
-                new DbContextOptionsBuilder<DealerManagerDbContext>().UseSqlite(connection).AddInterceptors(Queries).Options));
+            services.AddScoped<DealerManagerDbContext>(provider => new FinanceTestDbContext(
+                new DbContextOptionsBuilder<DealerManagerDbContext>().UseSqlite(connection).AddInterceptors(Queries).Options, provider.GetRequiredService<ICurrentUserContext>()));
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Clock);
         });
@@ -38,7 +41,8 @@ internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
     {
         var client = CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
         using var scope = Services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>().Database.EnsureCreated();
+        TestOwnerSession.Initialize(scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>());
+        TestOwnerSession.Csrf(client);
         return client;
     }
 
@@ -51,7 +55,7 @@ internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
 
 // SQLite cannot order DateTimeOffset natively. UTC ticks preserve chronological ordering
 // in this isolated test model; production PostgreSQL mappings remain unchanged.
-internal sealed class FinanceTestDbContext(DbContextOptions<DealerManagerDbContext> options) : DealerManagerDbContext(options)
+internal sealed class FinanceTestDbContext(DbContextOptions<DealerManagerDbContext> options, ICurrentUserContext currentUser) : DealerManagerDbContext(options, currentUser)
 {
     protected override void OnModelCreating(ModelBuilder builder)
     {

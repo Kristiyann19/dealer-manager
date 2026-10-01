@@ -1,3 +1,5 @@
+using DealerManager.Tests.Identity;
+using DealerManager.Application.IService.Identity;
 using DealerManager.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -20,6 +22,7 @@ internal sealed class CandidateApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
+            TestOwnerSession.Configure(services);
             services.RemoveAll<DbContextOptions<DealerManagerDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<DealerManagerDbContext>>();
             services.AddDbContext<DealerManagerDbContext>(options => options.UseSqlite(connection));
@@ -32,7 +35,8 @@ internal sealed class CandidateApiFactory : WebApplicationFactory<Program>
     {
         var client = CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
         using var scope = Services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>().Database.EnsureCreated();
+        TestOwnerSession.Initialize(scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>());
+        TestOwnerSession.Csrf(client);
         return client;
     }
 

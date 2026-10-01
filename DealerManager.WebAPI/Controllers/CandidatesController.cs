@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using DealerManager.Application.Dtos.Candidate;
 using DealerManager.Application.FilterDtos.Candidate;
 using DealerManager.Application.IService.Candidate;
@@ -5,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DealerManager.Controllers
 {
-    [ApiController]
+    [ApiController, Authorize]
     [Route("api/candidates")]
     public class CandidatesController : ControllerBase
     {

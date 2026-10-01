@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using DealerManager.Application.Dtos.Finance;
 using DealerManager.Application.IService.Finance;
 using Microsoft.AspNetCore.Mvc;
@@ -5,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DealerManager.Controllers
 {
-    [ApiController]
+    [ApiController, Authorize]
     [Route("api/capital-accounts")]
     public class CapitalAccountsController(ICapitalAccountService capitalAccountService) : ControllerBase
     {

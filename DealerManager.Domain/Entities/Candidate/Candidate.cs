@@ -3,8 +3,9 @@ using DealerManager.Domain.Enums;
 
 namespace DealerManager.Domain.Entities;
 
-public class Candidate : Entity
+public class Candidate : Entity, ITenantEntity
 {
+    public int DealershipId { get; set; }
     public CandidateStatus Status { get; set; }
     public string Make { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;

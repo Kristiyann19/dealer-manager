@@ -5,6 +5,8 @@ using DealerManager.Application.Dtos.Finance;
 using DealerManager.Application.IRepository;
 using DealerManager.Infrastructure.Persistence;
 using DealerManager.Tests.Finance;
+using DealerManager.Tests.Identity;
+using DealerManager.Application.IService.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +22,12 @@ public class DashboardLifecycleTests
     [Fact]
     public async Task CapitalPurchaseExpenseAndSaleUpdateDashboardThroughRealEndpoints()
     {
-        // Optional production-provider check: all test records roll back, no migrations or schema changes.
+        // Optional production-provider check requires an already migrated test database; all records roll back.
         var connectionString = Environment.GetEnvironmentVariable("DEALER_DASHBOARD_POSTGRES");
         using WebApplicationFactory<Program> factory = string.IsNullOrEmpty(connectionString)
             ? new FinanceApiFactory() : new RollbackPostgresFactory(connectionString);
         using var client = factory is FinanceApiFactory sqlite ? sqlite.CreateInitializedClient()
-            : factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+            : ((RollbackPostgresFactory)factory).CreateInitializedClient();
         async Task<DashboardDto> Dashboard() => (await client.GetFromJsonAsync<DashboardDto>("/api/dashboard"))!;
         async Task<T> Post<T>(string url, object body) {
             var response = await client.PostAsJsonAsync(url, body);
@@ -89,16 +91,26 @@ internal sealed class RollbackPostgresFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services => {
+            TestOwnerSession.Configure(services);
             services.RemoveAll<DealerManagerDbContext>();
             services.RemoveAll<DbContextOptions<DealerManagerDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<DealerManagerDbContext>>();
-            services.AddScoped(_ => {
-                var db = new DealerManagerDbContext(new DbContextOptionsBuilder<DealerManagerDbContext>().UseNpgsql(connection).Options);
+            services.AddScoped(provider => {
+                var db = new DealerManagerDbContext(new DbContextOptionsBuilder<DealerManagerDbContext>().UseNpgsql(connection).Options,
+                    provider.GetRequiredService<ICurrentUserContext>());
                 db.Database.UseTransaction(transaction); return db;
             });
             services.RemoveAll<IUnitOfWork>();
             services.AddScoped<IUnitOfWork, EnlistedUnitOfWork>();
         });
+    }
+    public HttpClient CreateInitializedClient()
+    {
+        using var scope = Services.CreateScope();
+        TestOwnerSession.Initialize(scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>());
+        var client = CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        TestOwnerSession.Csrf(client);
+        return client;
     }
     private bool disposed;
     protected override void Dispose(bool disposing)

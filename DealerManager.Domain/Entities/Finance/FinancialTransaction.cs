@@ -4,8 +4,9 @@ using DealerManager.Domain.Enums;
 namespace DealerManager.Domain.Entities;
 
 // Source of truth for actual capital movements.
-public class FinancialTransaction : Entity
+public class FinancialTransaction : Entity, ITenantEntity
 {
+    public int DealershipId { get; set; }
     private decimal _amount;
 
     public int CapitalAccountId { get; set; }

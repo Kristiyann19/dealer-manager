@@ -1,3 +1,4 @@
+using DealerManager.WebAPI.Identity;
 using DealerManager.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using DealerManager.WebAPI.Extensions;
@@ -11,6 +12,7 @@ builder.Services.AddDbContext<DealerManagerDbContext>(options =>
     ));
 
 builder.Services.AddControllers();
+builder.Services.AddDealerIdentity(builder.Environment);
 builder.Services.ConfigureRepositories();
 builder.Services.ConfigureServices();
 builder.Services.AddProblemDetails();
@@ -29,6 +31,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

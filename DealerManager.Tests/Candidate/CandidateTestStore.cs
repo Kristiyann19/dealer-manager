@@ -1,3 +1,4 @@
+using DealerManager.Tests.Identity;
 using DealerManager.Application.FilterDtos;
 using DealerManager.Application.FilterDtos.Candidate;
 using DealerManager.Application.IRepository;
@@ -29,8 +30,8 @@ internal sealed class CandidateTestStore : IDisposable
     {
         connection.Open();
         Context = new DealerManagerDbContext(new DbContextOptionsBuilder<DealerManagerDbContext>()
-            .UseSqlite(connection).Options);
-        Context.Database.EnsureCreated();
+            .UseSqlite(connection).Options, new TestCurrentUser());
+        TestOwnerSession.Initialize(Context);
         UnitOfWork = new UnitOfWork(Context);
         Service = new CandidateService(
             new BaseRepository<CandidateEntity, CandidateFilterDto, DealerManagerDbContext>(Context),
