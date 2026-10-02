@@ -36,6 +36,7 @@ export class CandidateCreateComponent {
       Validators.max(2147483647),
     ]),
     askingPrice: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    vin: this.fb.nonNullable.control('', Validators.maxLength(32)),
     notes: this.fb.nonNullable.control(''),
   });
   protected readonly fields = this.form.controls;
@@ -54,6 +55,7 @@ export class CandidateCreateComponent {
         model: value.model.trim(),
         askingPrice: value.askingPrice!,
         notes: optionalText(value.notes),
+        vin: optionalText(value.vin)?.toUpperCase() ?? null,
       })
       .pipe(
         takeUntilDestroyed(this.destroyRef),

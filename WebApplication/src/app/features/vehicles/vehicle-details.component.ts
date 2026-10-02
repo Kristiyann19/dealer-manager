@@ -1,3 +1,4 @@
+import { VehicleDossierComponent } from './vehicle-dossier.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -31,6 +32,7 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
 @Component({
   selector: 'app-vehicle-details',
   imports: [
+    VehicleDossierComponent,
     TranslatePipe,
     ToastModule,
     RouterLink,
@@ -58,7 +60,11 @@ export class VehicleDetailsComponent {
   readonly vehicle = signal<VehicleDetails | null>(null);
   readonly loading = signal(true);
   readonly error = signal('');
-  readonly notice = signal('');
+  readonly notice = signal(
+    inject(Router).currentNavigation()?.extras.state?.['dossierSaved']
+      ? 'vehicle.dossier.saved'
+      : '',
+  );
   readonly plan = signal<VehicleCostPlanItem[]>([]);
   readonly pendingPlan = computed(() => this.plan().filter((item) => item.remainingProjected > 0));
   readonly expenses = signal<VehicleExpense[]>([]);

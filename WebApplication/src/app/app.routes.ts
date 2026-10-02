@@ -46,6 +46,14 @@ export const routes: Routes = [
           import('./features/candidates/candidates.routes').then((m) => m.CANDIDATE_ROUTES),
       },
       {
+        path: 'vehicles/:id/edit',
+        title: 'vehicle.dossier.editTitle',
+        loadComponent: () =>
+          import('./features/vehicles/vehicle-dossier-edit.component').then(
+            (m) => m.VehicleDossierEditComponent,
+          ),
+      },
+      {
         path: 'vehicles/:id',
         title: 'nav.vehicles',
         loadComponent: () =>

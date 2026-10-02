@@ -123,6 +123,7 @@
         }
       </div>
     </section>
+    <app-vehicle-dossier [vehicle]="vehicle" />
     @if (vehicle.status === 9) {
       <section class="panel p-6" aria-labelledby="sale-history-title">
         <h2 id="sale-history-title" class="mb-5">{{ 'vehicle.sale.history' | translate }}</h2>

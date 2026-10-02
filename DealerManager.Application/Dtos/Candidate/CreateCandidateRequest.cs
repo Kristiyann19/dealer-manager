@@ -15,6 +15,8 @@ namespace DealerManager.Application.Dtos.Candidate
         [Required]
         [Range(typeof(decimal), "0", "79228162514264337593543950335")]
         public decimal? AskingPrice { get; set; }
+        [MaxLength(32)]
+        public string? Vin { get; set; }
         public string? Notes { get; set; }
     }
 }

@@ -45,6 +45,7 @@ export const COST_CATEGORIES = [
 ].map((label, value) => ({ label: 'cost.' + value, value: value as CostCategory }));
 
 export interface CreateCandidateRequest {
+  vin?: string | null;
   make: string;
   model: string;
   year: number | null;

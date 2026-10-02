@@ -98,6 +98,37 @@ describe('Candidate module HTTP workflows', () => {
   });
   afterEach(() => http.verify());
 
+  it('shows one compact vehicle row and expands remaining candidate data without refetching', () => {
+    const fixture = TestBed.createComponent(CandidateDetailsComponent);
+    http
+      .expectOne('/api/candidates/12')
+      .flush({
+        ...candidate,
+        vin: 'VIN123',
+        source: 'Broker',
+        location: 'Sofia',
+        notes: 'Vehicle notes',
+      });
+    fixture.detectChanges();
+    const section: HTMLElement = fixture.nativeElement.querySelector(
+      'section[aria-label="' + en.ui.vehicle_details + '"]',
+    );
+    expect(section.querySelectorAll('dt').length).toBe(3);
+    expect(section.querySelector('dl')!.classList.contains('grid-cols-3')).toBe(true);
+    expect(section.textContent).not.toContain('Broker');
+    const toggle = section.querySelector('button')!;
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(section.textContent).toContain('Broker');
+    expect(section.textContent).toContain('Vehicle notes');
+    expect(section.querySelectorAll('dt').length).toBe(5);
+    toggle.click();
+    fixture.detectChanges();
+    expect(section.querySelectorAll('dt').length).toBe(3);
+    expect(section.textContent).not.toContain('Vehicle notes');
+  });
+
   it('does not submit an empty form or whitespace-only make', () => {
     const fixture = TestBed.createComponent(CandidateCreateComponent);
     fixture.detectChanges();
@@ -127,6 +158,7 @@ describe('Candidate module HTTP workflows', () => {
       year: null,
       mileage: 0,
       askingPrice: 0,
+      vin: null,
       notes: null,
     });
     request.flush(candidate);
@@ -205,7 +237,8 @@ describe('Candidate module HTTP workflows', () => {
     const fixture = TestBed.createComponent(EstimateFormComponent);
     fixture.componentRef.setInput('candidate', candidate);
     fixture.detectChanges();
-    const save = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const save = () =>
+      fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
     expect(save().disabled).toBe(true);
     input(fixture, '#estimate-price', '7000');
     expect(save().disabled).toBe(false);
@@ -234,7 +267,11 @@ describe('Candidate module HTTP workflows', () => {
     fixture.detectChanges();
     expect(save().disabled).toBe(true);
     const request = http.expectOne('/api/candidates/estimates');
-    expect(request.request.body.items[1]).toEqual({ category: CostCategory.Other, description: '', estimatedAmount: 0 });
+    expect(request.request.body.items[1]).toEqual({
+      category: CostCategory.Other,
+      description: '',
+      estimatedAmount: 0,
+    });
     request.flush(estimate);
   });
   it('preserves the editable negotiated purchase when copying other costs from history', () => {
@@ -301,13 +338,21 @@ describe('Candidate module HTTP workflows', () => {
     expect(request.request.body.items[0].estimatedAmount).toBe(3200);
     request.flush(estimate);
   });
-  it('creates with exactly the six requested fields and no selling price', () => {
+  it('creates with the compact fields and optional VIN, without a selling price', () => {
     const fixture = TestBed.createComponent(CandidateCreateComponent);
     fixture.detectChanges();
     const controls = Array.from(
       fixture.nativeElement.querySelectorAll('[formControlName]') as NodeListOf<Element>,
     ).map((element) => element.getAttribute('formControlName'));
-    expect(controls.sort()).toEqual(['askingPrice', 'make', 'mileage', 'model', 'notes', 'year']);
+    expect(controls.sort()).toEqual([
+      'askingPrice',
+      'make',
+      'mileage',
+      'model',
+      'notes',
+      'vin',
+      'year',
+    ]);
     expect(fixture.nativeElement.textContent).toContain(en.candidate.askingPriceRequired);
     expect(fixture.nativeElement.querySelector('#selling-price')).toBeNull();
   });
@@ -405,13 +450,17 @@ describe('Candidate module HTTP workflows', () => {
   it('loads fresh list data on return after a candidate mutation', () => {
     const first = TestBed.createComponent(CandidateListComponent);
     first.detectChanges();
-    http.expectOne(request => request.url === '/api/candidates').flush({ items: [candidate], totalCount: 1 });
+    http
+      .expectOne((request) => request.url === '/api/candidates')
+      .flush({ items: [candidate], totalCount: 1 });
     first.detectChanges();
     expect(button(first, 'Refresh list')).toBeUndefined();
     first.destroy();
     const returned = TestBed.createComponent(CandidateListComponent);
     returned.detectChanges();
-    http.expectOne(request => request.url === '/api/candidates').flush({ items: [{ ...candidate, status: CandidateStatus.Purchased }], totalCount: 1 });
+    http
+      .expectOne((request) => request.url === '/api/candidates')
+      .flush({ items: [{ ...candidate, status: CandidateStatus.Purchased }], totalCount: 1 });
     returned.detectChanges();
     expect(returned.nativeElement.textContent).toContain('Purchased');
     expect(returned.nativeElement.textContent).not.toContain('Under Review');
@@ -437,14 +486,12 @@ describe('Candidate module HTTP workflows', () => {
     });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(en.ui.loading_candidate);
-    http
-      .expectOne('/api/candidates/12')
-      .flush({
-        ...candidate,
-        status: CandidateStatus.Approved,
-        latestEstimate: estimate,
-        estimateHistory: [estimate],
-      });
+    http.expectOne('/api/candidates/12').flush({
+      ...candidate,
+      status: CandidateStatus.Approved,
+      latestEstimate: estimate,
+      estimateHistory: [estimate],
+    });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Candidate approved.');
     expect(button(fixture, 'Approve candidate')).toBeUndefined();
@@ -468,17 +515,17 @@ describe('Candidate module HTTP workflows', () => {
     });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(en.ui.loading_candidate);
-    http
-      .expectOne('/api/candidates/12')
-      .flush({
-        ...candidate,
-        status: CandidateStatus.Rejected,
-        rejectedAt: candidate.createdAt,
-        notes: 'Rejection reason: Too expensive',
-      });
+    http.expectOne('/api/candidates/12').flush({
+      ...candidate,
+      status: CandidateStatus.Rejected,
+      rejectedAt: candidate.createdAt,
+      notes: 'Rejection reason: Too expensive',
+    });
     fixture.detectChanges();
     expect(button(fixture, '+ New estimate')).toBeUndefined();
     expect(button(fixture, 'Reject')).toBeUndefined();
+    button(fixture, en.vehicle.dossier.more).click();
+    fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Too expensive');
   });
   it('shows a conflict instead of optimistically changing status', () => {

@@ -1,3 +1,4 @@
+import { VehicleDossier } from './vehicle-dossier.models';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../configuration/api.config';
@@ -49,6 +50,9 @@ export class VehicleApiService {
   }
   currentListing(id: number) {
     return this.http.get<VehicleListing | null>(`${this.base}/vehicles/${id}/listing`);
+  }
+  updateDossier(id: number, request: VehicleDossier) {
+    return this.http.put<VehicleDetails>(`${this.base}/vehicles/${id}/details`, request);
   }
   details(id: number) {
     return this.http.get<VehicleDetails>(`${this.base}/vehicles/${id}`);

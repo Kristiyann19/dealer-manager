@@ -3,6 +3,7 @@ using System;
 using DealerManager.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DealerManager.Infrastructure.Migrations
 {
     [DbContext(typeof(DealerManagerDbContext))]
-    partial class DealerManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261001155137_VehicleDossierEnums")]
+    partial class VehicleDossierEnums
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

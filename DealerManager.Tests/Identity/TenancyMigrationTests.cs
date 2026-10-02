@@ -31,7 +31,8 @@ public class TenancyMigrationTests
             await using var db = new DealerManagerDbContext(new DbContextOptionsBuilder<DealerManagerDbContext>().UseNpgsql(connection).Options);
             var migrator = db.GetService<IMigrator>();
             var migrations = db.Database.GetMigrations().ToArray();
-            var previous = migrations[^2]; var current = migrations[^1];
+            var index = Array.FindIndex(migrations, m => m.EndsWith("_AddIdentityAndDealershipTenancy"));
+            var previous = migrations[index - 1]; var current = migrations[index];
             await Execute(migrator.GenerateScript(null, previous, MigrationsSqlGenerationOptions.NoTransactions));
             await Execute("""
                 INSERT INTO "Candidates" ("Id", "Status", "Make", "Model", "Year", "ExpectedSellingPrice", "CreatedAt") VALUES (1, 3, 'Legacy', 'Car', 2020, 9000, CURRENT_TIMESTAMP);
@@ -55,6 +56,17 @@ public class TenancyMigrationTests
                 """));
             Assert.Equal(PostgresErrorCodes.ForeignKeyViolation, error.SqlState);
             await Execute("ROLLBACK TO SAVEPOINT cross_tenant_check;");
+            // Subsequent additive dossier migration must preserve legacy vehicles and their financial history.
+            var dossier = migrations.Single(m => m.EndsWith("_AddVehicleDossier"));
+            await Execute(migrator.GenerateScript(current, dossier, MigrationsSqlGenerationOptions.NoTransactions));
+            Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM \"Vehicles\" WHERE \"Id\"=1 AND \"RegistrationNumber\" IS NULL AND \"FirstRegistration\" IS NULL AND \"PowerHp\" IS NULL"));
+            Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM \"FinancialTransactions\" WHERE \"Id\"=1"));
+            await Execute("""
+                UPDATE "Vehicles" SET "FuelType"=' Дизел ', "Transmission"='Automatic', "DriveType"='RWD', "EuroStandard"='Euro 6', "BodyType"='Custom body', "Notes"='Existing note' WHERE "Id"=1;
+                """);
+            var enums = migrations.Single(m => m.EndsWith("_VehicleDossierEnums"));
+            await Execute(migrator.GenerateScript(dossier, enums, MigrationsSqlGenerationOptions.NoTransactions));
+            Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM \"Vehicles\" WHERE \"Id\"=1 AND \"FuelType\"=1 AND \"Transmission\"=1 AND \"DriveType\"=1 AND \"EuroStandard\"=5 AND \"BodyType\"=99 AND \"Notes\" LIKE 'Existing note%' AND \"Notes\" LIKE '%Custom body%'"));
         }
         finally { await transaction.RollbackAsync(); }
     }

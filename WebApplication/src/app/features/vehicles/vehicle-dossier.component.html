@@ -1,0 +1,50 @@
+<section class="panel p-6" aria-labelledby="dossier-title">
+  <header class="flex flex-wrap items-center justify-between gap-4 mb-5">
+    <div>
+      <h2 id="dossier-title">{{ 'vehicle.dossier.title' | translate }}</h2>
+     
+    </div>
+    <a class="secondary-button" [routerLink]="['/vehicles', vehicle().id, 'edit']">{{
+      (incomplete() ? 'vehicle.dossier.complete' : 'vehicle.dossier.edit') | translate
+    }}</a>
+  </header>
+  @for (group of visibleGroups(); track group.title) {
+    @if (group.title) {
+      <h3 class="form-section-title mt-6 mb-4">{{ group.title | translate }}</h3>
+    }
+    <dl
+      class="grid gap-6"
+      [class.grid-cols-2]="!expanded()"
+      [class.grid-cols-1]="expanded()"
+      [class.sm:grid-cols-2]="expanded()"
+      [class.xl:grid-cols-4]="expanded()"
+    >
+      @for (field of group.fields; track field.key) {
+        <div class="min-w-0" [class.sm:col-span-2]="field.key === 'notes'">
+          <dt class="field-label">{{ field.label | translate }}</dt>
+          <dd class="break-words whitespace-pre-wrap">
+            @if (vehicle()[field.key] == null || vehicle()[field.key] === '') {
+              {{ 'common.notProvided' | translate }}
+            } @else if (field.type === 'select') {
+              {{ optionLabel(field) | translate }}
+            } @else if (field.type === 'date') {
+              {{ $any(vehicle()[field.key]) | localizedDate }}
+            } @else if (field.type === 'number') {
+              {{ vehicle()[field.key] | localizedNumber }}
+            } @else {
+              {{ vehicle()[field.key] }}
+            }
+          </dd>
+        </div>
+      }
+    </dl>
+  }
+  <button
+    type="button"
+    class="text-link mt-6"
+    [attr.aria-expanded]="expanded()"
+    (click)="expanded.set(!expanded())"
+  >
+    {{ (expanded() ? 'vehicle.dossier.less' : 'vehicle.dossier.more') | translate }}
+  </button>
+</section>

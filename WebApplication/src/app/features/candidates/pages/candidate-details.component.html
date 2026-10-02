@@ -235,7 +235,11 @@
     </section>
     <section class="panel p-6" [attr.aria-label]="'ui.vehicle_details' | translate">
       <h2 class="mb-5">{{ 'ui.vehicle_details' | translate }}</h2>
-      <dl class="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 candidate-facts">
+      <dl class="grid grid-cols-3 gap-x-4 sm:gap-x-8 gap-y-6 candidate-facts">
+        <div>
+          <dt>{{ 'vehicle.dossier.vin' | translate }}</dt>
+          <dd class="break-all">{{ candidate.vin || ('common.notProvided' | translate) }}</dd>
+        </div>
         <div>
           <dt>{{ 'ui.year' | translate }}</dt>
           <dd>{{ candidate.year ?? ('common.notProvided' | translate) }}</dd>
@@ -250,39 +254,50 @@
             }}
           </dd>
         </div>
-        <div>
-          <dt>{{ 'ui.vin' | translate }}</dt>
-          <dd class="break-all">{{ candidate.vin || ('common.notProvided' | translate) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'ui.source' | translate }}</dt>
-          <dd>{{ candidate.source || ('common.notProvided' | translate) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'ui.location' | translate }}</dt>
-          <dd>{{ candidate.location || ('common.notProvided' | translate) }}</dd>
-        </div>
-        @if (candidate.rejectedAt) {
-          <div>
-            <dt>{{ 'ui.rejected' | translate }}</dt>
-            <dd>{{ candidate.rejectedAt | localizedDate: 'dd MMM y, HH:mm' }}</dd>
-          </div>
-        }
-        @if (candidate.purchasedAt) {
-          <div>
-            <dt>{{ 'ui.purchased' | translate }}</dt>
-            <dd>{{ candidate.purchasedAt | localizedDate: 'dd MMM y, HH:mm' }}</dd>
-          </div>
-        }
       </dl>
-      @if (candidate.notes) {
-        <div class="mt-5 border-t border-slate-200 pt-5">
-          <h3 class="field-label">{{ 'ui.notes' | translate }}</h3>
-          <p class="text-base text-slate-700 whitespace-pre-wrap break-words">
-            {{ candidate.notes }}
-          </p>
+      @if (showAllVehicleData()) {
+        <div id="candidate-extra-data">
+          <dl class="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 mt-6 candidate-facts">
+            <div>
+              <dt>{{ 'ui.source' | translate }}</dt>
+              <dd>{{ candidate.source || ('common.notProvided' | translate) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'ui.location' | translate }}</dt>
+              <dd>{{ candidate.location || ('common.notProvided' | translate) }}</dd>
+            </div>
+            @if (candidate.rejectedAt) {
+              <div>
+                <dt>{{ 'ui.rejected' | translate }}</dt>
+                <dd>{{ candidate.rejectedAt | localizedDate: 'dd MMM y, HH:mm' }}</dd>
+              </div>
+            }
+            @if (candidate.purchasedAt) {
+              <div>
+                <dt>{{ 'ui.purchased' | translate }}</dt>
+                <dd>{{ candidate.purchasedAt | localizedDate: 'dd MMM y, HH:mm' }}</dd>
+              </div>
+            }
+          </dl>
+          @if (candidate.notes) {
+            <div class="mt-5 border-t border-slate-200 pt-5">
+              <h3 class="field-label">{{ 'ui.notes' | translate }}</h3>
+              <p class="text-base text-slate-700 whitespace-pre-wrap break-words">
+                {{ candidate.notes }}
+              </p>
+            </div>
+          }
         </div>
       }
+      <button
+        type="button"
+        class="text-link mt-6"
+        [attr.aria-expanded]="showAllVehicleData()"
+        aria-controls="candidate-extra-data"
+        (click)="showAllVehicleData.set(!showAllVehicleData())"
+      >
+        {{ (showAllVehicleData() ? 'vehicle.dossier.less' : 'vehicle.dossier.more') | translate }}
+      </button>
     </section>
     @if (showEstimate()) {
       <app-estimate-form

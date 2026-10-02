@@ -15,7 +15,8 @@ public class VehicleFilterDto : FilterDto<VehicleEntity>
         {
             var text = TextFilter.Trim().ToLowerInvariant();
             query = query.Where(v => v.Make.ToLower().Contains(text) || v.Model.ToLower().Contains(text)
-                || (v.Vin != null && v.Vin.ToLower().Contains(text)));
+                || (v.Vin != null && v.Vin.ToLower().Contains(text))
+                || (v.RegistrationNumber != null && v.RegistrationNumber.ToLower().Contains(text)));
         }
         return query;
     }

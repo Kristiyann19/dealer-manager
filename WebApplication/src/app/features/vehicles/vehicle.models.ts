@@ -1,3 +1,4 @@
+import { VehicleDossier } from './vehicle-dossier.models';
 import { CandidateEstimate, CostCategory } from '../candidates/models/candidate.models';
 
 export interface VehicleFinancialSummary {
@@ -23,7 +24,7 @@ export interface OriginalForecast {
   originalExpectedProfit: number;
   originalExpectedROI: number;
 }
-export interface VehicleDetails extends VehicleFinancialSummary {
+export interface VehicleDetails extends VehicleFinancialSummary, Partial<VehicleDossier> {
   id: number;
   make: string;
   model: string;

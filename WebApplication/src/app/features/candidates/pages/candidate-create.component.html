@@ -83,6 +83,12 @@
             [message]="'ui.mileage_must_be_a_whole_number_between_0_and_2_147_483_647' | translate"
           />
         </div>
+        <div>
+          <label class="field-label" for="vin">{{
+            'vehicle.dossier.vinOptional' | translate
+          }}</label
+          ><input id="vin" class="form-input" formControlName="vin" maxlength="32" />
+        </div>
         <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-5">
           <label class="field-label" for="asking-price">{{
             'candidate.askingPriceRequired' | translate

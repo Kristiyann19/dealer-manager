@@ -50,6 +50,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
                 Year = request.Year,
                 Mileage = request.Mileage,
                 AskingPrice = request.AskingPrice,
+                Vin = Normalize(request.Vin)?.ToUpperInvariant(),
                 Notes = Normalize(request.Notes),
                 Status = CandidateStatus.UnderReview,
                 CreatedAt = now,

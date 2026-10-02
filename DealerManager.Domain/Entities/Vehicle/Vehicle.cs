@@ -1,3 +1,4 @@
+using DriveType = DealerManager.Domain.Enums.DriveType;
 using DealerManager.Domain.Common;
 using DealerManager.Domain.Enums;
 
@@ -13,6 +14,23 @@ public class Vehicle : Entity, ITenantEntity
     public int Year { get; set; }
     public int? Mileage { get; set; }
     public string? Vin { get; set; }
+    public string? RegistrationNumber { get; set; }
+    public DateOnly? FirstRegistration { get; set; }
+    public FuelType? FuelType { get; set; }
+    public Transmission? Transmission { get; set; }
+    public int? EngineDisplacementCc { get; set; }
+    public int? PowerKw { get; set; }
+    public int? PowerHp { get; set; }
+    public DriveType? DriveType { get; set; }
+    public EuroStandard? EuroStandard { get; set; }
+    public BodyType? BodyType { get; set; }
+    public string? Color { get; set; }
+    public int? NumberOfDoors { get; set; }
+    public int? NumberOfSeats { get; set; }
+    public int? NumberOfKeys { get; set; }
+    public string? ImportedFrom { get; set; }
+    public string? Notes { get; set; }
+
     public DateTimeOffset PurchaseDate { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 

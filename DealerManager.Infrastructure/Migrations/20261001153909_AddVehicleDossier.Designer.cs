@@ -3,6 +3,7 @@ using System;
 using DealerManager.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DealerManager.Infrastructure.Migrations
 {
     [DbContext(typeof(DealerManagerDbContext))]
-    partial class DealerManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261001153909_AddVehicleDossier")]
+    partial class AddVehicleDossier
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -364,8 +367,8 @@ namespace DealerManager.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BodyType")
-                        .HasColumnType("integer");
+                    b.Property<string>("BodyType")
+                        .HasColumnType("text");
 
                     b.Property<string>("Color")
                         .HasColumnType("text");
@@ -377,20 +380,20 @@ namespace DealerManager.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("integer");
 
-                    b.Property<int?>("DriveType")
-                        .HasColumnType("integer");
+                    b.Property<string>("DriveType")
+                        .HasColumnType("text");
 
                     b.Property<int?>("EngineDisplacementCc")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("EuroStandard")
-                        .HasColumnType("integer");
+                    b.Property<string>("EuroStandard")
+                        .HasColumnType("text");
 
                     b.Property<DateOnly?>("FirstRegistration")
                         .HasColumnType("date");
 
-                    b.Property<int?>("FuelType")
-                        .HasColumnType("integer");
+                    b.Property<string>("FuelType")
+                        .HasColumnType("text");
 
                     b.Property<string>("ImportedFrom")
                         .HasColumnType("text");
@@ -436,8 +439,8 @@ namespace DealerManager.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Transmission")
-                        .HasColumnType("integer");
+                    b.Property<string>("Transmission")
+                        .HasColumnType("text");
 
                     b.Property<string>("Vin")
                         .HasColumnType("text");

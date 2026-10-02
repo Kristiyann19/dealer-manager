@@ -1,0 +1,85 @@
+<div class="page-container page-container--form">
+  <a class="text-link" [routerLink]="['/vehicles', id]">{{ 'vehicle.dossier.back' | translate }}</a>
+  <div class="page-heading">
+    <h1>{{ 'vehicle.dossier.editTitle' | translate }}</h1>
+    <p class="form-help mt-3">{{ 'vehicle.dossier.optional' | translate }}</p>
+  </div>
+  @if (error()) {
+    <p class="error-banner" role="alert">{{ error() | translate }}</p>
+  }
+  @if (loading()) {
+    <p class="panel p-6" role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (loaded()) {
+    <form [formGroup]="form" (ngSubmit)="save()" [attr.aria-busy]="busy()">
+      @for (group of groups; track group.title) {
+        <fieldset class="panel p-6 mb-6" [disabled]="busy()">
+          <legend class="form-section-title px-2">{{ group.title | translate }}</legend>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            @for (field of group.fields; track field.key) {
+              <div [class.md:col-span-2]="field.key === 'notes'">
+                <label class="field-label" [for]="field.key">{{ field.label | translate }}</label>
+                @if (field.type === 'select') {
+                  <select class="form-input" [id]="field.key" [formControlName]="field.key">
+                    <option [ngValue]="null">{{ 'common.notProvided' | translate }}</option>
+                    @for (option of field.options; track option.value) {
+                      <option [ngValue]="option.value">{{ option.label | translate }}</option>
+                    }
+                  </select>
+                } @else if (field.type === 'textarea') {
+                  <textarea
+                    class="form-input"
+                    [id]="field.key"
+                    [formControlName]="field.key"
+                    [maxlength]="field.maxLength!"
+                    rows="4"
+                  ></textarea>
+                } @else if (field.type === 'number') {
+                  <input
+                    class="form-input"
+                    [id]="field.key"
+                    type="number"
+                    [formControlName]="field.key"
+                    [min]="field.min!"
+                    [max]="field.max!"
+                    step="1"
+                    [attr.aria-describedby]="field.key + '-error'"
+                    [attr.aria-invalid]="
+                      form.controls[field.key].touched && form.controls[field.key].invalid
+                    "
+                  />
+                } @else {
+                  <input
+                    class="form-input"
+                    [id]="field.key"
+                    [type]="field.type"
+                    [formControlName]="field.key"
+                    [attr.min]="field.min ?? null"
+                    [attr.max]="field.max ?? null"
+                    [attr.maxlength]="field.maxLength ?? null"
+                    [attr.aria-describedby]="field.key + '-error'"
+                    [attr.aria-invalid]="
+                      form.controls[field.key].touched && form.controls[field.key].invalid
+                    "
+                  />
+                }
+                @if (form.controls[field.key].touched && form.controls[field.key].invalid) {
+                  <p class="text-sm text-red-600 mt-2" [id]="field.key + '-error'">
+                    {{ 'vehicle.dossier.invalid' | translate }}
+                  </p>
+                }
+              </div>
+            }
+          </div>
+        </fieldset>
+      }
+      <div class="flex flex-wrap gap-3 justify-end">
+        <a class="secondary-button" [routerLink]="['/vehicles', id]">{{
+          'vehicle.dossier.cancel' | translate
+        }}</a>
+        <button class="primary-button" type="submit" [disabled]="busy() || form.invalid">
+          {{ (busy() ? 'vehicle.dossier.saving' : 'vehicle.dossier.save') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

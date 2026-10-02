@@ -76,6 +76,7 @@ export class CandidateDetailsComponent {
   protected readonly savedVersion = signal(0);
   protected readonly busy = signal(false);
   protected readonly showEstimate = signal(false);
+  protected readonly showAllVehicleData = signal(false);
   protected readonly decision = signal<'approve' | 'reject' | null>(null);
   protected readonly reason = new FormControl('', { nonNullable: true });
   protected readonly selectedVersion = signal<number | null>(null);
@@ -100,6 +101,7 @@ export class CandidateDetailsComponent {
         map((params) => Number(params.get('id'))),
         distinctUntilChanged(),
         switchMap((id) => {
+          this.showAllVehicleData.set(false);
           this.showEstimate.set(false);
           this.showPurchase.set(false);
           this.decision.set(null);
