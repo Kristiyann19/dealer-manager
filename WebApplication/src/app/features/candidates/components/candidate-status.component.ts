@@ -15,5 +15,5 @@ import { CANDIDATE_STATUS_LABELS, CandidateStatus } from '../models/candidate.mo
 export class CandidateStatusComponent {
   readonly status = input.required<CandidateStatus>();
   protected readonly labels = CANDIDATE_STATUS_LABELS;
-  protected readonly severity = { 0: 'info', 1: 'success', 2: 'danger', 3: 'secondary' } as const;
+  protected readonly severity = { 0: 'secondary', 1: 'info', 2: 'danger', 3: 'success' } as const;
 }
