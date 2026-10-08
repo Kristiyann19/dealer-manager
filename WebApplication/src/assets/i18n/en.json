@@ -407,7 +407,6 @@
     "date": "Purchase date (optional)",
     "account": "Pay from",
     "after": "After purchase",
-    "previewHelp": "Balance preview. Available funds are checked again when you confirm.",
     "noAccounts": "No active EUR accounts. Create one in Finances.",
     "confirm": "Confirm the purchase",
     "success": "Vehicle purchased successfully.",

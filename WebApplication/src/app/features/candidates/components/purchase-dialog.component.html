@@ -82,7 +82,6 @@
               {{ 'purchase.after' | translate }}:
               <strong>{{ remaining() | localizedCurrency: account.currency }}</strong>
             </p>
-            <p class="form-help mt-3">{{ 'purchase.previewHelp' | translate }}</p>
           </div>
         }
         @if (insufficient()) {

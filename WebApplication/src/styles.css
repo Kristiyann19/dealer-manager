@@ -275,6 +275,14 @@
   .primary-button:hover {
     background: #1f54bd;
   }
+  .primary-button.success-button {
+    background: #15803d;
+    border-color: #15803d;
+  }
+  .primary-button.success-button:hover {
+    background: #166534;
+    border-color: #166534;
+  }
   .secondary-button {
     background: var(--app-surface, white);
     color: var(--app-text, #334155);

@@ -4,11 +4,8 @@
       <p class="eyebrow">{{ 'ui.before_the_purchase' | translate }}</p>
       <h1>{{ 'ui.candidates' | translate }}</h1>
     </div>
-    <a routerLink="/candidates/new" class="primary-button">{{
-      'ui.new_candidate_3' | translate
-    }}</a>
   </div>
-  <section class="panel overflow-hidden" [attr.aria-label]="'ui.candidate_list' | translate">
+  <section class="panel overflow-hidden">
     <div class="p-5 flex flex-wrap justify-between gap-3 items-end">
       <label class="block w-full sm:max-w-sm"
         ><span class="field-label">{{ 'ui.search_candidates' | translate }}</span
@@ -18,7 +15,12 @@
           [formControl]="search"
           [placeholder]="'ui.make_model_or_vin' | translate"
       /></label>
+      <a routerLink="/candidates/new" class="primary-button shrink-0 whitespace-nowrap">{{
+        'ui.new_candidate_3' | translate
+      }}</a>
     </div>
+  </section>
+  <section class="panel overflow-hidden" [attr.aria-label]="'ui.candidate_list' | translate">
     @let current = state();
     @switch (current.status) {
       @case ('loading') {

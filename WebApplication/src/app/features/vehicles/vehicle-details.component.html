@@ -33,31 +33,35 @@
             >{{ vehicle.purchaseDate | localizedDate }}</time
           >
         </p>
-        @if (canSell()) {
-          <button
-            type="button"
-            class="primary-button mt-5 min-h-12 px-6 text-base whitespace-nowrap"
-            (click)="saleDialog.set(true)"
-          >
-            {{ 'vehicle.sale.action' | translate }}
-          </button>
-        }
-        @if (canChangeStatus()) {
-          <button
-            type="button"
-            class="primary-button mt-5 min-h-12 px-6 text-base whitespace-nowrap"
-            (click)="changingStatus.set(true)"
-          >
-            {{ 'vehicle.changeStatus' | translate }}
-          </button>
-        }
-      </div>
-      <div class="flex flex-wrap items-center gap-3">
-        @if (canList()) {
-          <button class="primary-button" (click)="listingDialog.set(true)">
-            {{ 'vehicle.listing.action' | translate }}
-          </button>
-        }
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          @if (canSell()) {
+            <button
+              type="button"
+              class="primary-button min-h-12 px-6 text-base whitespace-nowrap"
+              (click)="saleDialog.set(true)"
+            >
+              {{ 'vehicle.sale.action' | translate }}
+            </button>
+          }
+          @if (canChangeStatus()) {
+            <button
+              type="button"
+              class="primary-button min-h-12 px-6 text-base whitespace-nowrap"
+              (click)="changingStatus.set(true)"
+            >
+              {{ 'vehicle.changeStatus' | translate }}
+            </button>
+          }
+          @if (canList()) {
+            <button
+              type="button"
+              class="primary-button success-button min-h-12 px-6 text-base whitespace-nowrap"
+              (click)="listingDialog.set(true)"
+            >
+              {{ 'vehicle.listing.action' | translate }}
+            </button>
+          }
+        </div>
       </div>
     </header>
     @if (vehicle.status === 9) {

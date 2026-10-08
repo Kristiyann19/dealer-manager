@@ -1,4 +1,4 @@
-using DealerManager.Domain.Common;
+ using DealerManager.Domain.Common;
 using DealerManager.Domain.Enums;
 
 namespace DealerManager.Domain.Entities;
