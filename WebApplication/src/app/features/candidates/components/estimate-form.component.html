@@ -1,108 +1,192 @@
-<section class="panel p-6" aria-labelledby="estimate-title">
-  <div class="section-heading">
-    <h2 id="estimate-title">{{ 'ui.new_estimate_version' | translate }}</h2>
-  </div>
+<section class="panel p-5 sm:p-6" aria-labelledby="estimate-title">
+  <h2 id="estimate-title">{{ 'candidate.editor.title' | translate }}</h2>
+  <p class="text-sm text-slate-600 mt-2 mb-6">{{ 'candidate.editor.subtitle' | translate }}</p>
   <form [formGroup]="form" (ngSubmit)="submit()">
     @if (error()) {
       <div class="error-banner mb-5" role="alert">{{ error() | translate }}</div>
     }
     <fieldset [disabled]="busy()">
-      @if (candidate().latestEstimate) {
-        <button type="button" class="secondary-button mb-5" (click)="copyLatest()">
-          {{ 'ui.replace_draft_items_with_latest_estimate' | translate }}
-        </button>
-      }
-      <div class="max-w-sm mb-5">
-        <label class="field-label" for="estimate-price">{{
-          'ui.expected_selling_price_eur' | translate
-        }}</label
-        ><input
-          id="estimate-price"
-          class="form-input"
-          type="number"
-          min="0"
-          step="0.01"
-          formControlName="expectedSellingPrice"
-          aria-required="true"
-          aria-describedby="estimate-price-error"
-        /><app-field-error
+      <section class="pb-6 border-b border-slate-200">
+          <h3 class="font-semibold mb-3">{{
+            'candidate.editor.price' | translate
+          }}</h3>
+          <div class="flex w-full max-w-[280px] items-center gap-3">
+            <input
+              id="estimate-price"
+              class="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              formControlName="expectedSellingPrice"
+              aria-required="true"
+              aria-describedby="estimate-price-error"
+            />
+            <span class="text-slate-600" aria-hidden="true">€</span>
+          </div>
+        <app-field-error
           id="estimate-price-error"
           [control]="form.controls.expectedSellingPrice"
           [message]="'ui.enter_a_selling_price_of_zero_or_more' | translate"
         />
-      </div>
-      <div formArrayName="items" class="space-y-3">
-        @for (item of items.controls; track item; let i = $index) {
-          <div [formGroupName]="i" class="estimate-item">
-            <div>
-              <label class="field-label" [for]="'category-' + i">{{
-                'ui.category' | translate
-              }}</label
-              ><select class="form-input" [id]="'category-' + i" formControlName="category">
-                @for (
-                  category of isPurchaseRow(i) ? categories : additionalCategories;
-                  track category.value
-                ) {
-                  <option [ngValue]="category.value">{{ category.label | translate }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="field-label" [for]="'amount-' + i">{{
-                'ui.estimated_amount' | translate
-              }}</label
-              ><input
-                class="form-input"
-                [id]="'amount-' + i"
-                type="number"
-                min="0"
-                step="1"
-                formControlName="estimatedAmount"
-                [attr.aria-describedby]="
-                  isPurchaseRow(i) ? 'purchase-cost-help amount-error-' + i : 'amount-error-' + i
-                "
-              /><app-field-error
-                [id]="'amount-error-' + i"
-                [control]="item.controls.estimatedAmount"
-                [message]="'ui.enter_an_amount_of_zero_or_more' | translate"
-              />
-              @if (isPurchaseRow(i)) {
-                <p id="purchase-cost-help" class="form-help mt-2">
-                  {{ 'candidate.negotiatedPurchaseHelp' | translate }}
-                </p>
-              }
-            </div>
-            <div>
-              <label class="field-label" [for]="'description-' + i">{{
-                'ui.description' | translate
-              }}</label
-              ><input
-                class="form-input"
-                [id]="'description-' + i"
-                formControlName="description"
-              />
-            </div>
-            
-            <button
-              type="button"
-              class="secondary-button self-start mt-6"
-              [disabled]="isPurchaseRow(i)"
-              [attr.aria-label]="'candidate.removeItem' | translate: { index: i + 1 }"
-              (click)="removeItem(i)"
-            >
-              {{ 'ui.remove' | translate }}
-            </button>
-          </div>
+      </section>
+      <section class="py-6 border-b border-slate-200">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <h3 class="font-semibold">{{ 'candidate.editor.costs' | translate }}</h3>
+          <span class="text-xs text-slate-500">{{
+            'candidate.editor.count' | translate: { count: items.length }
+          }}</span>
+        </div>
+        @if (candidate().latestEstimate) {
+          <button type="button" class="text-link text-sm my-3" (click)="copyLatest()">
+            {{ 'ui.replace_draft_items_with_latest_estimate' | translate }}
+          </button>
         }
-      </div>
-      <button type="button" class="primary-button mt-4" (click)="addItem()">
-        {{ 'ui.add_cost_item' | translate }}
-      </button>
-      <div class="mt-6 flex flex-wrap justify-end gap-3">
+        <div formArrayName="items">
+          @for (item of items.controls; track item; let i = $index) {
+            <div [formGroupName]="i" class="estimate-cost-row">
+              <div
+                [id]="'estimate-editor-' + i"
+                class="estimate-cost-editor"
+              >
+                <div>
+                  <label class="field-label" [for]="'category-' + i">{{
+                    'ui.category' | translate
+                  }}</label
+                  ><select class="form-input" [id]="'category-' + i" formControlName="category">
+                    @for (
+                      category of isPurchaseRow(i) ? categories : additionalCategories;
+                      track category.value
+                    ) {
+                      <option [ngValue]="category.value">{{ category.label | translate }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <label class="field-label !mb-0" [for]="'amount-' + i">{{
+                      'ui.estimated_amount' | translate
+                    }}</label>
+                    @if (isPurchaseRow(i)) {
+                      <span class="help-tooltip">
+                        <button
+                          type="button"
+                          class="help-tooltip-trigger"
+                          aria-describedby="purchase-cost-help"
+                          [attr.aria-label]="'candidate.negotiatedPurchaseHelp' | translate"
+                        >
+                          <svg
+                            viewBox="0 0 20 20"
+                            width="18"
+                            height="18"
+                            aria-hidden="true"
+                            fill="currentColor"
+                          >
+                            <circle cx="10" cy="5" r="1" />
+                            <path d="M9 8h2v7H9z" />
+                          </svg>
+                        </button>
+                        <span id="purchase-cost-help" class="help-tooltip-content" role="tooltip">{{
+                          'candidate.negotiatedPurchaseHelp' | translate
+                        }}</span>
+                      </span>
+                    }
+                  </div>
+                  <input
+                    class="form-input"
+                    [id]="'amount-' + i"
+                    type="number"
+                    min="0"
+                    step="1"
+                    formControlName="estimatedAmount"
+                    [attr.aria-describedby]="
+                      isPurchaseRow(i)
+                        ? 'purchase-cost-help amount-error-' + i
+                        : 'amount-error-' + i
+                    "
+                  /><app-field-error
+                    [id]="'amount-error-' + i"
+                    [control]="item.controls.estimatedAmount"
+                    [message]="'ui.enter_an_amount_of_zero_or_more' | translate"
+                  />
+                </div>
+                <div>
+                  <label class="field-label" [for]="'description-' + i">{{
+                    'ui.description' | translate
+                  }}</label
+                  ><input
+                    class="form-input"
+                    [id]="'description-' + i"
+                    formControlName="description"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="secondary-button self-start justify-self-start sm:mt-6"
+                  [disabled]="isPurchaseRow(i)"
+                  [class.invisible]="isPurchaseRow(i)"
+                  [attr.aria-label]="'candidate.removeItem' | translate: { index: i + 1 }"
+                  (click)="removeItem(i)"
+                >
+                  <span class="sr-only">{{ 'ui.remove' | translate }}</span>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+        <button type="button" class="primary-button mt-4" (click)="addItem()">
+          {{ 'ui.add_cost_item' | translate }}
+        </button>
+      </section>
+      <dl class="grid grid-cols-1 sm:grid-cols-3 gap-5 py-6 border-b border-slate-200">
+        <div>
+          <dt class="field-label">{{ 'candidate.editor.total' | translate }}</dt>
+          <dd class="font-semibold tabular-nums">
+            {{ totalCost() === null ? '—' : (totalCost() | localizedCurrency: 'EUR') }}
+          </dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'candidate.editor.profit' | translate }}</dt>
+          <dd
+            class="font-semibold tabular-nums"
+            [class.text-emerald-700]="(profit() ?? 0) > 0"
+            [class.text-red-600]="(profit() ?? 0) < 0"
+          >
+            {{ profit() === null ? '—' : (profit() | localizedCurrency: 'EUR') }}
+          </dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'candidate.editor.margin' | translate }}</dt>
+          <dd
+            class="font-semibold tabular-nums"
+            [class.text-emerald-700]="(margin() ?? 0) > 0"
+            [class.text-red-600]="(margin() ?? 0) < 0"
+          >
+            {{
+              margin() === null
+                ? '—'
+                : ('candidate.editor.percent'
+                  | translate: { value: (margin() | localizedNumber: '1.2-2') })
+            }}
+          </dd>
+        </div>
+      </dl>
+      <div class="pt-6 flex flex-wrap justify-end gap-3">
         <button type="button" class="secondary-button" (click)="cancelled.emit(!!error())">
-          {{ 'ui.cancel_estimate' | translate }}</button
-        ><button type="submit" class="primary-button" [disabled]="busy() || !form.valid">
-          {{ busy() ? ('common.saving' | translate) : ('candidate.saveVersion' | translate) }}
+          {{ 'candidate.editor.cancel' | translate }}
+        </button>
+        <button type="submit" class="primary-button" [disabled]="busy() || !form.valid">
+          {{ (busy() ? 'common.saving' : 'candidate.editor.save') | translate }}
         </button>
       </div>
     </fieldset>

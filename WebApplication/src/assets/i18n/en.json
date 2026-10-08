@@ -210,6 +210,21 @@
     "km": " km"
   },
   "candidate": {
+    "editor": {
+      "title": "Edit estimate",
+      "subtitle": "Update the expected selling price and estimated vehicle costs.",
+      "sale": "Expected sale",
+      "price": "Estimated selling price",
+      "costs": "Estimated costs",
+      "count": "{{count}} items",
+      "purchaseDescription": "Vehicle purchase price",
+      "total": "Total estimated costs",
+      "profit": "Expected profit",
+      "margin": "Profit margin (%)",
+      "percent": "{{value}}%",
+      "cancel": "Cancel",
+      "save": "Save estimate"
+    },
     "pagination": "Candidate pages",
     "pageNumber": "Page {{number}}",
     "negotiatedPurchaseHelp": "Saving this estimate updates the candidate price to this amount. Previous estimates remain unchanged.",

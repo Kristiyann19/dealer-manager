@@ -316,6 +316,69 @@
     max-width: 100%;
     overflow-x: auto;
   }
+  .help-tooltip {
+    position: relative;
+    display: inline-flex;
+  }
+  .estimate-sale-field {
+    max-width: 280px;
+    border: 1px solid var(--app-border, #dce3ec);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .estimate-sale-field .form-input {
+    font-size: 22px;
+    font-weight: 600;
+    padding: 4px 0;
+    border-radius: 0;
+    background: transparent;
+    border-color: transparent;
+    min-width: 0;
+  }
+  .estimate-cost-row {
+    border-bottom: 1px solid var(--app-border, #e2e8f0);
+  }
+  .estimate-cost-editor {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px 0;
+  }
+  @media (min-width: 640px) {
+    .estimate-cost-editor {
+      grid-template-columns: 1fr 1fr 2fr auto;
+    }
+  }
+  .help-tooltip-trigger {
+    width: 20px;
+    height: 20px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    color: var(--app-muted, #2863d9);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: help;
+  }
+  .help-tooltip-content {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(260px, 70vw);
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #2863d9;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.5;
+    z-index: 20;
+    box-shadow: 0 3px 12px rgb(15 23 42 / 15%);
+  }
+  .help-tooltip:hover .help-tooltip-content,
+  .help-tooltip:focus-within .help-tooltip-content {
+    display: block;
+  }
   .pagination-control button {
     background: var(--app-surface, white);
     border: 1px solid var(--app-border, #dce3ec);

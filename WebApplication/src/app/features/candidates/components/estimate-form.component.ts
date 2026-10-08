@@ -1,5 +1,19 @@
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, OnInit, output, signal,
+import {
+  LocalizedCurrencyPipe,
+  LocalizedNumberPipe,
+} from '../../../shared/pipes/localized-format.pipe';
+import { computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +31,13 @@ import { apiError } from './candidate-form-utils';
 
 @Component({
   selector: 'app-estimate-form',
-  imports: [TranslatePipe, ReactiveFormsModule, FieldErrorComponent],
+  imports: [
+    TranslatePipe,
+    ReactiveFormsModule,
+    FieldErrorComponent,
+    LocalizedCurrencyPipe,
+    LocalizedNumberPipe,
+  ],
   templateUrl: './estimate-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -45,6 +65,27 @@ export class EstimateFormComponent implements OnInit {
   protected get items() {
     return this.form.controls.items;
   }
+  private readonly changes = toSignal(this.form.valueChanges);
+  protected readonly totalCost = computed(() => {
+    this.changes();
+    const amounts = this.form.getRawValue().items.map((item) => item.estimatedAmount);
+    return amounts.some((value) => value === null || !Number.isFinite(value) || value < 0)
+      ? null
+      : amounts.reduce<number>((sum, value) => sum + value!, 0);
+  });
+  protected readonly profit = computed(() => {
+    this.changes();
+    const price = this.form.controls.expectedSellingPrice.value;
+    const cost = this.totalCost();
+    return price === null || !Number.isFinite(price) || price < 0 || cost === null
+      ? null
+      : price - cost;
+  });
+  protected readonly margin = computed(() => {
+    const profit = this.profit();
+    const price = this.form.controls.expectedSellingPrice.value;
+    return profit === null || !price ? null : (profit / price) * 100;
+  });
 
   ngOnInit() {
     const candidate = this.candidate();
@@ -78,7 +119,9 @@ export class EstimateFormComponent implements OnInit {
     return index === 0;
   }
   protected removeItem(index: number) {
-    if (index > 0 && !this.busy()) this.items.removeAt(index);
+    if (index > 0 && !this.busy()) {
+      this.items.removeAt(index);
+    }
   }
   protected copyLatest() {
     const latest = this.candidate().latestEstimate;
@@ -93,7 +136,9 @@ export class EstimateFormComponent implements OnInit {
   protected submit() {
     if (this.busy()) return;
     this.form.markAllAsTouched();
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      return;
+    }
     const value = this.form.getRawValue();
     this.busy.set(true);
     this.error.set('');

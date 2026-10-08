@@ -215,6 +215,28 @@ describe('Candidate module HTTP workflows', () => {
     request.flush({ ...estimate, version: 2 });
     expect(saved).toHaveBeenCalledOnce();
   });
+  it('keeps cost inputs visible and recalculates profit and sales margin', () => {
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', candidate);
+    fixture.detectChanges();
+    const editor = fixture.nativeElement.querySelector('#estimate-editor-0');
+    expect(editor.hidden).toBe(false);
+    input(fixture, '#estimate-price', '10000');
+    input(fixture, '#amount-0', '7500');
+    const summary = () => fixture.nativeElement.querySelector('dl').textContent;
+    expect(summary()).toContain('25.00%');
+    button(fixture, '+ Add cost item').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#estimate-editor-1').hidden).toBe(false);
+    input(fixture, '#amount-1', '500');
+    expect(summary()).toContain('20.00%');
+    input(fixture, '#amount-1', '3500');
+    expect(summary()).toContain('-10.00%');
+    expect(fixture.nativeElement.querySelectorAll('dd.text-red-600').length).toBe(2);
+    input(fixture, '#estimate-price', '0');
+    expect(summary()).not.toContain('Infinity');
+    expect(summary()).toContain('—');
+  });
   it('requires at least one valid estimate item and permits a zero amount', () => {
     const fixture = TestBed.createComponent(EstimateFormComponent);
     fixture.componentRef.setInput('candidate', candidate);
@@ -429,7 +451,7 @@ describe('Candidate module HTTP workflows', () => {
     button(fixture, '+ New estimate').click();
     fixture.detectChanges();
     input(fixture, '#amount-0', '2500');
-    button(fixture, 'Cancel estimate').click();
+    button(fixture, en.candidate.editor.cancel).click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.financial-summary').textContent).toContain(
       '€3,000.00',
