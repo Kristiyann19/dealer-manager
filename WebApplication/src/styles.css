@@ -307,7 +307,7 @@
     background: var(--app-surface, white);
     border: 1px solid var(--app-border, #dce3ec);
     border-radius: 12px;
-    box-shadow: none;
+    box-shadow: 0 5px 16px rgb(15 23 42 / 12%);
   }
   .page-heading {
     display: flex;
