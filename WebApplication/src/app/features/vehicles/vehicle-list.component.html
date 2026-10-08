@@ -116,35 +116,14 @@
             </table>
           </div>
         }
-        @if (current.data.totalCount > 0) {
-          <div
-            class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-5"
-          >
-            <p class="text-sm text-slate-600">
-              {{
-                'vehicle.pagination'
-                  | translate
-                    : {
-                        start: current.data.items.length ? offset() + 1 : 0,
-                        end: end(current.data.totalCount),
-                        total: current.data.totalCount,
-                      }
-              }}
-            </p>
-            <div class="flex gap-2">
-              <button class="secondary-button" [disabled]="offset() === 0" (click)="page(-1)">
-                {{ 'vehicle.previous' | translate }}</button
-              ><button
-                class="secondary-button"
-                [disabled]="end(current.data.totalCount) >= current.data.totalCount"
-                (click)="page(1)"
-              >
-                {{ 'vehicle.next' | translate }}
-              </button>
-            </div>
-          </div>
-        }
       }
     }
   </section>
+  @if (state(); as current) {
+    @if (current.status === 'ready') {
+      <app-pagination [offset]="offset()" [pageSize]="limit" [total]="current.data.totalCount" (pageChange)="goToPage($event)">
+        {{ 'vehicle.pagination' | translate: {start: current.data.items.length ? offset() + 1 : 0, end: end(current.data.totalCount), total: current.data.totalCount} }}
+      </app-pagination>
+    }
+  }
 </div>

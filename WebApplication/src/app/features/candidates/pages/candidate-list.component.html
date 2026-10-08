@@ -145,37 +145,19 @@
             }
           </div>
         }
-        <div
-          class="p-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500"
-        >
-          <span role="status">{{
-            'ui.value_value_of_value_candidates_eur'
-              | translate
-                : {
-                    p0: current.data.items.length ? offset() + 1 : 0,
-                    p1: current.data.items.length ? end(current.data.totalCount) : 0,
-                    p2: current.data.totalCount,
-                  }
-          }}</span>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="secondary-button"
-              [disabled]="offset() === 0"
-              (click)="page(-1)"
-            >
-              {{ 'ui.previous' | translate }}</button
-            ><button
-              type="button"
-              class="secondary-button"
-              [disabled]="offset() + limit >= current.data.totalCount"
-              (click)="page(1)"
-            >
-              {{ 'ui.next' | translate }}
-            </button>
-          </div>
-        </div>
       }
     }
   </section>
+  @if (state(); as current) {
+    @if (current.status === 'ready') {
+      <app-pagination [offset]="offset()" [pageSize]="limit" [total]="current.data.totalCount" (pageChange)="goToPage($event)">
+        <span >{{
+          'ui.value_value_of_value_candidates_eur' | translate: {
+            p0: current.data.items.length ? offset() + 1 : 0,
+            p1: end(current.data.totalCount), p2: current.data.totalCount
+          }
+        }}</span>
+      </app-pagination>
+    }
+  }
 </div>

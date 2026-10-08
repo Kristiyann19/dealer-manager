@@ -67,7 +67,7 @@ function input(fixture: ComponentFixture<unknown>, selector: string, value: stri
 function button(fixture: ComponentFixture<unknown>, text: string): HTMLButtonElement {
   return Array.from(
     fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
-  ).find((element) => element.textContent?.trim() === text)!;
+  ).find((element) => element.getAttribute('aria-label') === text || element.textContent?.trim() === text)!;
 }
 function submit(fixture: ComponentFixture<unknown>) {
   fixture.nativeElement

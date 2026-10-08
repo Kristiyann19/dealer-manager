@@ -1,3 +1,4 @@
+import { PaginationComponent } from '../../../shared/components/pagination.component';
 import {
   LocalizedNumberPipe,
   LocalizedCurrencyPipe,
@@ -30,6 +31,7 @@ type ListState =
 @Component({
   selector: 'app-candidate-list',
   imports: [
+    PaginationComponent,
     TranslatePipe,
     RouterLink,
     ReactiveFormsModule,
@@ -80,6 +82,11 @@ export class CandidateListComponent {
   }
   protected page(direction: number) {
     this.offset.update((value) => Math.max(0, value + direction * this.limit));
+    this.refresh();
+  }
+  protected goToPage(number: number) {
+    if ((number - 1) * this.limit === this.offset()) return;
+    this.offset.set((number - 1) * this.limit);
     this.refresh();
   }
   protected end(total: number) {

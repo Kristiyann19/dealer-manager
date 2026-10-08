@@ -109,7 +109,7 @@
     "review": "Review →",
     "clear_search": "Clear search",
     "create_first_candidate": "Create first candidate",
-    "value_value_of_value_candidates_eur": "{{p0}}–{{p1}} of {{p2}} candidates · EUR",
+    "value_value_of_value_candidates_eur": "{{p0}}–{{p1}} of {{p2}} candidates",
     "previous": "Previous",
     "next": "Next",
     "workspace_2": "WORKSPACE",
@@ -198,6 +198,8 @@
     "role": "Admin / Manager"
   },
   "common": {
+    "pagination": "Pagination",
+    "pageNumber": "Page {{number}}",
     "saving": "Saving…",
     "creating": "Creating…",
     "unknown": "Unknown",
@@ -208,6 +210,8 @@
     "km": " km"
   },
   "candidate": {
+    "pagination": "Candidate pages",
+    "pageNumber": "Page {{number}}",
     "negotiatedPurchaseHelp": "Saving this estimate updates the candidate price to this amount. Previous estimates remain unchanged.",
     "fixedPurchaseHelp": "The Purchase cost is locked to the candidate’s asking price and is included once in the total. Copying an earlier estimate keeps this price. Add other costs as separate rows.",
     "legacyPurchaseHelp": "This candidate has no recorded asking price. Enter the purchase price as a Purchase cost and add the other estimated costs.",

@@ -1,3 +1,4 @@
+import { PaginationComponent } from '../../shared/components/pagination.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -30,6 +31,7 @@ type ListState =
 @Component({
   selector: 'app-vehicle-list',
   imports: [
+    PaginationComponent,
     TranslatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -101,6 +103,10 @@ export class VehicleListComponent {
   }
   page(direction: number) {
     this.offset.update((value) => Math.max(0, value + direction * this.limit));
+    this.reload.next();
+  }
+  goToPage(number: number) {
+    this.offset.set((number - 1) * this.limit);
     this.reload.next();
   }
   end(total: number) {
