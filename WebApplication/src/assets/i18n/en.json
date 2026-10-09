@@ -1,5 +1,6 @@
 {
   "ui": {
+    "listed_cars": "Listed vehicles",
     "skip_to_content": "Skip to content",
     "close_navigation": "Close navigation",
     "autocapital_dashboard": "AutoCapital dashboard",

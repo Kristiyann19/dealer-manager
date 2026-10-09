@@ -1,7 +1,7 @@
 import { PaginationComponent } from '../../shared/components/pagination.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject,
@@ -43,10 +43,11 @@ type ListState =
 })
 export class VehicleListComponent {
   private readonly api = inject(VehicleApiService);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reload = new BehaviorSubject<void>(undefined);
   readonly search = new FormControl('', { nonNullable: true });
-  readonly statusFilter = new FormControl<VehicleStatus | null>(null);
+  readonly statusFilter = new FormControl<VehicleStatus | null>(this.routeStatus(this.route.snapshot.queryParamMap.get('status')));
   readonly statuses = VEHICLE_STATUSES;
   readonly query = signal('');
   readonly offset = signal(0);
@@ -69,6 +70,14 @@ export class VehicleListComponent {
     { initialValue: { status: 'loading' } as ListState },
   );
   constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const status = this.routeStatus(params.get('status'));
+      if (status !== this.statusFilter.value) {
+        this.statusFilter.setValue(status, { emitEvent: false });
+        this.offset.set(0);
+        this.reload.next();
+      }
+    });
     this.search.valueChanges
       .pipe(
         map((value) => value.trim()),
@@ -97,6 +106,11 @@ export class VehicleListComponent {
       if (key === 'projectedProfit') return vehicle.realizedProfit;
     }
     return vehicle[key];
+  }
+  private routeStatus(value: string | null): VehicleStatus | null {
+    if (value === null || value.trim() === '') return null;
+    const status = Number(value);
+    return VEHICLE_STATUSES.some(option => option.value === status) ? status : null;
   }
   retry() {
     this.reload.next();

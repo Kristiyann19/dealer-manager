@@ -1,5 +1,6 @@
 {
   "ui": {
+    "listed_cars": "Автомобили на обява",
     "skip_to_content": "Към съдържанието",
     "close_navigation": "Затвори навигацията",
     "autocapital_dashboard": "Табло на AutoCapital",
@@ -68,7 +69,7 @@
     "created_value": "Създаден на {{p0}}",
     "reject": "Отхвърли",
     "approve_candidate": "Одобри кандидата",
-    "add_at_least_one_estimate_before_approving_this_candidate": "Добави поне една оценка, преди да одобриш кандидата.",
+    "add_at_least_one_estimate_before_approving_this_candidate": "Добави прогнозни разходи за кандидата, за да го одобриш",
     "this_candidate_is_value_its_evaluation_history_is_available_for_reference": "Кандидатът е {{p0}}. Историята на оценките е достъпна за справка.",
     "reason_optional": "Причина",
     "mileage": "Пробег",
@@ -77,7 +78,7 @@
     "current_expectation": "Текуща прогноза",
     "current_expected_selling_price": "Текуща очаквана продажна цена",
     "estimates_do_not_affect_the_capital_balance": "Оценките не променят наличния капитал.",
-    "estimate_history": "Финансова прогноза",
+    "estimate_history": "Финансова прогноза за разходите",
     "review_how_the_evaluation_changed_over_time": "Предварителна калкулация на разходите и очакваната печалба.",
     "new_estimate": "+ Добави нова прогноза",
     "viewing_version": "Преглед на версия",
@@ -211,7 +212,7 @@
   },
   "candidate": {
     "editor": {
-      "title": "Редактиране на оценката",
+      "title": "Редактиране на прогнозата",
       "subtitle": "Актуализирайте очакваната продажна цена и прогнозните разходи на автомобила.",
       "sale": "Очаквана продажба",
       "price": "Прогнозна продажна цена",
@@ -223,7 +224,7 @@
       "margin": "Марж на печалба (%)",
       "percent": "{{value}}%",
       "cancel": "Откажи",
-      "save": "Запази оценката"
+      "save": "Запази прогнозата"
     },
     "pagination": "Страници с кандидати",
     "pageNumber": "Страница {{number}}",
@@ -256,7 +257,7 @@
     "askingPriceRequired": "Цена на кандидата (EUR) *",
     "askingPriceHelp": "Цената, на която продавачът или посредникът предлага автомобила.",
     "askingPriceValidation": "Въведи цена на кандидата, равна на или по-голяма от нула.",
-    "sellingPricePending": "Попълни в оценката",
+    "sellingPricePending": "Попълни в прогнозните разходи",
     "estimatePurchaseHelp": "Офертната цена е попълнена като разход „Покупка“. Въведи очакваната продажна цена и добави останалите разходи. Покупната цена се брои само чрез този разход."
   },
   "form": {
@@ -422,7 +423,7 @@
     "action": "Потвърди покупка",
     "title": "Потвърждаване на покупка",
     "forecast": "Прогнозна покупна цена",
-    "actualPrice": "Реална покупна цена (EUR)",
+    "actualPrice": "Цена само на колата:",
     "date": "Дата на покупка (незадължителна)",
     "account": "Плащане от",
     "after": "След покупката",

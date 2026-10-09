@@ -24,7 +24,7 @@
     }
     @case ('ready') {
       <div class="space-y-6">
-        <app-monthly-overview [data]="current.data.monthly" [period]="current.data.asOf" />
+        <app-monthly-overview [listedCount]="current.data.pipeline.listed" [data]="current.data.monthly" [period]="current.data.asOf" />
         <app-financial-overview [data]="current.data.financial" />
         <app-operational-pipeline [data]="current.data.pipeline" />
         @if (workspace.searchQuery()) {
