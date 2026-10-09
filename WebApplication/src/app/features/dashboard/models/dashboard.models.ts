@@ -56,10 +56,23 @@ export interface MonthlyFinancialData {
 }
 export interface DashboardSummary {
   asOf: string;
+  agedVehicles: AgedVehicle[];
   monthly: MonthlyOverview;
   financial: FinancialOverview;
   pipeline: PipelineSummary;
   candidates: CandidateSummary[];
   activeVehicles: ActiveVehicleSummary[];
   monthlyFinancials: MonthlyFinancialData[];
+}
+
+export interface AgedVehicle {
+  id: number;
+  make: string;
+  model: string;
+  status: VehicleStatus;
+  daysInStock: number;
+  daysListed: number | null;
+  severity: 'Warning' | 'Critical';
+  totalInvested: number;
+  listingPrice: number | null;
 }

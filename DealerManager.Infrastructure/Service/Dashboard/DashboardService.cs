@@ -33,6 +33,28 @@ public sealed class DashboardService(DealerManagerDbContext db, TimeProvider clo
                 .Where(p => p.Vehicle.Status != VehicleStatus.Sold))
             .SumAsync(cancellationToken);
 
+        // UTC calendar days (not rounded elapsed hours); project scalars, never navigation graphs.
+        var today = now.UtcDateTime.Date;
+        var cutoff = new DateTimeOffset(today.AddDays(-30), TimeSpan.Zero);
+        var agedRows = await (from vehicle in active.Where(v => v.PurchaseDate < cutoff)
+            join investment in investments on vehicle.Id equals investment.VehicleId
+            select new {
+                vehicle.Id, vehicle.Make, vehicle.Model, vehicle.Status, vehicle.PurchaseDate,
+                investment.TotalInvested,
+                ListedAt = vehicle.Status == VehicleStatus.Listed
+                    ? db.VehicleListings.Where(l => l.VehicleId == vehicle.Id && l.IsActive)
+                        .OrderByDescending(l => l.Id).Select(l => (DateTimeOffset?)l.ListedAt).FirstOrDefault() : null,
+                ListingPrice = db.VehicleListings.Where(l => l.VehicleId == vehicle.Id && l.IsActive)
+                    .OrderByDescending(l => l.Id).Select(l => (decimal?)l.ListingPrice).FirstOrDefault()
+            }).ToListAsync(cancellationToken);
+        var agedVehicles = agedRows.Select(v => new AgedVehicleDto {
+            Id = v.Id, Make = v.Make, Model = v.Model, Status = v.Status,
+            DaysInStock = (today - v.PurchaseDate.UtcDateTime.Date).Days,
+            DaysListed = v.ListedAt.HasValue ? Math.Max(0, (today - v.ListedAt.Value.UtcDateTime.Date).Days) : null,
+            TotalInvested = v.TotalInvested, ListingPrice = v.ListingPrice
+        }).OrderByDescending(v => v.DaysInStock).ThenByDescending(v => v.TotalInvested)
+            .ThenBy(v => v.Id).Take(5).ToList();
+
         // Only five rows are materialized; latest estimate sums are computed by SQL.
         var recent = await activeCandidates.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id)
             .Take(5).Select(c => new {
@@ -94,6 +116,7 @@ public sealed class DashboardService(DealerManagerDbContext db, TimeProvider clo
         }
         return new DashboardDto {
             AsOf = now,
+            AgedVehicles = agedVehicles,
             Monthly = new() { CarsInStock = counts.Values.Sum(), CarsInRepair = counts.GetValueOrDefault(VehicleStatus.Repairing),
                 SoldThisMonth = monthly[^1].SalesCount, ProfitThisMonth = monthly[^1].RealizedProfit },
             Financial = new() { AvailableCash = cash, CapitalInvested = invested, UpcomingProjectedCosts = remaining },

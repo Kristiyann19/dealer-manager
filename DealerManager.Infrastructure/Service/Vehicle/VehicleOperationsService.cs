@@ -49,6 +49,7 @@ public partial class VehicleService
     public async Task<VehicleListResultDto> GetVehicles(VehicleFilterDto filter, CancellationToken cancellationToken)
     {
         filter ??= new();
+        filter.SetStockReferenceDate(clock.GetUtcNow());
         Validate(filter);
         if (filter.Offset < 0 || (!filter.GetAllData && (filter.Limit < 1 || filter.Limit > 500)))
             throw new ValidationException("Offset must be non-negative and Limit must be between 1 and 500.");

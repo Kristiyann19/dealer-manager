@@ -10,6 +10,7 @@ public sealed class DashboardDto
     public FinancialSummaryDto Financial { get; init; } = new();
     public PipelineDto Pipeline { get; init; } = new();
     public IReadOnlyList<CandidateListDto> Candidates { get; init; } = [];
+    public IReadOnlyList<AgedVehicleDto> AgedVehicles { get; init; } = [];
     public IReadOnlyList<DashboardVehicleDto> ActiveVehicles { get; init; } = [];
     public IReadOnlyList<MonthlyFinancialDto> MonthlyFinancials { get; init; } = [];
 }
@@ -58,4 +59,17 @@ public sealed class MonthlyFinancialDto
     public decimal SalesRevenue { get; init; }
     public decimal RealizedProfit { get; init; }
     public int SalesCount { get; init; }
+}
+
+public sealed class AgedVehicleDto
+{
+    public int Id { get; init; }
+    public string Make { get; init; } = "";
+    public string Model { get; init; } = "";
+    public VehicleStatus Status { get; init; }
+    public int DaysInStock { get; init; }
+    public int? DaysListed { get; init; }
+    public string Severity => DaysInStock > 60 ? "Critical" : "Warning";
+    public decimal TotalInvested { get; init; }
+    public decimal? ListingPrice { get; init; }
 }

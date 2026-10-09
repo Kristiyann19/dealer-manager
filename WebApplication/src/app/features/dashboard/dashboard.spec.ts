@@ -1,3 +1,4 @@
+import { AgedVehiclesComponent } from './components/aged-vehicles/aged-vehicles.component';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -14,6 +15,7 @@ import { ActiveVehiclesComponent } from './components/active-vehicles/active-veh
 
 const empty: DashboardSummary = {
   asOf: '2026-10-01T00:00:00Z',
+  agedVehicles: [],
   monthly: { carsInStock: 0, carsInRepair: 0, soldThisMonth: 0, profitThisMonth: 0 },
   financial: {
     availableCash: 0,
@@ -43,6 +45,21 @@ describe('Dashboard integration', () => {
     translate.use('en').subscribe();
   });
   afterEach(() => TestBed.inject(HttpTestingController).verify());
+
+  it('renders aged inventory with warning levels and links to the matching vehicle filter', () => {
+    const fixture = TestBed.createComponent(AgedVehiclesComponent);
+    fixture.componentRef.setInput('vehicles', [{ id: 42, make: 'BMW', model: '320d',
+      status: VehicleStatus.Listed, daysInStock: 61, daysListed: 10, severity: 'Critical', totalInvested: 6000, listingPrice: 7000 }]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('61 days');
+    expect(fixture.nativeElement.textContent).toContain('10 days');
+    expect(fixture.nativeElement.textContent).toContain('Critical');
+    expect(fixture.nativeElement.querySelector('a[href="/vehicles/42"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('a[href="/vehicles?agedStock=true"]')).toBeTruthy();
+    fixture.componentRef.setInput('vehicles', []);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.dashboard.aged.empty);
+  });
 
   it('requests one aggregate endpoint with no cache on subsequent visits', () => {
     const service = TestBed.inject(DashboardService);

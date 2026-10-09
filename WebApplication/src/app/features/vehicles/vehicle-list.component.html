@@ -28,6 +28,10 @@
           }
         </select>
       </div>
+      <label class="flex items-center gap-2 text-sm self-end pb-3">
+        <input type="checkbox" [formControl]="agedStock" />
+        {{ 'dashboard.aged.filter' | translate }}
+      </label>
     </div>
     </section>
     <section class="panel overflow-hidden" [attr.aria-label]="'vehicle.inventory' | translate">

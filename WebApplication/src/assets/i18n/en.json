@@ -174,7 +174,7 @@
     "loading_your_dashboard": "Loading your dashboard…",
     "we_couldn_t_load_the_dashboard": "We couldn't load the dashboard.",
     "please_try_again": "Please try again.",
-    "filtering_candidates_and_active_vehicles_for_value": "Filtering candidates and active vehicles for “{{p0}}”",
+    "filtering_candidates_and_active_vehicles_for_value": "Filtering aged and active vehicles for “{{p0}}”",
     "autocapital_dealership_workspace": "AutoCapital · Dealership workspace",
     "sample_data_as_of_value_all_amounts_in_eur": "Sample data as of {{p0}} · All amounts in EUR"
   },
@@ -274,6 +274,7 @@
     "invalidId": "Invalid candidate ID."
   },
   "dashboard": {
+    "aged": {"title": "Aged inventory", "viewAll": "View all →", "daysInStock": "Days in stock", "daysListed": "Days listed", "days": "{{count}} days", "Warning": "Warning", "Critical": "Critical", "filter": "Unsold over 30 days only", "empty": "No unsold vehicles over 30 days.", "noMatches": "No aged vehicles match your search."},
     "allStatuses": "All statuses",
     "sixMonths": "Last 6 months",
     "threeMonths": "Last 3 months",

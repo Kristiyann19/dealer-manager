@@ -11,7 +11,7 @@ import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { MonthlyOverviewComponent } from '../../components/monthly-overview/monthly-overview.component';
 import { FinancialOverviewComponent } from '../../components/financial-overview/financial-overview.component';
 import { OperationalPipelineComponent } from '../../components/operational-pipeline/operational-pipeline.component';
-import { RecentCandidatesComponent } from '../../components/recent-candidates/recent-candidates.component';
+import { AgedVehiclesComponent } from '../../components/aged-vehicles/aged-vehicles.component';
 import { ActiveVehiclesComponent } from '../../components/active-vehicles/active-vehicles.component';
 import { FinancialChartComponent } from '../../components/financial-chart/financial-chart.component';
 
@@ -27,7 +27,7 @@ type DashboardState =
     MonthlyOverviewComponent,
     FinancialOverviewComponent,
     OperationalPipelineComponent,
-    RecentCandidatesComponent,
+    AgedVehiclesComponent,
     ActiveVehiclesComponent,
     FinancialChartComponent,
   ],

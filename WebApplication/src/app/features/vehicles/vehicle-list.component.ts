@@ -65,6 +65,7 @@ export class VehicleListComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reload = new BehaviorSubject<void>(undefined);
+  readonly agedStock = new FormControl(this.route.snapshot.queryParamMap.get('agedStock') === 'true', { nonNullable: true });
   readonly search = new FormControl('', { nonNullable: true });
   readonly statusFilter = new FormControl<VehicleStatus | null>(this.routeStatus(this.route.snapshot.queryParamMap.get('status')));
   readonly statuses = VEHICLE_STATUSES;
@@ -79,7 +80,7 @@ export class VehicleListComponent {
   readonly state = toSignal(
     this.reload.pipe(
       switchMap(() =>
-        this.api.list(this.query(), this.statusFilter.value, this.offset(), this.limit).pipe(
+        this.api.list(this.query(), this.statusFilter.value, this.offset(), this.limit, this.agedStock.value).pipe(
           map((data) => ({ status: 'ready', data }) as ListState),
           catchError((error) => of<ListState>({ status: 'error', message: vehicleError(error) })),
           startWith<ListState>({ status: 'loading' }),
@@ -91,11 +92,17 @@ export class VehicleListComponent {
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const status = this.routeStatus(params.get('status'));
-      if (status !== this.statusFilter.value) {
+      const aged = params.get('agedStock') === 'true';
+      if (status !== this.statusFilter.value || aged !== this.agedStock.value) {
+        this.agedStock.setValue(aged, { emitEvent: false });
         this.statusFilter.setValue(status, { emitEvent: false });
         this.offset.set(0);
         this.reload.next();
       }
+    });
+    this.agedStock.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.offset.set(0);
+      this.reload.next();
     });
     this.search.valueChanges
       .pipe(

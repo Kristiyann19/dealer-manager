@@ -124,6 +124,15 @@ describe('Vehicle inventory and operational status', () => {
     expect(fixture.debugElement.query(By.directive(SellVehicleComponent))).toBeNull();
     expect(Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).some(button => button.textContent?.trim() === en.vehicle.sale.shortAction)).toBe(false);
   });
+  it('initializes the aged inventory filter from the dashboard link before requesting data', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/vehicles?agedStock=true', VehicleListComponent);
+    const request = list();
+    expect(request.request.params.get('AgedStock')).toBe('true');
+    expect(page.agedStock.value).toBe(true);
+    page.agedStock.setValue(false);
+    expect(list().request.params.has('AgedStock')).toBe(false);
+  });
   it('filters remotely, resets pagination and cancels stale requests', async () => {
     const fixture = TestBed.createComponent(VehicleListComponent);
     list([vehicle], 30);
