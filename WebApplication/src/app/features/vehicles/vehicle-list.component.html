@@ -5,7 +5,7 @@
       <p class="mt-2 text-slate-600">{{ 'vehicle.inventorySubtitle' | translate }}</p>
     </div>
   </header>
-  <section class="panel overflow-hidden" [attr.aria-label]="'vehicle.inventory' | translate">
+    <section class="panel overflow-hidden">
     <div class="grid gap-4 p-6 sm:grid-cols-[minmax(240px,1fr)_240px]">
       <div>
         <label class="field-label" for="vehicle-search">{{ 'vehicle.search' | translate }}</label>
@@ -29,6 +29,8 @@
         </select>
       </div>
     </div>
+    </section>
+    <section class="panel overflow-hidden" [attr.aria-label]="'vehicle.inventory' | translate">
     @let current = state();
     @switch (current.status) {
       @case ('loading') {
@@ -60,7 +62,7 @@
                   @for (column of columns; track column.key) {
                     <th scope="col" class="text-right">{{ column.label | translate }}</th>
                   }
-                  <th scope="col" class="w-40 min-w-40">{{ 'vehicle.action' | translate }}</th>
+                  <th scope="col" class="w-64 min-w-64">{{ 'vehicle.action' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,7 +102,8 @@
                         }
                       </td>
                     }
-                    <td class="w-40 min-w-40">
+                    <td class="w-64 min-w-64">
+                      <div class="flex items-center gap-2">
                       <a
                         class="secondary-button min-w-28 whitespace-nowrap"
                         [routerLink]="['/vehicles', vehicle.id]"
@@ -109,6 +112,12 @@
                         "
                         >{{ 'ui.review' | translate }}</a
                       >
+                      @if (vehicle.status === listedStatus) {
+                        <button type="button" class="primary-button whitespace-nowrap" (click)="saleVehicle.set(vehicle)">
+                          {{ 'vehicle.sale.shortAction' | translate }}
+                        </button>
+                      }
+                      </div>
                     </td>
                   </tr>
                 }
@@ -119,6 +128,7 @@
       }
     }
   </section>
+  
   @if (state(); as current) {
     @if (current.status === 'ready') {
       <app-pagination [offset]="offset()" [pageSize]="limit" [total]="current.data.totalCount" (pageChange)="goToPage($event)">
@@ -127,3 +137,12 @@
     }
   }
 </div>
+
+<p-toast position="top-right">
+  <ng-template #message let-message><p role="status">{{ message.detail | translate }}</p></ng-template>
+</p-toast>
+@if (saleVehicle(); as selected) {
+  <app-sell-vehicle [vehicleId]="selected.id" [listingPrice]="selected.listingPrice ?? null"
+    [totalInvested]="selected.totalInvested" (saved)="saleSaved()"
+    (closed)="saleVehicle.set(null); $event && retry()" />
+}

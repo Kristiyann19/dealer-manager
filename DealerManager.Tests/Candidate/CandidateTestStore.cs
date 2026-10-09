@@ -36,7 +36,8 @@ internal sealed class CandidateTestStore : IDisposable
         Service = new CandidateService(
             new BaseRepository<CandidateEntity, CandidateFilterDto, DealerManagerDbContext>(Context),
             new BaseRepository<CandidateEstimate, FilterDto<CandidateEstimate>, DealerManagerDbContext>(Context),
-            decorateUnitOfWork?.Invoke(UnitOfWork) ?? UnitOfWork, new CandidateFinancialCalculator(), Clock);
+            decorateUnitOfWork?.Invoke(UnitOfWork) ?? UnitOfWork, new CandidateFinancialCalculator(), Clock,
+            new AutoMapper.MapperConfiguration(config => config.AddMaps(typeof(DealerManager.Infrastructure.AutoMapperProfiles.CandidateProfile).Assembly)).CreateMapper());
     }
 
     public void Dispose()

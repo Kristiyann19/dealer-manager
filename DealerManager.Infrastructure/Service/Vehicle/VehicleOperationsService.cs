@@ -1,3 +1,4 @@
+using AutoMapper.QueryableExtensions;
 using DealerManager.Infrastructure.Service.Finance;
 #nullable enable
 using DealerManager.Application.Dtos.Vehicle;
@@ -7,7 +8,6 @@ using DealerManager.Domain.Entities;
 using DealerManager.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
 
 namespace DealerManager.Infrastructure.Service.Vehicle;
 public partial class VehicleService
@@ -33,7 +33,7 @@ public partial class VehicleService
             vehicle.Status = next;
             await statusHistory.Create(history);
             await unitOfWork.SaveChanges(token);
-            return await statusHistory.GetQueryByProperties(h => h.Id == history.Id).Select(HistoryProjection).SingleAsync(token);
+            return await statusHistory.GetQueryByProperties(h => h.Id == history.Id).ProjectTo<VehicleStatusHistoryDto>(mapper.ConfigurationProvider).SingleAsync(token);
         }, cancellationToken);
     }
 
@@ -42,11 +42,9 @@ public partial class VehicleService
         await LoadVehicle(vehicleId, cancellationToken);
         return await statusHistory.GetQueryByProperties(h => h.VehicleId == vehicleId)
             .OrderByDescending(h => h.ChangedAt).ThenByDescending(h => h.Id)
-            .Select(HistoryProjection).ToListAsync(cancellationToken);
+            .ProjectTo<VehicleStatusHistoryDto>(mapper.ConfigurationProvider).ToListAsync(cancellationToken);
     }
 
-    private static readonly Expression<Func<VehicleStatusHistory, VehicleStatusHistoryDto>> HistoryProjection = h => new()
-    { Id = h.Id, FromStatus = h.FromStatus, ToStatus = h.ToStatus, ChangedAt = h.ChangedAt, Notes = h.Notes };
 
     public async Task<VehicleListResultDto> GetVehicles(VehicleFilterDto filter, CancellationToken cancellationToken)
     {
@@ -84,10 +82,8 @@ public partial class VehicleService
                 var sale = soldVehicles.GetValueOrDefault(vehicle.Id);
                 var summary = CalculateFinancialSummary(investments[vehicle.Id].ActualPurchasePrice, investments[vehicle.Id].ActualExpenses,
                     plansByVehicle[vehicle.Id], selling, sale?.SalePrice, sale?.SoldAt);
-                return new VehicleListItemDto
+                return mapper.Map(vehicle, new VehicleListItemDto
                 {
-                    Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
-                    Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status, PurchaseDate = vehicle.PurchaseDate,
                     ListingPrice = listingPrices.GetValueOrDefault(vehicle.Id),
                     ActualSalePrice = summary.ActualSalePrice, SoldAt = summary.SoldAt,
                     RealizedProfit = summary.RealizedProfit, RealizedROI = summary.RealizedROI,
@@ -95,7 +91,7 @@ public partial class VehicleService
                     TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
                     ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,
                     ProjectedProfit = summary.ProjectedProfit, ProjectedROI = summary.ProjectedROI
-                };
+                });
             }).ToList()
         };
     }

@@ -58,9 +58,6 @@
         </div>
       </div>
     </header>
-    @if (vehicle.status === 9) {
-      <p class="info-banner">{{ 'vehicle.errors.sold' | translate }}</p>
-    }
     <section class="panel overflow-hidden" aria-labelledby="finance-summary-title">
       <h2 id="finance-summary-title" class="sr-only">
         {{ 'vehicle.financialSummary' | translate }}
@@ -121,32 +118,6 @@
         }
       </div>
     </section>
-    <app-vehicle-dossier [vehicle]="vehicle" />
-    @if (vehicle.status === 9) {
-      <section class="panel p-6" aria-labelledby="sale-history-title">
-        <h2 id="sale-history-title" class="mb-5">{{ 'vehicle.sale.history' | translate }}</h2>
-        <dl class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt>
-            <dd class="text-xl font-semibold">
-              {{ vehicle.listingPrice | localizedCurrency: 'EUR' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="field-label">{{ 'vehicle.listing.listedAt' | translate }}</dt>
-            <dd>{{ vehicle.listedAt | localizedDate }}</dd>
-          </div>
-          <div>
-            <dt class="field-label">{{ 'vehicle.sale.soldAt' | translate }}</dt>
-            <dd>{{ vehicle.soldAt | localizedDate }}</dd>
-          </div>
-          <div>
-            <dt class="field-label">{{ 'vehicle.expectedSellingPrice' | translate }}</dt>
-            <dd>{{ vehicle.expectedSellingPrice | localizedCurrency: 'EUR' }}</dd>
-          </div>
-        </dl>
-      </section>
-    }
     @if (vehicle.currentListing; as listing) {
       <section class="panel p-6" aria-labelledby="listing-title">
         <h2 id="listing-title" class="mb-5">{{ 'vehicle.listing.current' | translate }}</h2>
@@ -173,6 +144,34 @@
         <p class="mt-5 text-sm text-slate-500">{{ 'vehicle.listing.profitHelp' | translate }}</p>
       </section>
     }
+    @if (vehicle.status === 9) {
+      <section class="panel p-6" aria-labelledby="sale-history-title">
+        <h2 id="sale-history-title" class="mb-5">{{ 'vehicle.sale.history' | translate }}</h2>
+        <dl class="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
+          <div>
+            <dt class="field-label">{{ 'vehicle.sale.price' | translate }}</dt>
+            <dd class="text-xl font-semibold">{{ vehicle.actualSalePrice | localizedCurrency: 'EUR' }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt>
+            <dd class="text-xl font-semibold">{{ vehicle.listingPrice | localizedCurrency: 'EUR' }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.expectedSellingPrice' | translate }}</dt>
+            <dd>{{ vehicle.expectedSellingPrice | localizedCurrency: 'EUR' }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.listing.listedAt' | translate }}</dt>
+            <dd>{{ vehicle.listedAt | localizedDate }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.sale.soldAt' | translate }}</dt>
+            <dd>{{ vehicle.soldAt | localizedDate }}</dd>
+          </div>
+        </dl>
+      </section>
+    }
+    <app-vehicle-dossier [vehicle]="vehicle" />
     @if (vehicle.status !== 9) {
       <section class="panel overflow-hidden" aria-labelledby="cost-plan-title">
         <div class="flex flex-wrap items-center justify-between gap-4 p-6">

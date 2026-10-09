@@ -1,3 +1,4 @@
+using AutoMapper;
 #nullable enable
 using DealerManager.Application.Dtos.Candidate;
 using DealerManager.Application.FilterDtos;
@@ -20,19 +21,21 @@ namespace DealerManager.Infrastructure.Service.Candidate
         private readonly IUnitOfWork unitOfWork;
         private readonly ICandidateFinancialCalculator calculator;
         private readonly TimeProvider timeProvider;
+        private readonly IMapper mapper;
 
         public CandidateService(
             IBaseRepository<CandidateEntity, CandidateFilterDto, DealerManagerDbContext> candidates,
             IBaseRepository<CandidateEstimate, FilterDto<CandidateEstimate>, DealerManagerDbContext> estimates,
             IUnitOfWork unitOfWork,
             ICandidateFinancialCalculator calculator,
-            TimeProvider timeProvider)
+            TimeProvider timeProvider, IMapper mapper)
         {
             this.candidates = candidates;
             this.estimates = estimates;
             this.unitOfWork = unitOfWork;
             this.calculator = calculator;
             this.timeProvider = timeProvider;
+            this.mapper = mapper;
         }
 
         public async Task<CandidateDetailsDto> CreateCandidate(CreateCandidateRequest request, CancellationToken cancellationToken)
@@ -222,15 +225,11 @@ namespace DealerManager.Infrastructure.Service.Candidate
         {
             var analysis = latest == null ? null : calculator.Calculate(latest.ExpectedSellingPrice,
                 latest.CandidateEstimateItems.Select(item => item.EstimatedAmount));
-            return new CandidateListDto
+            return mapper.Map(candidate, new CandidateListDto
             {
-                Id = candidate.Id, Make = candidate.Make, Model = candidate.Model,
-                Year = candidate.Year, Mileage = candidate.Mileage, Status = candidate.Status,
-                AskingPrice = candidate.AskingPrice,
-                ExpectedSellingPrice = latest?.ExpectedSellingPrice, CreatedAt = candidate.CreatedAt,
-                EstimatedTotalCost = analysis?.EstimatedTotalCost,
+                ExpectedSellingPrice = latest?.ExpectedSellingPrice, EstimatedTotalCost = analysis?.EstimatedTotalCost,
                 ExpectedProfit = analysis?.ExpectedProfit, ExpectedRoi = analysis?.ExpectedRoi
-            };
+            });
         }
 
         private CandidateDetailsDto ToDetails(CandidateEntity candidate)
@@ -238,37 +237,23 @@ namespace DealerManager.Infrastructure.Service.Candidate
             var history = candidate.CandidateEstimates.OrderByDescending(estimate => estimate.Version)
                 .ThenByDescending(estimate => estimate.Id).Select(ToEstimateDto).ToList();
             var latest = history.FirstOrDefault();
-            return new CandidateDetailsDto
+            return mapper.Map(candidate, new CandidateDetailsDto
             {
-                Id = candidate.Id, Make = candidate.Make, Model = candidate.Model,
-                Year = candidate.Year, Mileage = candidate.Mileage, Status = candidate.Status,
-                AskingPrice = candidate.AskingPrice,
-                ExpectedSellingPrice = latest?.ExpectedSellingPrice, CreatedAt = candidate.CreatedAt,
-                Vin = candidate.Vin, Source = candidate.Source, Location = candidate.Location,
-                Notes = candidate.Notes, RejectedAt = candidate.RejectedAt, PurchasedAt = candidate.PurchasedAt,
-                EstimateHistory = history, LatestEstimate = latest,
-                VehicleId = candidate.Vehicle?.Id,
+                ExpectedSellingPrice = latest?.ExpectedSellingPrice, EstimateHistory = history, LatestEstimate = latest,
+
                 EstimatedTotalCost = latest?.FinancialAnalysis.EstimatedTotalCost,
                 ExpectedProfit = latest?.FinancialAnalysis.ExpectedProfit,
                 ExpectedRoi = latest?.FinancialAnalysis.ExpectedRoi
-            };
+            });
         }
 
         private CandidateEstimateDto ToEstimateDto(CandidateEstimate estimate)
         {
-            return new CandidateEstimateDto
+            return mapper.Map(estimate, new CandidateEstimateDto
             {
-                Id = estimate.Id, CandidateId = estimate.CandidateId, Version = estimate.Version,
-                ExpectedSellingPrice = estimate.ExpectedSellingPrice, Notes = estimate.Notes,
-                CreatedAt = estimate.CreatedAt, IsDecisionSnapshot = estimate.IsDecisionSnapshot,
-                Items = estimate.CandidateEstimateItems.OrderBy(item => item.Id).Select(item => new CandidateEstimateItemDto
-                {
-                    Id = item.Id, Category = item.Category, Description = item.Description,
-                    EstimatedAmount = item.EstimatedAmount
-                }).ToList(),
                 FinancialAnalysis = calculator.Calculate(estimate.ExpectedSellingPrice,
                     estimate.CandidateEstimateItems.Select(item => item.EstimatedAmount))
-            };
+            });
         }
 
         private static void Validate(object? request)

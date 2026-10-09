@@ -1,3 +1,4 @@
+using AutoMapper.QueryableExtensions;
 #nullable enable
 using DealerManager.Application.Dtos.Vehicle;
 using DealerManager.Application.IService.Vehicle;
@@ -5,7 +6,6 @@ using DealerManager.Domain.Entities;
 using DealerManager.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using System.Linq.Expressions;
 
 namespace DealerManager.Infrastructure.Service.Vehicle;
 
@@ -57,11 +57,6 @@ public partial class VehicleService
 
     private Task<VehicleListingDto?> LoadCurrentListing(int vehicleId, CancellationToken token)
         => listings.GetQueryByProperties(l => l.VehicleId == vehicleId && l.IsActive)
-            .Select(ListingProjection).SingleOrDefaultAsync(token);
+            .ProjectTo<VehicleListingDto>(mapper.ConfigurationProvider).SingleOrDefaultAsync(token);
 
-    private static readonly Expression<Func<VehicleListing, VehicleListingDto>> ListingProjection = l => new()
-    {
-        VehicleId = l.VehicleId, ListingId = l.Id, ListingPrice = l.ListingPrice,
-        ListedAt = l.ListedAt, Status = l.Vehicle.Status
-    };
 }

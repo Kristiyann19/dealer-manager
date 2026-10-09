@@ -1,4 +1,7 @@
 import { PaginationComponent } from '../../shared/components/pagination.component';
+import { SellVehicleComponent } from './sell-vehicle.component';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -31,6 +34,8 @@ type ListState =
 @Component({
   selector: 'app-vehicle-list',
   imports: [
+    SellVehicleComponent,
+    ToastModule,
     PaginationComponent,
     TranslatePipe,
     ReactiveFormsModule,
@@ -39,9 +44,23 @@ type ListState =
     VehicleStatusComponent,
   ],
   templateUrl: './vehicle-list.component.html',
+  providers: [MessageService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VehicleListComponent {
+  private readonly messages = inject(MessageService);
+  readonly saleVehicle = signal<VehicleListItem | null>(null);
+  readonly listedStatus = VehicleStatus.Listed;
+  saleSaved() {
+    this.saleVehicle.set(null);
+    const current = this.state();
+    if (this.statusFilter.value === VehicleStatus.Listed && current.status === 'ready' && current.data.items.length === 1 && this.offset() > 0) {
+      this.offset.update(value => Math.max(0, value - this.limit));
+    }
+    this.messages.clear();
+    this.messages.add({ severity: 'success', detail: 'vehicle.sale.success', life: 5000 });
+    this.retry();
+  }
   private readonly api = inject(VehicleApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);

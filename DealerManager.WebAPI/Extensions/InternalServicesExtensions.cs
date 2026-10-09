@@ -31,9 +31,10 @@ namespace DealerManager.WebAPI.Extensions
                 CapitalAccountService>();
         }
 
-        public static void ConfigureAutoMapper(this IServiceCollection services, ILoggerFactory loggerFactory)
+        public static void ConfigureAutoMapper(this IServiceCollection services)
         {
-
+            services.AddAutoMapper(configuration => { },
+                typeof(DealerManager.Infrastructure.AutoMapperProfiles.CandidateProfile).Assembly);
         }
     }
 }

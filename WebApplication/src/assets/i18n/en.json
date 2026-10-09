@@ -593,6 +593,7 @@
       "success": "Vehicle listed successfully."
     },
     "sale": {
+      "shortAction": "Sell",
       "action": "Sell vehicle",
       "title": "Vehicle sale",
       "confirm": "Confirm sale",

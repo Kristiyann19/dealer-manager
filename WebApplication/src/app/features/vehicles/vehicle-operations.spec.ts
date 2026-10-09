@@ -107,6 +107,23 @@ describe('Vehicle inventory and operational status', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Закупен');
   });
+  it('opens the existing sale dialog from listed inventory and refreshes after sale', () => {
+    const fixture = TestBed.createComponent(VehicleListComponent);
+    list([{ ...vehicle, status: VehicleStatus.Listed, listingPrice: 9000 }]);
+    fixture.detectChanges();
+    const sell = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find(button => button.textContent?.trim() === en.vehicle.sale.shortAction)!;
+    expect(sell).toBeTruthy();
+    sell.click();
+    fixture.detectChanges();
+    const dialog = fixture.debugElement.query(By.directive(SellVehicleComponent)).componentInstance as SellVehicleComponent;
+    expect(dialog.vehicleId()).toBe(vehicle.id);
+    expect(dialog.form.controls.actualSalePrice.value).toBe(9000);
+    dialog.saved.emit();
+    list([{ ...vehicle, status: VehicleStatus.Sold }]);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(SellVehicleComponent))).toBeNull();
+    expect(Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).some(button => button.textContent?.trim() === en.vehicle.sale.shortAction)).toBe(false);
+  });
   it('filters remotely, resets pagination and cancels stale requests', async () => {
     const fixture = TestBed.createComponent(VehicleListComponent);
     list([vehicle], 30);

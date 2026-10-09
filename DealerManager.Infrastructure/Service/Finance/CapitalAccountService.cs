@@ -1,3 +1,5 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 #nullable enable
 using DealerManager.Application.Dtos.Finance;
 using DealerManager.Application.FilterDtos;
@@ -8,7 +10,6 @@ using DealerManager.Domain.Enums;
 using DealerManager.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
 
 namespace DealerManager.Infrastructure.Service.Finance
 {
@@ -18,16 +19,18 @@ namespace DealerManager.Infrastructure.Service.Finance
         private readonly IBaseRepository<FinancialTransaction, FilterDto<FinancialTransaction>, DealerManagerDbContext> transactions;
         private readonly IUnitOfWork unitOfWork;
         private readonly TimeProvider timeProvider;
+        private readonly IMapper mapper;
 
         public CapitalAccountService(
             IBaseRepository<CapitalAccount, FilterDto<CapitalAccount>, DealerManagerDbContext> accounts,
             IBaseRepository<FinancialTransaction, FilterDto<FinancialTransaction>, DealerManagerDbContext> transactions,
-            IUnitOfWork unitOfWork, TimeProvider timeProvider)
+            IUnitOfWork unitOfWork, TimeProvider timeProvider, IMapper mapper)
         {
             this.accounts = accounts;
             this.transactions = transactions;
             this.unitOfWork = unitOfWork;
             this.timeProvider = timeProvider;
+            this.mapper = mapper;
         }
 
         public async Task<CapitalAccountDto> CreateCapitalAccount(CreateCapitalAccountRequest request, CancellationToken cancellationToken)
@@ -37,7 +40,7 @@ namespace DealerManager.Infrastructure.Service.Finance
             var account = new CapitalAccount { Name = request.Name.Trim(), Currency = request.Currency.Trim(), IsActive = true };
             await accounts.Create(account);
             await unitOfWork.SaveChanges(cancellationToken);
-            return new CapitalAccountDto { Id = account.Id, Name = account.Name, Currency = account.Currency, IsActive = account.IsActive, CurrentBalance = 0 };
+            return mapper.Map<CapitalAccountDto>(account);
         }
 
         public async Task<IReadOnlyList<CapitalAccountDto>> GetCapitalAccounts(CancellationToken cancellationToken)
@@ -48,12 +51,11 @@ namespace DealerManager.Infrastructure.Service.Finance
         {
             var account = await AccountBalances(accounts.GetQueryByProperties(account => account.Id == id))
                 .SingleOrDefaultAsync(cancellationToken) ?? throw new CapitalAccountNotFoundException(id);
-            var latest = await TransactionHistory(id).Take(20).Select(TransactionProjection).ToListAsync(cancellationToken);
-            return new CapitalAccountDetailsDto
+            var latest = await TransactionHistory(id).Take(20).ProjectTo<FinancialTransactionDto>(mapper.ConfigurationProvider).ToListAsync(cancellationToken);
+            return mapper.Map(account, new CapitalAccountDetailsDto
             {
-                Id = account.Id, Name = account.Name, Currency = account.Currency, IsActive = account.IsActive,
-                CurrentBalance = account.CurrentBalance, LatestTransactions = latest
-            };
+                LatestTransactions = latest
+            });
         }
 
         public Task<FinancialTransactionDto> AddCapital(AddCapitalRequest request, CancellationToken cancellationToken)
@@ -76,7 +78,7 @@ namespace DealerManager.Infrastructure.Service.Finance
                 };
                 await transactions.Create(transaction);
                 await unitOfWork.SaveChanges(token);
-                return ToTransactionDto(transaction);
+                return mapper.Map<FinancialTransactionDto>(transaction);
             }, cancellationToken);
         }
 
@@ -84,7 +86,7 @@ namespace DealerManager.Infrastructure.Service.Finance
         {
             if (!await accounts.AnyEntity(account => account.Id == capitalAccountId, cancellationToken))
                 throw new CapitalAccountNotFoundException(capitalAccountId);
-            return await TransactionHistory(capitalAccountId).Select(TransactionProjection).ToListAsync(cancellationToken);
+            return await TransactionHistory(capitalAccountId).ProjectTo<FinancialTransactionDto>(mapper.ConfigurationProvider).ToListAsync(cancellationToken);
         }
 
         public async Task<decimal> GetBalance(int capitalAccountId, CancellationToken cancellationToken)
@@ -98,13 +100,6 @@ namespace DealerManager.Infrastructure.Service.Finance
         private IOrderedQueryable<FinancialTransaction> TransactionHistory(int id)
             => transactions.GetQueryByProperties(t => t.CapitalAccountId == id)
                 .OrderByDescending(t => t.OccurredAt).ThenByDescending(t => t.Id);
-
-        private static readonly Expression<Func<FinancialTransaction, FinancialTransactionDto>> TransactionProjection = t => new FinancialTransactionDto
-        {
-            Id = t.Id, CapitalAccountId = t.CapitalAccountId, Type = t.Type, Direction = t.Direction,
-            Amount = t.Amount, Description = t.Description, VehicleId = t.VehicleId, OccurredAt = t.OccurredAt, CreatedAt = t.CreatedAt
-        };
-        private static readonly Func<FinancialTransaction, FinancialTransactionDto> ToTransactionDto = TransactionProjection.Compile();
 
         private static void Validate(object? request)
         {

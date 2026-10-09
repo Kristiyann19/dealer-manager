@@ -15,6 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddDealerIdentity(builder.Environment);
 builder.Services.ConfigureRepositories();
 builder.Services.ConfigureServices();
+builder.Services.ConfigureAutoMapper();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<CandidateExceptionHandler>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

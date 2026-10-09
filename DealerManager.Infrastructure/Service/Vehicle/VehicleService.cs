@@ -1,3 +1,5 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using DealerManager.Infrastructure.Service.Finance;
 #nullable enable
 using DealerManager.Application.Dtos.Candidate;
@@ -12,7 +14,6 @@ using DealerManager.Domain.Enums;
 using DealerManager.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
 using VehicleEntity = DealerManager.Domain.Entities.Vehicle;
 
 namespace DealerManager.Infrastructure.Service.Vehicle;
@@ -27,8 +28,10 @@ public partial class VehicleService(
     IBaseRepository<VehicleListing, FilterDto<VehicleListing>, DealerManagerDbContext> listings,
     IBaseRepository<VehicleSale, FilterDto<VehicleSale>, DealerManagerDbContext> sales,
     ICapitalAccountService finance, ICandidateFinancialCalculator forecastCalculator,
-    IUnitOfWork unitOfWork, TimeProvider clock) : IVehicleService
+    IUnitOfWork unitOfWork, TimeProvider clock, IMapper mapping) : IVehicleService
 {
+    private readonly IMapper mapper = mapping;
+
     public async Task<VehicleDetailsDto> GetDetails(int id, CancellationToken cancellationToken)
     {
         var vehicle = await LoadVehicle(id, cancellationToken);
@@ -47,8 +50,7 @@ public partial class VehicleService(
             original = new OriginalForecastDto
             {
                 EstimateId = snapshot.Id, Version = snapshot.Version,
-                Items = snapshot.CandidateEstimateItems.OrderBy(i => i.Id).Select(i => new CandidateEstimateItemDto
-                { Id = i.Id, Category = i.Category, Description = i.Description, EstimatedAmount = i.EstimatedAmount }).ToList(),
+                Items = mapper.Map<List<CandidateEstimateItemDto>>(snapshot.CandidateEstimateItems.OrderBy(i => i.Id)),
                 OriginalEstimatedTotal = analysis.EstimatedTotalCost, OriginalExpectedSellingPrice = snapshot.ExpectedSellingPrice,
                 OriginalExpectedProfit = analysis.ExpectedProfit, OriginalExpectedROI = analysis.ExpectedRoi
             };
@@ -57,29 +59,9 @@ public partial class VehicleService(
             query => query.Include(s => s.FinancialTransaction).ThenInclude(t => t.CapitalAccount));
         var summary = CalculateFinancialSummary(purchasePrice, actualExpenses, plan, snapshot?.ExpectedSellingPrice, sale?.SalePrice, sale?.SoldAt);
         var latestListing = await listings.GetQueryByProperties(l => l.VehicleId == id)
-            .OrderByDescending(l => l.Id).Select(ListingProjection).FirstOrDefaultAsync(cancellationToken);
-        return new VehicleDetailsDto
+            .OrderByDescending(l => l.Id).ProjectTo<VehicleListingDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync(cancellationToken);
+        return mapper.Map(vehicle, new VehicleDetailsDto
         {
-            Id = vehicle.Id, Make = vehicle.Make, Model = vehicle.Model, Year = vehicle.Year,
-            Mileage = vehicle.Mileage, Vin = vehicle.Vin, Status = vehicle.Status,
-            RegistrationNumber = vehicle.RegistrationNumber,
-            FirstRegistration = vehicle.FirstRegistration,
-            FuelType = vehicle.FuelType,
-            Transmission = vehicle.Transmission,
-            EngineDisplacementCc = vehicle.EngineDisplacementCc,
-            PowerKw = vehicle.PowerKw,
-            PowerHp = vehicle.PowerHp,
-            DriveType = vehicle.DriveType,
-            EuroStandard = vehicle.EuroStandard,
-            BodyType = vehicle.BodyType,
-            Color = vehicle.Color,
-            NumberOfDoors = vehicle.NumberOfDoors,
-            NumberOfSeats = vehicle.NumberOfSeats,
-            NumberOfKeys = vehicle.NumberOfKeys,
-            ImportedFrom = vehicle.ImportedFrom,
-            Notes = vehicle.Notes,
-
-            SourceCandidateId = vehicle.SourceCandidateId, PurchaseDate = vehicle.PurchaseDate,
             CurrentListing = await LoadCurrentListing(id, cancellationToken),
             ListingPrice = latestListing?.ListingPrice, ListedAt = latestListing?.ListedAt,
             ActualSalePrice = summary.ActualSalePrice, SoldAt = summary.SoldAt,
@@ -93,7 +75,7 @@ public partial class VehicleService(
             TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,
             ProjectedFinalCost = summary.ProjectedFinalCost, ExpectedSellingPrice = summary.ExpectedSellingPrice,
             ProjectedProfit = summary.ProjectedProfit, ProjectedROI = summary.ProjectedROI, OriginalForecast = original
-        };
+        });
     }
 
     private static VehicleFinancialSummaryDto CalculateFinancialSummary(decimal purchase, decimal actual, IEnumerable<VehicleCostPlanItemDto> plan, decimal? selling,
@@ -139,7 +121,7 @@ public partial class VehicleService(
             if (request.Description != null) item.Description = request.Description.Trim();
             item.IsCancelled = request.IsCancelled;
             await unitOfWork.SaveChanges(token);
-            return await plans.GetQueryByProperties(i => i.Id == itemId).Select(PlanProjection).SingleAsync(token);
+            return await plans.GetQueryByProperties(i => i.Id == itemId).ProjectTo<VehicleCostPlanItemDto>(mapper.ConfigurationProvider).SingleAsync(token);
         }, cancellationToken);
     }
 
@@ -215,7 +197,7 @@ public partial class VehicleService(
     private async Task<VehicleCostPlanItemDto> PayablePlan(int vehicleId, int itemId, CancellationToken token)
     {
         var item = await plans.GetQueryByProperties(i => i.Id == itemId && i.VehicleId == vehicleId)
-            .Select(PlanProjection).SingleOrDefaultAsync(token)
+            .ProjectTo<VehicleCostPlanItemDto>(mapper.ConfigurationProvider).SingleOrDefaultAsync(token)
             ?? throw Conflict("planMismatch", "The cost plan item does not belong to this vehicle.");
         if (item.IsCancelled) throw Conflict("cancelledPlan", "A cancelled forecast cannot be paid.");
         if (Target(item) <= 0) throw Conflict("invalidPlanAmount", "Set a positive current forecast before confirming payment.");
@@ -250,34 +232,20 @@ public partial class VehicleService(
         };
         await expenses.Create(expense);
         await unitOfWork.SaveChanges(token);
-        return await expenses.GetQueryByProperties(e => e.Id == expense.Id).Select(ExpenseProjection).SingleAsync(token);
+        return await expenses.GetQueryByProperties(e => e.Id == expense.Id).ProjectTo<VehicleExpenseDto>(mapper.ConfigurationProvider).SingleAsync(token);
     }
 
     public async Task<IReadOnlyList<VehicleExpenseDto>> GetExpenses(int vehicleId, CancellationToken cancellationToken)
     {
         await LoadVehicle(vehicleId, cancellationToken);
         return await expenses.GetQueryByProperties(e => e.VehicleId == vehicleId)
-            .OrderByDescending(e => e.PaidAt).ThenByDescending(e => e.Id).Select(ExpenseProjection).ToListAsync(cancellationToken);
+            .OrderByDescending(e => e.PaidAt).ThenByDescending(e => e.Id).ProjectTo<VehicleExpenseDto>(mapper.ConfigurationProvider).ToListAsync(cancellationToken);
     }
 
     private async Task<VehicleEntity> LoadVehicle(int id, CancellationToken token)
         => await vehicles.GetById(id, token) ?? throw new VehicleNotFoundException(id);
     private async Task<IReadOnlyList<VehicleCostPlanItemDto>> LoadCostPlan(int id, CancellationToken token)
-        => await plans.GetQueryByProperties(i => i.VehicleId == id).OrderBy(i => i.Id).Select(PlanProjection).ToListAsync(token);
-    private static readonly Expression<Func<VehicleCostPlanItem, VehicleCostPlanItemDto>> PlanProjection = i => new()
-    {
-        Id = i.Id, Category = i.Category, Description = i.Description, CurrentEstimatedAmount = i.CurrentEstimatedAmount,
-        CommittedAmount = i.CommittedAmount, IsCancelled = i.IsCancelled,
-        ActualPaid = i.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
-    };
-    private static readonly Expression<Func<VehicleExpense, VehicleExpenseDto>> ExpenseProjection = e => new()
-    {
-        Id = e.Id, Category = e.Category, Description = e.Description, Amount = e.Amount,
-        Supplier = e.Supplier, DocumentNumber = e.DocumentNumber, PaidAt = e.PaidAt,
-        CostPlanItemId = e.CostPlanItemId, CostPlanDescription = e.CostPlanItem == null ? null : e.CostPlanItem.Description,
-        FinancialTransactionId = e.FinancialTransactionId, CapitalAccountId = e.FinancialTransaction.CapitalAccountId,
-        CapitalAccountName = e.FinancialTransaction.CapitalAccount.Name, Currency = e.FinancialTransaction.CapitalAccount.Currency
-    };
+        => await plans.GetQueryByProperties(i => i.VehicleId == id).OrderBy(i => i.Id).ProjectTo<VehicleCostPlanItemDto>(mapper.ConfigurationProvider).ToListAsync(token);
     private static VehicleConflictException Conflict(string code, string message) => new(code, message);
     private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static void Validate(object? request)
