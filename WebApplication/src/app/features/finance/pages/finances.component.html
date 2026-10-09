@@ -1,3 +1,8 @@
+<p-toast position="top-right">
+  <ng-template #message let-message>
+    <p role="status">{{ message.detail | translate }}</p>
+  </ng-template>
+</p-toast>
 <div class="page-container">
   <header class="page-heading flex flex-wrap items-start justify-between gap-5">
     <div>
@@ -17,9 +22,6 @@
       </button>
     </div>
   </header>
-  @if (success()) {
-    <p class="success-banner" role="status">{{ success() | translate }}</p>
-  }
   @if (loading()) {
     <p class="panel p-7" role="status">{{ 'finance.loading' | translate }}</p>
   } @else if (error()) {

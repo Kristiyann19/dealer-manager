@@ -5,12 +5,6 @@
     </ng-template>
   </p-toast>
   <a class="text-link" routerLink="/vehicles">{{ 'vehicle.allVehicles' | translate }}</a>
-  @if (purchased) {
-    <p class="success-banner" role="status">{{ 'purchase.success' | translate }}</p>
-  }
-  @if (notice() && notice() !== 'vehicle.listing.success' && notice() !== 'vehicle.sale.success') {
-    <p class="success-banner" role="status">{{ notice() | translate }}</p>
-  }
   @if (loading()) {
     <p class="panel p-8" role="status">{{ 'finance.loading' | translate }}</p>
   } @else if (error()) {

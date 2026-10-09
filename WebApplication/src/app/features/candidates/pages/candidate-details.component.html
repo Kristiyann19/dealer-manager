@@ -1,12 +1,12 @@
 <div class="page-container">
+  <p-toast position="top-right">
+    <ng-template #message let-message>
+      <p role="status">{{ message.detail | translate: message.data }}</p>
+    </ng-template>
+  </p-toast>
   <nav [attr.aria-label]="'ui.all_candidates' | translate">
     <a class="text-link" routerLink="/candidates">{{ 'ui.all_candidates' | translate }}</a>
   </nav>
-  @if (notice()) {
-    <div class="success-banner" role="status">
-      {{ notice() | translate: { version: savedVersion() } }}
-    </div>
-  }
   @if (loading()) {
     <div class="panel p-10" role="status">{{ 'ui.loading_candidate' | translate }}</div>
   } @else if (error()) {

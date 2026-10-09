@@ -1,3 +1,5 @@
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -38,7 +40,9 @@ const validDate: ValidatorFn = (control) =>
 
 @Component({
   selector: 'app-finances',
+  providers: [MessageService],
   imports: [
+    ToastModule,
     ReactiveFormsModule,
     TranslatePipe,
     DialogModule,
@@ -49,6 +53,7 @@ const validDate: ValidatorFn = (control) =>
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FinancesComponent {
+  private readonly messages = inject(MessageService);
   private readonly api = inject(CapitalAccountApiService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
@@ -222,6 +227,8 @@ export class FinancesComponent {
   private saved(message: string, id: number) {
     this.dialog.set(null);
     this.success.set(message);
+    this.messages.clear();
+    this.messages.add({ severity: 'success', detail: message, life: 5000 });
     this.refreshAccounts(id);
   }
   private errorKey(error: unknown, writing = false) {

@@ -38,6 +38,8 @@ import { CandidateStatusComponent } from '../components/candidate-status.compone
 import { EstimateFormComponent } from '../components/estimate-form.component';
 import { apiError, optionalText } from '../components/candidate-form-utils';
 import { DialogModule } from 'primeng/dialog';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-candidate-details',
@@ -52,12 +54,15 @@ import { DialogModule } from 'primeng/dialog';
     EstimateFormComponent,
     PurchaseDialogComponent,
     DialogModule,
+    ToastModule,
   ],
   templateUrl: './candidate-details.component.html',
   styleUrl: './candidate-details.component.css',
+  providers: [MessageService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CandidateDetailsComponent {
+  private readonly messages = inject(MessageService);
   private readonly api = inject(CandidateApiService);
   private readonly router = inject(Router);
   protected readonly showPurchase = signal(false);
@@ -145,7 +150,9 @@ export class CandidateDetailsComponent {
   protected estimateSaved(estimate: CandidateEstimate) {
     this.selectedVersion.set(estimate.id);
     this.savedVersion.set(estimate.version);
-    this.notice.set('candidate.versionSaved');
+    this.notice.set('');
+    this.messages.clear();
+    this.messages.add({ severity: 'success', detail: 'candidate.versionSaved', data: { version: estimate.version }, life: 5000 });
     this.refreshCandidate();
   }
   protected openDecision(decision: 'approve' | 'reject') {
@@ -175,6 +182,8 @@ export class CandidateDetailsComponent {
           if (this.candidate()?.id !== candidate.id) return;
           this.decision.set(null);
           this.notice.set(decision === 'approve' ? 'candidate.approved' : 'candidate.rejected');
+          this.messages.clear();
+          this.messages.add({ severity: 'success', detail: this.notice(), life: 5000 });
           this.refreshCandidate();
         },
         error: (error) => {

@@ -1,3 +1,4 @@
+import { afterNextRender } from '@angular/core';
 import { VehicleDossierComponent } from './vehicle-dossier.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -97,6 +98,10 @@ export class VehicleDetailsComponent {
     this.vehicle()?.status === VehicleStatus.Sold ? this.soldMetrics : this.metrics,
   );
   constructor() {
+    afterNextRender(() => {
+      const message = this.purchased ? 'purchase.success' : this.notice();
+      if (message) this.messages.add({ severity: 'success', detail: message, life: 5000 });
+    });
     this.route.paramMap
       .pipe(
         switchMap((params) =>
@@ -158,13 +163,6 @@ export class VehicleDetailsComponent {
     this.expenseDialog.set({ plan });
   }
   saved(kind: 'plan' | 'expense' | 'status' | 'listing' | 'sale') {
-    if (kind === 'listing' || kind === 'sale') {
-      this.messages.add({
-        severity: 'success',
-        detail: kind === 'sale' ? 'vehicle.sale.success' : 'vehicle.listing.success',
-        life: 5000,
-      });
-    }
     this.notice.set(
       kind === 'sale'
         ? 'vehicle.sale.success'
@@ -176,6 +174,8 @@ export class VehicleDetailsComponent {
               ? 'vehicle.planSaved'
               : 'vehicle.expenseSaved',
     );
+    this.messages.clear();
+    this.messages.add({ severity: 'success', detail: this.notice(), life: 5000 });
     this.refreshFinancialData();
   }
   paymentClosed(needsReconciliation: boolean) {
