@@ -55,6 +55,8 @@ export interface MonthlyFinancialData {
   salesCount: number;
 }
 export interface DashboardSummary {
+  attentionCount: number;
+  attentionItems: DashboardAttentionItem[];
   asOf: string;
   agedVehicles: AgedVehicle[];
   monthly: MonthlyOverview;
@@ -75,4 +77,31 @@ export interface AgedVehicle {
   severity: 'Warning' | 'Critical';
   totalInvested: number;
   listingPrice: number | null;
+}
+
+export enum DashboardAttentionSeverity {
+  Critical = 0,
+  Warning = 1,
+  Info = 2,
+}
+export enum DashboardAttentionType {
+  ReservationExpired = 0,
+  ReservationExpiringSoon = 1,
+  CandidateWaiting = 2,
+  RepairTakingTooLong = 3,
+  TransportTakingTooLong = 4,
+  ReadyNotListed = 5,
+  ReservedWithoutReservation = 6,
+  ListedWithoutListing = 7,
+}
+export interface DashboardAttentionItem {
+  type: DashboardAttentionType;
+  severity: DashboardAttentionSeverity;
+  vehicleId: number | null;
+  candidateId: number | null;
+  make: string;
+  model: string;
+  referenceDate: string;
+  days: number;
+  depositAmount: number | null;
 }

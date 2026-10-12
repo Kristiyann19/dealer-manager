@@ -21,7 +21,7 @@ public class DashboardTests
         Assert.Equal(6, data.MonthlyFinancials.Count);
         Assert.Equal(new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero), data.MonthlyFinancials[0].Month);
         Assert.All(data.MonthlyFinancials, m => { Assert.Equal(0, m.CapitalInvested); Assert.Equal(0, m.SalesRevenue); Assert.Equal(0, m.RealizedProfit); });
-        Assert.InRange(factory.Queries.Commands.Count, 20, 22);
+        Assert.InRange(factory.Queries.Commands.Count, 23, 25);
         Assert.All(factory.Queries.Commands, q => Assert.StartsWith("SELECT", q.TrimStart()));
     }
 
@@ -88,6 +88,6 @@ public class DashboardTests
         Assert.Equal(5, data.ActiveVehicles.Count); Assert.DoesNotContain(data.ActiveVehicles, v => v.Status == VehicleStatus.Sold);
         Assert.Equal(21469, data.MonthlyFinancials[^1].CapitalInvested); Assert.Equal(14300, data.MonthlyFinancials[^1].SalesRevenue);
         Assert.Equal(-169, data.MonthlyFinancials[^1].RealizedProfit); Assert.Equal(2000, data.MonthlyFinancials[^2].RealizedProfit);
-        Assert.Equal(22, factory.Queries.Commands.Count);
+        Assert.Equal(25, factory.Queries.Commands.Count);
     }
 }

@@ -14,6 +14,8 @@ import { RecentCandidatesComponent } from './components/recent-candidates/recent
 import { ActiveVehiclesComponent } from './components/active-vehicles/active-vehicles.component';
 
 const empty: DashboardSummary = {
+  attentionItems: [],
+  attentionCount: 0,
   asOf: '2026-10-01T00:00:00Z',
   agedVehicles: [],
   monthly: { carsInStock: 0, carsInRepair: 0, soldThisMonth: 0, profitThisMonth: 0 },
@@ -48,8 +50,19 @@ describe('Dashboard integration', () => {
 
   it('renders aged inventory with warning levels and links to the matching vehicle filter', () => {
     const fixture = TestBed.createComponent(AgedVehiclesComponent);
-    fixture.componentRef.setInput('vehicles', [{ id: 42, make: 'BMW', model: '320d',
-      status: VehicleStatus.Listed, daysInStock: 61, daysListed: 10, severity: 'Critical', totalInvested: 6000, listingPrice: 7000 }]);
+    fixture.componentRef.setInput('vehicles', [
+      {
+        id: 42,
+        make: 'BMW',
+        model: '320d',
+        status: VehicleStatus.Listed,
+        daysInStock: 61,
+        daysListed: 10,
+        severity: 'Critical',
+        totalInvested: 6000,
+        listingPrice: 7000,
+      },
+    ]);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('61 days');
     expect(fixture.nativeElement.textContent).toContain('10 days');

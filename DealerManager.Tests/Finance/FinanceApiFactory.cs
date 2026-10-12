@@ -65,6 +65,9 @@ internal sealed class FinanceTestDbContext(DbContextOptions<DealerManagerDbConte
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.Entity<DealerManager.Domain.Entities.VehicleReservation>().Property(r => r.ExpiresAt)
+            .HasConversion(value => value.HasValue ? (long?)value.Value.UtcTicks : null,
+                value => value.HasValue ? new DateTimeOffset(value.Value, TimeSpan.Zero) : null);
         builder.Entity<DealerManager.Domain.Entities.VehiclePhoto>().Property(p => p.UploadedAt)
             .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
         builder.Entity<DealerManager.Domain.Entities.VehicleDocument>().Property(d => d.UploadedAt)

@@ -5,6 +5,8 @@ namespace DealerManager.Application.Dtos.Dashboard;
 
 public sealed class DashboardDto
 {
+    public int AttentionCount { get; init; }
+    public IReadOnlyList<DashboardAttentionItemDto> AttentionItems { get; init; } = [];
     public DateTimeOffset AsOf { get; init; }
     public OperationalSummaryDto Monthly { get; init; } = new();
     public FinancialSummaryDto Financial { get; init; } = new();

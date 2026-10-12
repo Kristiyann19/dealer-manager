@@ -274,7 +274,19 @@
     "invalidId": "Invalid candidate ID."
   },
   "dashboard": {
-    "aged": {"title": "Aged inventory", "viewAll": "View all →", "daysInStock": "Days in stock", "daysListed": "Days listed", "days": "{{count}} days", "Warning": "Warning", "Critical": "Critical", "filter": "Unsold over 30 days only", "empty": "No unsold vehicles over 30 days.", "noMatches": "No aged vehicles match your search."},
+    "aged": {
+      "title": "Aged inventory",
+      "viewAll": "View all →",
+      "daysInStock": "Days in stock",
+      "daysListed": "Days listed",
+      "days": "{{count}} days",
+      "Warning": "Warning",
+      "Critical": "Critical",
+      "filter": "Unsold over 30 days only",
+      "empty": "No unsold vehicles over 30 days.",
+      "noMatches": "No aged vehicles match your search.",
+      "filtering": "Filtering aged vehicles for “{{p0}}”"
+    },
     "allStatuses": "All statuses",
     "sixMonths": "Last 6 months",
     "threeMonths": "Last 3 months",
@@ -299,7 +311,43 @@
     "remainingProjected": "Remaining projected costs",
     "listingPrice": "Listing price",
     "noListing": "No active listing",
-    "realizedProfit": "Realized profit"
+    "realizedProfit": "Realized profit",
+    "attention": {
+      "title": "Needs attention",
+      "emptyTitle": "All clear",
+      "emptyDetail": "No vehicles, reservations or candidates need attention right now.",
+      "deposit": "Deposit {{amount}}",
+      "today": "Expires today",
+      "tomorrow": "Expires tomorrow",
+      "inHours": "Expires in {{hours}} hours",
+      "expiredRecently": "Expired less than a day ago",
+      "expiredYesterday": "Expired 1 day ago",
+      "shown": "Showing {{shown}} of {{total}}",
+      "severities": {
+        "0": "Critical",
+        "1": "Warning",
+        "2": "Info"
+      },
+      "types": {
+        "0": "Reservation has expired",
+        "1": "Reservation expires soon",
+        "2": "Candidate awaiting a decision",
+        "3": "Vehicle has been in repair too long",
+        "4": "Vehicle transport is taking longer than expected",
+        "5": "Vehicle is ready but not yet listed",
+        "6": "Reservation inconsistency",
+        "7": "Active listing is missing"
+      },
+      "details": {
+        "0": "Expired {{days}} days ago",
+        "2": "Under review for {{days}} days",
+        "3": "In repair for {{days}} days",
+        "4": "In transport for {{days}} days",
+        "5": "Ready for sale for {{days}} days",
+        "6": "The vehicle is Reserved but has no active reservation.",
+        "7": "The vehicle is Listed but has no active listing."
+      }
+    }
   },
   "status": {
     "Under Review": "Under Review",

@@ -114,7 +114,9 @@ public sealed class DashboardService(DealerManagerDbContext db, TimeProvider clo
             monthly.Add(new MonthlyFinancialDto { Month = start, CapitalInvested = spending,
                 SalesCount = sold?.Count ?? 0, SalesRevenue = sold?.Revenue ?? 0m, RealizedProfit = sold?.Profit ?? 0m });
         }
+        var attention = await DashboardAttentionQueries.Read(db, now, cancellationToken);
         return new DashboardDto {
+            AttentionCount = attention.Count, AttentionItems = attention.Take(5).ToList(),
             AsOf = now,
             AgedVehicles = agedVehicles,
             Monthly = new() { CarsInStock = counts.Values.Sum(), CarsInRepair = counts.GetValueOrDefault(VehicleStatus.Repairing),

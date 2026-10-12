@@ -12,7 +12,7 @@ import { MonthlyOverviewComponent } from '../../components/monthly-overview/mont
 import { FinancialOverviewComponent } from '../../components/financial-overview/financial-overview.component';
 import { OperationalPipelineComponent } from '../../components/operational-pipeline/operational-pipeline.component';
 import { AgedVehiclesComponent } from '../../components/aged-vehicles/aged-vehicles.component';
-import { ActiveVehiclesComponent } from '../../components/active-vehicles/active-vehicles.component';
+import { AttentionComponent } from '../../components/attention/attention.component';
 import { FinancialChartComponent } from '../../components/financial-chart/financial-chart.component';
 
 type DashboardState =
@@ -28,7 +28,7 @@ type DashboardState =
     FinancialOverviewComponent,
     OperationalPipelineComponent,
     AgedVehiclesComponent,
-    ActiveVehiclesComponent,
+    AttentionComponent,
     FinancialChartComponent,
   ],
   templateUrl: './dashboard.component.html',

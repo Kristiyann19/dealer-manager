@@ -1,0 +1,78 @@
+<section class="panel overflow-hidden h-full" aria-labelledby="attention-title">
+  <div class="section-heading px-6 pt-6">
+    <div class="flex items-center gap-3">
+      <h2 id="attention-title">{{ 'dashboard.attention.title' | translate }}</h2>
+      @if (count() > 0) {
+        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{{
+          count() | localizedNumber
+        }}</span>
+      }
+    </div>
+  </div>
+  @if (count() === 0) {
+    <div class="px-6 pb-8 pt-4 text-center">
+      <svg
+        lucideIcon="circle-check"
+        [size]="24"
+        class="mx-auto mb-3 text-emerald-600"
+        aria-hidden="true"
+      ></svg>
+      <h3 class="font-semibold">{{ 'dashboard.attention.emptyTitle' | translate }}</h3>
+      <p class="mt-2 text-sm text-slate-500">{{ 'dashboard.attention.emptyDetail' | translate }}</p>
+    </div>
+  } @else {
+    <ul class="divide-y divide-slate-100">
+      @for (item of items(); track item.type + ':' + (item.vehicleId ?? item.candidateId)) {
+        <li>
+          <a
+            class="attention-row"
+            [routerLink]="
+              item.vehicleId != null
+                ? ['/vehicles', item.vehicleId]
+                : ['/candidates', item.candidateId]
+            "
+          >
+            <span
+              class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
+              [class.bg-red-500]="item.severity === 0"
+              [class.bg-orange-500]="item.severity === 1"
+              [class.bg-blue-500]="item.severity === 2"
+            >
+              <span class="sr-only">{{
+                'dashboard.attention.severities.' + item.severity | translate
+              }}</span>
+            </span>
+            <div class="min-w-0">
+              <h3 class="text-sm font-semibold">
+                {{ 'dashboard.attention.types.' + item.type | translate }}
+              </h3>
+              <p class="mt-1 text-sm break-words">
+                {{ item.make }} {{ item.model }}
+                @if (item.depositAmount !== null) {
+                  ·
+                  {{
+                    'dashboard.attention.deposit'
+                      | translate: { amount: (item.depositAmount | localizedCurrency) }
+                  }}
+                }
+              </p>
+              @let description = detail(item);
+              <p class="mt-1 text-xs text-slate-500">
+                {{ description.key | translate: description.params }}
+              </p>
+            </div>
+          </a>
+        </li>
+      }
+    </ul>
+    @if (count() > items().length) {
+      <p class="px-6 py-4 text-xs text-slate-500">
+        {{
+          'dashboard.attention.shown'
+            | translate
+              : { shown: (items().length | localizedNumber), total: (count() | localizedNumber) }
+        }}
+      </p>
+    }
+  }
+</section>

@@ -54,6 +54,20 @@
   }
 }
 @layer components {
+  .attention-row {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    transition: background-color 150ms;
+  }
+  .attention-row:hover,
+  .attention-row:focus-visible {
+    background: var(--app-subtle, #f8fafc);
+  }
+  .attention-row:focus-visible {
+    outline-offset: -3px;
+  }
+
   .disclosure-toggle {
     display: flex;
     width: 100%;
