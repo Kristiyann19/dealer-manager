@@ -2,112 +2,195 @@
   <p class="error-banner" role="alert">{{ error() | translate }}</p>
 }
 <section [class]="embedded() ? 'border-t border-slate-200 pt-6' : 'panel p-6'">
-  <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
-    <h2>{{ 'files.photos' | translate }}</h2>
+  <div
+    class="flex flex-wrap justify-between items-center gap-3"
+    [class.mb-5]="!embedded() || photosExpanded()"
+  >
+    <h2 [class.w-full]="embedded()">
+      @if (embedded()) {
+        <button
+          type="button"
+          class="disclosure-toggle"
+          [attr.aria-expanded]="photosExpanded()"
+          [attr.aria-controls]="'vehicle-photos-' + vehicleId()"
+          (click)="photosExpanded.set(!photosExpanded())"
+        >
+          <svg
+            class="disclosure-chevron"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="m9 5 7 7-7 7" />
+          </svg>
+          <span>{{ 'files.photos' | translate }}</span>
+        </button>
+      } @else {
+        {{ 'files.photos' | translate }}
+      }
+    </h2>
     @if (editable()) {
       <button class="primary-button" [disabled]="busy() || loading()" (click)="openPhotos()">
         {{ 'files.addPhotos' | translate }}
       </button>
     }
   </div>
-  @if (loading()) {
-    <p role="status">{{ 'finance.loading' | translate }}</p>
-  } @else if (!photos().length) {
-    <div class="py-8 text-center text-slate-500">
-      <p>{{ 'files.noPhotos' | translate }}</p>
-      @if (editable()) {
-        <p class="mt-2 text-sm">{{ 'files.photoHint' | translate }}</p>
-      }
-      @if (editable()) {
-        <button class="secondary-button mt-4" [disabled]="busy()" (click)="openPhotos()">
-          {{ 'files.addPhotos' | translate }}
-        </button>
-      }
-    </div>
-  } @else {
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-      @for (photo of photos(); track photo.id) {
-        <article class="overflow-hidden rounded-lg border border-slate-200">
-          <button
-            class="block w-full relative"
-            (click)="previewPhoto(photo)"
-            [attr.aria-label]="
-              'files.previewNamed' | translate: { name: photo.caption || photo.originalFileName }
-            "
-          >
-            <img
-              class="w-full h-40 object-cover bg-slate-100"
-              [src]="api.photoUrl(vehicleId(), photo.id)"
-              [alt]="photo.caption || photo.originalFileName"
-              loading="lazy"
-            />
-            @if (photo.isPrimary) {
-              <span
-                class="absolute top-2 left-2 rounded bg-blue-600 text-white px-2 py-1 text-xs"
-                >{{ 'files.primary' | translate }}</span
+  <div [id]="'vehicle-photos-' + vehicleId()">
+    @if (!embedded() || photosExpanded()) {
+      @if (loading()) {
+        <p role="status">{{ 'finance.loading' | translate }}</p>
+      } @else if (!photos().length) {
+        <div class="py-8 text-center text-slate-500">
+          <p>{{ 'files.noPhotos' | translate }}</p>
+          @if (editable()) {
+            <p class="mt-2 text-sm">{{ 'files.photoHint' | translate }}</p>
+          }
+          @if (editable()) {
+            <button class="secondary-button mt-4" [disabled]="busy()" (click)="openPhotos()">
+              {{ 'files.addPhotos' | translate }}
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+          @for (photo of photos(); track photo.id) {
+            <article class="overflow-hidden rounded-lg border border-slate-200">
+              <button
+                class="block w-full relative"
+                (click)="previewPhoto(photo)"
+                [attr.aria-label]="
+                  'files.previewNamed'
+                    | translate: { name: photo.caption || photo.originalFileName }
+                "
               >
-            }
-          </button>
-          <div class="p-3">
-            <p class="text-sm font-semibold">{{ 'files.photoTypes.' + photo.type | translate }}</p>
-            <p class="text-xs truncate text-slate-500">
-              {{ photo.caption || photo.originalFileName }}
-            </p>
-          </div>
-        </article>
+                <img
+                  class="w-full h-40 object-cover bg-slate-100"
+                  [src]="api.photoUrl(vehicleId(), photo.id)"
+                  [alt]="photo.caption || photo.originalFileName"
+                  loading="lazy"
+                />
+                @if (photo.isPrimary) {
+                  <span
+                    class="absolute top-2 left-2 rounded bg-blue-600 text-white px-2 py-1 text-xs"
+                    >{{ 'files.primary' | translate }}</span
+                  >
+                }
+              </button>
+              <div class="p-3">
+                <p class="text-sm font-semibold">
+                  {{ 'files.photoTypes.' + photo.type | translate }}
+                </p>
+                <p class="text-xs truncate text-slate-500">
+                  {{ photo.caption || photo.originalFileName }}
+                </p>
+              </div>
+            </article>
+          }
+        </div>
       }
-    </div>
-  }
+    }
+  </div>
 </section>
 <section [class]="embedded() ? 'border-t border-slate-200 pt-6' : 'panel p-6'">
-  <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
-    <h2>{{ 'files.documents' | translate }}</h2>
+  <div
+    class="flex flex-wrap justify-between items-center gap-3"
+    [class.mb-5]="!embedded() || documentsExpanded()"
+  >
+    <h2 [class.w-full]="embedded()">
+      @if (embedded()) {
+        <button
+          type="button"
+          class="disclosure-toggle"
+          [attr.aria-expanded]="documentsExpanded()"
+          [attr.aria-controls]="'vehicle-documents-' + vehicleId()"
+          (click)="documentsExpanded.set(!documentsExpanded())"
+        >
+          <svg
+            class="disclosure-chevron"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="m9 5 7 7-7 7" />
+          </svg>
+          <span>{{ 'files.documents' | translate }}</span>
+        </button>
+      } @else {
+        {{ 'files.documents' | translate }}
+      }
+    </h2>
     @if (editable()) {
       <button class="primary-button" [disabled]="busy() || loading()" (click)="openDocument()">
         {{ 'files.uploadDocument' | translate }}
       </button>
     }
   </div>
-  @if (loading()) {
-    <p role="status">{{ 'finance.loading' | translate }}</p>
-  } @else if (!documents().length) {
-    <p class="py-8 text-center text-slate-500">{{ 'files.noDocuments' | translate }}</p>
-  } @else {
-    <ul class="divide-y divide-slate-200">
-      @for (document of documents(); track document.id) {
-        <li class="py-4 flex flex-wrap justify-between items-center gap-4">
-          <div class="min-w-0">
-            <h3 class="font-semibold break-words">{{ document.title }}</h3>
-            <p class="text-sm text-slate-500">
-              {{ 'files.documentTypes.' + document.type | translate }}
-            </p>
-            <p class="text-xs break-all text-slate-500">
-              {{ document.originalFileName }} ·
-              {{ document.documentDate || document.uploadedAt | localizedDate }}
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button class="secondary-button" [disabled]="busy()" (click)="content(document, false)">
-              {{ 'files.preview' | translate }}</button
-            ><button class="secondary-button" [disabled]="busy()" (click)="content(document, true)">
-              {{ 'files.download' | translate }}
-            </button>
-            @if (editable()) {
-              <button class="secondary-button" [disabled]="busy()" (click)="openDocument(document)">
-                {{ 'files.edit' | translate }}</button
-              ><button
-                class="secondary-button"
-                [disabled]="busy()"
-                (click)="deleting.set({ kind: 'document', id: document.id })"
-              >
-                {{ 'files.delete' | translate }}
-              </button>
-            }
-          </div>
-        </li>
+  <div [id]="'vehicle-documents-' + vehicleId()">
+    @if (!embedded() || documentsExpanded()) {
+      @if (loading()) {
+        <p role="status">{{ 'finance.loading' | translate }}</p>
+      } @else if (!documents().length) {
+        <p class="py-8 text-center text-slate-500">{{ 'files.noDocuments' | translate }}</p>
+      } @else {
+        <ul class="divide-y divide-slate-200">
+          @for (document of documents(); track document.id) {
+            <li class="py-4 flex flex-wrap justify-between items-center gap-4">
+              <div class="min-w-0">
+                <h3 class="font-semibold break-words">{{ document.title }}</h3>
+                <p class="text-sm text-slate-500">
+                  {{ 'files.documentTypes.' + document.type | translate }}
+                </p>
+                <p class="text-xs break-all text-slate-500">
+                  {{ document.originalFileName }} ·
+                  {{ document.documentDate || document.uploadedAt | localizedDate }}
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  class="secondary-button"
+                  [disabled]="busy()"
+                  (click)="content(document, false)"
+                >
+                  {{ 'files.preview' | translate }}</button
+                ><button
+                  class="secondary-button"
+                  [disabled]="busy()"
+                  (click)="content(document, true)"
+                >
+                  {{ 'files.download' | translate }}
+                </button>
+                @if (editable()) {
+                  <button
+                    class="secondary-button"
+                    [disabled]="busy()"
+                    (click)="openDocument(document)"
+                  >
+                    {{ 'files.edit' | translate }}</button
+                  ><button
+                    class="secondary-button"
+                    [disabled]="busy()"
+                    (click)="deleting.set({ kind: 'document', id: document.id })"
+                  >
+                    {{ 'files.delete' | translate }}
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
       }
-    </ul>
-  }
+    }
+  </div>
 </section>
 <p-dialog
   [visible]="photoDialog()"

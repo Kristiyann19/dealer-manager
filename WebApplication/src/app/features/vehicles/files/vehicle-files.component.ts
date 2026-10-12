@@ -30,6 +30,8 @@ export class VehicleFilesComponent implements OnInit {
   readonly vehicleId = input.required<number>();
   readonly editable = input(true);
   readonly embedded = input(false);
+  readonly photosExpanded = signal(false);
+  readonly documentsExpanded = signal(false);
   readonly api = inject(VehicleFilesApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly messages = inject(MessageService);

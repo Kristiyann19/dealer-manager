@@ -76,6 +76,23 @@ describe('Vehicle dossier', () => {
     expect(files.textContent).toContain(en.files.photos);
     expect(files.textContent).not.toContain(en.files.addPhotos);
     expect(files.textContent).not.toContain(en.files.uploadDocument);
+    const toggles = files.querySelectorAll('h2 button');
+    expect(toggles.length).toBe(2);
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('false');
+    expect(files.textContent).not.toContain(en.files.noPhotos);
+    expect(files.textContent).not.toContain(en.files.noDocuments);
+    toggles[0].click();
+    fixture.detectChanges();
+    expect(files.textContent).toContain(en.files.noPhotos);
+    expect(files.textContent).not.toContain(en.files.noDocuments);
+    toggles[1].click();
+    fixture.detectChanges();
+    expect(files.textContent).toContain(en.files.noDocuments);
+    toggles[0].click();
+    fixture.detectChanges();
+    expect(files.textContent).not.toContain(en.files.noPhotos);
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('false');
+
     TestBed.inject(TranslateService).use('bg').subscribe();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(bg.vehicle.dossier.title);
