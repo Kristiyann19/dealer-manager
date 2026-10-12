@@ -12,6 +12,10 @@ import { VehicleDossierComponent } from './vehicle-dossier.component';
 import { VehicleDetails, VehicleStatus } from './vehicle.models';
 import { CandidateCreateComponent } from '../candidates/pages/candidate-create.component';
 
+import { MessageService } from 'primeng/api';
+import { of } from 'rxjs';
+import { VehicleFilesApiService } from './files/vehicle-files-api.service';
+
 registerLocaleData(bgLocale);
 const details = {
   id: 5,
@@ -30,6 +34,11 @@ describe('Vehicle dossier', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        MessageService,
+        {
+          provide: VehicleFilesApiService,
+          useValue: { photos: () => of([]), documents: () => of([]) },
+        },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -51,6 +60,7 @@ describe('Vehicle dossier', () => {
     const fixture = TestBed.createComponent(VehicleDossierComponent);
     fixture.componentRef.setInput('vehicle', details);
     fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-vehicle-files')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('dt').length).toBe(2);
     expect(fixture.nativeElement.querySelector('dl').classList.contains('grid-cols-2')).toBe(true);
     expect(fixture.nativeElement.textContent).not.toContain(en.vehicle.dossier.registrationNumber);
@@ -61,6 +71,11 @@ describe('Vehicle dossier', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('dt').length).toBe(16);
     expect(fixture.nativeElement.textContent).toContain('Archived details');
+    const files = fixture.nativeElement.querySelector('app-vehicle-files');
+    expect(files).not.toBeNull();
+    expect(files.textContent).toContain(en.files.photos);
+    expect(files.textContent).not.toContain(en.files.addPhotos);
+    expect(files.textContent).not.toContain(en.files.uploadDocument);
     TestBed.inject(TranslateService).use('bg').subscribe();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(bg.vehicle.dossier.title);
@@ -70,6 +85,10 @@ describe('Vehicle dossier', () => {
     const page = fixture.componentInstance;
     http.expectOne('/api/vehicles/5').flush(details);
     fixture.detectChanges();
+    const files = fixture.nativeElement.querySelector('app-vehicle-files');
+    expect(files.closest('form')).toBeNull();
+    expect(files.textContent).toContain(en.files.addPhotos);
+    expect(files.textContent).toContain(en.files.uploadDocument);
     page.form.controls['powerHp'].setValue(-1);
     fixture.detectChanges();
     expect(page.form.invalid).toBe(true);

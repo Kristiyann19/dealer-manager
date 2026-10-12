@@ -42,7 +42,7 @@ const files = fs
 for (const file of files) {
   const source = fs.readFileSync(file, 'utf8');
   for (const match of source.matchAll(
-    /'((?:auth|ui|language|nav|profile|common|candidate|finance|purchase|vehicle|form|errors|dashboard|status|cost|months|specs)\.[A-Za-z0-9_ ./]+)'/g,
+    /'((?:files|reservation|auth|ui|language|nav|profile|common|candidate|finance|purchase|vehicle|form|errors|dashboard|status|cost|months|specs)\.[A-Za-z0-9_ ./]+)'/g,
   )) {
     // Dot-only prefixes are used to map stable enum values to translation keys.
     if (!match[1].endsWith('.')) assert.ok(en[match[1]], `Missing key ${match[1]} in ${file}`);
@@ -56,8 +56,9 @@ for (const file of files) {
     if (!expression || typeof expression !== 'object') return;
     if (expression.constructor.name === 'LiteralPrimitive' && typeof expression.value === 'string') {
       const value = expression.value;
+      const keyPrefix = value.endsWith('.') && Object.keys(en).some(key => key.startsWith(value));
       const format = ['EUR', 'UTC', 'dd MMM y', 'dd MMM y, HH:mm', 'd MMM y'].includes(value);
-      assert.ok(!/[A-ZА-Я]/.test(value) || format || en[value], `Untranslated display literal in ${file}: ${value}`);
+      assert.ok(!/[A-ZА-Я]/.test(value) || format || keyPrefix || en[value], `Untranslated display literal in ${file}: ${value}`);
     }
     for (const [key, value] of Object.entries(expression)) {
       if (key === 'sourceSpan') continue;

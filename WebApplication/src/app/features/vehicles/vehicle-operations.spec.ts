@@ -1,3 +1,5 @@
+import { of } from 'rxjs';
+import { VehicleFilesApiService } from './files/vehicle-files-api.service';
 import { ReserveVehicleComponent } from './reserve-vehicle.component';
 import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
@@ -60,6 +62,7 @@ describe('Vehicle inventory and operational status', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        { provide: VehicleFilesApiService, useValue: { photos: () => of([]), documents: () => of([]) } },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTranslateService(),

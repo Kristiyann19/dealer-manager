@@ -8,8 +8,12 @@ import { VehicleApiService } from './vehicle-api.service';
 import { DOSSIER_GROUPS, VehicleDossier } from './vehicle-dossier.models';
 import { validOptionalDate, vehicleError } from './vehicle-form-utils';
 import { integer } from '../candidates/components/candidate-form-utils';
+import { VehicleFilesComponent } from './files/vehicle-files.component';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  providers: [MessageService],
+  imports: [VehicleFilesComponent, ToastModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './vehicle-dossier-edit.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

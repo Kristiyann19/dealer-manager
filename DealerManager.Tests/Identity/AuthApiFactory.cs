@@ -1,3 +1,5 @@
+using DealerManager.Application.IService.Storage;
+using DealerManager.Tests.VehicleFiles;
 using System.Net.Http.Json;
 using DealerManager.Application.Dtos.Identity;
 using DealerManager.Application.IService.Identity;
@@ -16,6 +18,7 @@ namespace DealerManager.Tests.Identity;
 
 internal sealed class AuthApiFactory : WebApplicationFactory<Program>
 {
+    public TestFileStorage Storage { get; } = new();
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public AuthApiFactory() => connection.Open();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -23,6 +26,8 @@ internal sealed class AuthApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services => {
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
+            services.RemoveAll<IFileStorage>();
+            services.AddSingleton<IFileStorage>(Storage);
             services.RemoveAll<DealerManagerDbContext>();
             services.RemoveAll<DbContextOptions<DealerManagerDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<DealerManagerDbContext>>();
@@ -61,5 +66,5 @@ internal sealed class AuthApiFactory : WebApplicationFactory<Program>
         public int? UserId => 1;
         public int? DealershipId => id;
     }
-    protected override void Dispose(bool disposing) { base.Dispose(disposing); if (disposing) connection.Dispose(); }
+    protected override void Dispose(bool disposing) { base.Dispose(disposing); if (disposing) { connection.Dispose(); Storage.Dispose(); } }
 }

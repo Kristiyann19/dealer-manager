@@ -1,3 +1,5 @@
+using DealerManager.Application.IService.Storage;
+using DealerManager.Tests.VehicleFiles;
 using DealerManager.Tests.Identity;
 using DealerManager.Application.IService.Identity;
 using DealerManager.Infrastructure.Persistence;
@@ -16,6 +18,7 @@ namespace DealerManager.Tests.Finance;
 
 internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
 {
+    public TestFileStorage Storage { get; } = new();
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public FixedTimeProvider Clock { get; } = new();
     public QueryRecorder Queries { get; } = new();
@@ -27,6 +30,8 @@ internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             TestOwnerSession.Configure(services);
+            services.RemoveAll<IFileStorage>();
+            services.AddSingleton<IFileStorage>(Storage);
             services.RemoveAll<DealerManagerDbContext>();
             services.RemoveAll<DbContextOptions<DealerManagerDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<DealerManagerDbContext>>();
@@ -49,7 +54,7 @@ internal sealed class FinanceApiFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        if (disposing) connection.Dispose();
+        if (disposing) { connection.Dispose(); Storage.Dispose(); }
     }
 }
 
@@ -60,6 +65,10 @@ internal sealed class FinanceTestDbContext(DbContextOptions<DealerManagerDbConte
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.Entity<DealerManager.Domain.Entities.VehiclePhoto>().Property(p => p.UploadedAt)
+            .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
+        builder.Entity<DealerManager.Domain.Entities.VehicleDocument>().Property(d => d.UploadedAt)
+            .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
         builder.Entity<DealerManager.Domain.Entities.VehicleReservation>().Property(r => r.ReservedAt)
             .HasConversion(value => value.UtcTicks, value => new DateTimeOffset(value, TimeSpan.Zero));
         builder.Entity<DealerManager.Domain.Entities.Vehicle>().Property(e => e.PurchaseDate)

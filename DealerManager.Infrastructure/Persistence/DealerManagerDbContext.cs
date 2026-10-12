@@ -26,6 +26,8 @@ namespace DealerManager.Infrastructure.Persistence
         #endregion
 
         #region Vehicle
+        public DbSet<VehiclePhoto> VehiclePhotos { get; set; }
+        public DbSet<VehicleDocument> VehicleDocuments { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<VehicleCostPlanItem> VehicleCostPlanItems { get; set; }
         public DbSet<VehicleExpense> VehicleExpenses { get; set; }

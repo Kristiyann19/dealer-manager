@@ -35,8 +35,10 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
 @Component({
   selector: 'app-vehicle-details',
   imports: [
-    ReserveVehicleComponent, CancelReservationComponent,
+    ReserveVehicleComponent,
+    CancelReservationComponent,
     VehicleDossierComponent,
+
     TranslatePipe,
     ToastModule,
     RouterLink,
@@ -82,7 +84,11 @@ export class VehicleDetailsComponent {
   readonly reservationDialog = signal(false);
   readonly cancellationDialog = signal(false);
   readonly canReserve = computed(() => this.vehicle()?.status === VehicleStatus.Listed);
-  readonly canSell = computed(() => this.vehicle()?.status === VehicleStatus.Listed || (this.vehicle()?.status === VehicleStatus.Reserved && !!this.vehicle()?.activeReservation));
+  readonly canSell = computed(
+    () =>
+      this.vehicle()?.status === VehicleStatus.Listed ||
+      (this.vehicle()?.status === VehicleStatus.Reserved && !!this.vehicle()?.activeReservation),
+  );
   readonly canList = computed(() => this.vehicle()?.status === VehicleStatus.ReadyForSale);
   readonly canChangeStatus = computed(
     () => this.vehicle() !== null && this.vehicle()!.status < VehicleStatus.Listed,
@@ -170,17 +176,23 @@ export class VehicleDetailsComponent {
     if (this.vehicle()?.status === 9) return;
     this.expenseDialog.set({ plan });
   }
-  saved(kind: 'plan' | 'expense' | 'status' | 'listing' | 'sale' | 'reservation' | 'cancelReservation') {
+  saved(
+    kind: 'plan' | 'expense' | 'status' | 'listing' | 'sale' | 'reservation' | 'cancelReservation',
+  ) {
     this.notice.set(
-      kind === 'reservation' ? 'reservation.success' : kind === 'cancelReservation' ? 'reservation.cancelSuccess' : kind === 'sale'
-        ? 'vehicle.sale.success'
-        : kind === 'listing'
-          ? 'vehicle.listing.success'
-          : kind === 'status'
-            ? 'vehicle.statusSaved'
-            : kind === 'plan'
-              ? 'vehicle.planSaved'
-              : 'vehicle.expenseSaved',
+      kind === 'reservation'
+        ? 'reservation.success'
+        : kind === 'cancelReservation'
+          ? 'reservation.cancelSuccess'
+          : kind === 'sale'
+            ? 'vehicle.sale.success'
+            : kind === 'listing'
+              ? 'vehicle.listing.success'
+              : kind === 'status'
+                ? 'vehicle.statusSaved'
+                : kind === 'plan'
+                  ? 'vehicle.planSaved'
+                  : 'vehicle.expenseSaved',
     );
     this.messages.clear();
     this.messages.add({ severity: 'success', detail: this.notice(), life: 5000 });

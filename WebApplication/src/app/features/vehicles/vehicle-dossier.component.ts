@@ -4,9 +4,16 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LocalizedDatePipe, LocalizedNumberPipe } from '../../shared/pipes/localized-format.pipe';
 import { VehicleDetails } from './vehicle.models';
 import { DOSSIER_GROUPS, DossierField } from './vehicle-dossier.models';
+import { VehicleFilesComponent } from './files/vehicle-files.component';
 @Component({
   selector: 'app-vehicle-dossier',
-  imports: [RouterLink, TranslatePipe, LocalizedDatePipe, LocalizedNumberPipe],
+  imports: [
+    VehicleFilesComponent,
+    RouterLink,
+    TranslatePipe,
+    LocalizedDatePipe,
+    LocalizedNumberPipe,
+  ],
   templateUrl: './vehicle-dossier.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

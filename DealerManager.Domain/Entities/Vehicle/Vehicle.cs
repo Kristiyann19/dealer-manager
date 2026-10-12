@@ -38,6 +38,8 @@ public class Vehicle : Entity, ITenantEntity
     public ICollection<VehicleStatusHistory> VehicleStatusHistory { get; set; } = new List<VehicleStatusHistory>();
     public ICollection<VehicleCostPlanItem> VehicleCostPlanItems { get; set; } = new List<VehicleCostPlanItem>();
     public ICollection<VehicleExpense> VehicleExpenses { get; set; } = new List<VehicleExpense>();
+    public ICollection<VehiclePhoto> VehiclePhotos { get; set; } = new List<VehiclePhoto>();
+    public ICollection<VehicleDocument> VehicleDocuments { get; set; } = new List<VehicleDocument>();
     public VehicleSale? VehicleSale { get; set; }
     public ICollection<VehicleListing> VehicleListings { get; set; } = new List<VehicleListing>();
 }

@@ -1,3 +1,4 @@
+import { VehicleFilesApiService } from '../vehicles/files/vehicle-files-api.service';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -60,6 +61,7 @@ describe('Purchase frontend', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        { provide: VehicleFilesApiService, useValue: { photos: () => of([]), documents: () => of([]) } },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTranslateService(),

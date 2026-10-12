@@ -22,6 +22,8 @@ public sealed class VehicleProfile : Profile
             .ForMember(d => d.VehicleStatusHistory, o => o.Ignore())
             .ForMember(d => d.VehicleCostPlanItems, o => o.Ignore())
             .ForMember(d => d.VehicleExpenses, o => o.Ignore())
+            .ForMember(d => d.VehiclePhotos, o => o.Ignore())
+            .ForMember(d => d.VehicleDocuments, o => o.Ignore())
             .ForMember(d => d.VehicleSale, o => o.Ignore())
             .ForMember(d => d.VehicleListings, o => o.Ignore())
             .ForMember(d => d.Id, o => o.Ignore())

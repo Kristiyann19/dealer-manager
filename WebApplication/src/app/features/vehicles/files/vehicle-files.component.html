@@ -1,0 +1,372 @@
+@if (error()) {
+  <p class="error-banner" role="alert">{{ error() | translate }}</p>
+}
+<section [class]="embedded() ? 'border-t border-slate-200 pt-6' : 'panel p-6'">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+    <h2>{{ 'files.photos' | translate }}</h2>
+    @if (editable()) {
+      <button class="primary-button" [disabled]="busy() || loading()" (click)="openPhotos()">
+        {{ 'files.addPhotos' | translate }}
+      </button>
+    }
+  </div>
+  @if (loading()) {
+    <p role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (!photos().length) {
+    <div class="py-8 text-center text-slate-500">
+      <p>{{ 'files.noPhotos' | translate }}</p>
+      @if (editable()) {
+        <p class="mt-2 text-sm">{{ 'files.photoHint' | translate }}</p>
+      }
+      @if (editable()) {
+        <button class="secondary-button mt-4" [disabled]="busy()" (click)="openPhotos()">
+          {{ 'files.addPhotos' | translate }}
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+      @for (photo of photos(); track photo.id) {
+        <article class="overflow-hidden rounded-lg border border-slate-200">
+          <button
+            class="block w-full relative"
+            (click)="previewPhoto(photo)"
+            [attr.aria-label]="
+              'files.previewNamed' | translate: { name: photo.caption || photo.originalFileName }
+            "
+          >
+            <img
+              class="w-full h-40 object-cover bg-slate-100"
+              [src]="api.photoUrl(vehicleId(), photo.id)"
+              [alt]="photo.caption || photo.originalFileName"
+              loading="lazy"
+            />
+            @if (photo.isPrimary) {
+              <span
+                class="absolute top-2 left-2 rounded bg-blue-600 text-white px-2 py-1 text-xs"
+                >{{ 'files.primary' | translate }}</span
+              >
+            }
+          </button>
+          <div class="p-3">
+            <p class="text-sm font-semibold">{{ 'files.photoTypes.' + photo.type | translate }}</p>
+            <p class="text-xs truncate text-slate-500">
+              {{ photo.caption || photo.originalFileName }}
+            </p>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+<section [class]="embedded() ? 'border-t border-slate-200 pt-6' : 'panel p-6'">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+    <h2>{{ 'files.documents' | translate }}</h2>
+    @if (editable()) {
+      <button class="primary-button" [disabled]="busy() || loading()" (click)="openDocument()">
+        {{ 'files.uploadDocument' | translate }}
+      </button>
+    }
+  </div>
+  @if (loading()) {
+    <p role="status">{{ 'finance.loading' | translate }}</p>
+  } @else if (!documents().length) {
+    <p class="py-8 text-center text-slate-500">{{ 'files.noDocuments' | translate }}</p>
+  } @else {
+    <ul class="divide-y divide-slate-200">
+      @for (document of documents(); track document.id) {
+        <li class="py-4 flex flex-wrap justify-between items-center gap-4">
+          <div class="min-w-0">
+            <h3 class="font-semibold break-words">{{ document.title }}</h3>
+            <p class="text-sm text-slate-500">
+              {{ 'files.documentTypes.' + document.type | translate }}
+            </p>
+            <p class="text-xs break-all text-slate-500">
+              {{ document.originalFileName }} ·
+              {{ document.documentDate || document.uploadedAt | localizedDate }}
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button class="secondary-button" [disabled]="busy()" (click)="content(document, false)">
+              {{ 'files.preview' | translate }}</button
+            ><button class="secondary-button" [disabled]="busy()" (click)="content(document, true)">
+              {{ 'files.download' | translate }}
+            </button>
+            @if (editable()) {
+              <button class="secondary-button" [disabled]="busy()" (click)="openDocument(document)">
+                {{ 'files.edit' | translate }}</button
+              ><button
+                class="secondary-button"
+                [disabled]="busy()"
+                (click)="deleting.set({ kind: 'document', id: document.id })"
+              >
+                {{ 'files.delete' | translate }}
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
+<p-dialog
+  [visible]="photoDialog()"
+  (visibleChange)="!busy() && photoDialog.set($event)"
+  [header]="'files.addPhotos' | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [style]="{ width: '580px', maxWidth: '94vw' }"
+>
+  <form [formGroup]="photoForm" (ngSubmit)="uploadPhotos()">
+    <fieldset [disabled]="busy()" class="grid gap-4">
+      <div>
+        <label class="field-label" for="vehicle-photos">{{
+          'files.selectPhotos' | translate
+        }}</label
+        ><input
+          id="vehicle-photos"
+          class="form-input"
+          type="file"
+          multiple
+          accept=".jpg,.jpeg,.png,.webp"
+          (change)="selectPhotos($event)"
+        />
+        <p class="mt-2 text-xs text-slate-500">{{ 'files.photoLimits' | translate }}</p>
+      </div>
+      @if (fileError()) {
+        <p class="field-error" role="alert">{{ fileError() | translate }}</p>
+      }
+      <ul class="text-sm max-h-40 overflow-auto">
+        @for (file of selectedPhotos(); track $index) {
+          <li class="break-all">{{ file.name }}</li>
+        }
+      </ul>
+      <div>
+        <label class="field-label" for="photo-type">{{ 'files.type' | translate }}</label
+        ><select id="photo-type" class="form-input" formControlName="type">
+          @for (type of photoTypes; track type) {
+            <option [ngValue]="type">{{ 'files.photoTypes.' + type | translate }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="field-label" for="photo-caption">{{ 'files.caption' | translate }}</label
+        ><textarea
+          id="photo-caption"
+          class="form-input"
+          formControlName="caption"
+          maxlength="1000"
+        ></textarea>
+      </div>
+    </fieldset>
+    @if (error()) {
+      <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p>
+    }
+    <div class="form-actions">
+      <button
+        type="button"
+        class="secondary-button"
+        [disabled]="busy()"
+        (click)="photoDialog.set(false)"
+      >
+        {{ 'finance.cancel' | translate }}</button
+      ><button
+        type="submit"
+        class="primary-button"
+        [disabled]="busy() || photoForm.invalid || !!fileError() || !selectedPhotos().length"
+      >
+        {{
+          (busy() ? 'files.uploading' : 'files.uploadCount')
+            | translate: { count: selectedPhotos().length }
+        }}
+      </button>
+    </div>
+  </form>
+</p-dialog>
+<p-dialog
+  [visible]="documentDialog()"
+  (visibleChange)="!busy() && documentDialog.set($event)"
+  [header]="(editing() ? 'files.editDocument' : 'files.uploadDocument') | translate"
+  [closeAriaLabel]="'finance.cancel' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!busy()"
+  [closeOnEscape]="!busy()"
+  [style]="{ width: '580px', maxWidth: '94vw' }"
+>
+  <form [formGroup]="documentForm" (ngSubmit)="saveDocument()">
+    <fieldset [disabled]="busy()" class="grid gap-4">
+      <div>
+        <label class="field-label" for="document-type">{{ 'files.type' | translate }}</label
+        ><select id="document-type" class="form-input" formControlName="type">
+          @for (type of documentTypes; track type) {
+            <option [ngValue]="type">{{ 'files.documentTypes.' + type | translate }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="field-label" for="document-title">{{ 'files.title' | translate }}</label
+        ><input id="document-title" class="form-input" formControlName="title" maxlength="200" />
+        @if (documentForm.controls.title.touched && documentForm.controls.title.invalid) {
+          <p class="field-error">{{ 'files.errors.title' | translate }}</p>
+        }
+      </div>
+      <div>
+        <label class="field-label" for="document-date">{{ 'files.documentDate' | translate }}</label
+        ><input id="document-date" class="form-input" type="date" formControlName="documentDate" />
+      </div>
+      @if (editing(); as document) {
+        <div>
+          <span class="field-label">{{ 'files.file' | translate }}</span>
+          <p class="break-all">{{ document.originalFileName }}</p>
+        </div>
+      } @else {
+        <div>
+          <label class="field-label" for="vehicle-document">{{ 'files.file' | translate }}</label
+          ><input
+            id="vehicle-document"
+            class="form-input"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            (change)="selectDocument($event)"
+          />
+          <p class="mt-2 text-xs text-slate-500">{{ 'files.documentLimits' | translate }}</p>
+        </div>
+      }
+      @if (fileError()) {
+        <p class="field-error" role="alert">{{ fileError() | translate }}</p>
+      }
+      <div>
+        <label class="field-label" for="document-notes">{{ 'files.notes' | translate }}</label
+        ><textarea
+          id="document-notes"
+          class="form-input"
+          formControlName="notes"
+          maxlength="2000"
+        ></textarea>
+      </div>
+    </fieldset>
+    @if (error()) {
+      <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p>
+    }
+    <div class="form-actions">
+      <button
+        type="button"
+        class="secondary-button"
+        [disabled]="busy()"
+        (click)="documentDialog.set(false)"
+      >
+        {{ 'finance.cancel' | translate }}</button
+      ><button
+        type="submit"
+        class="primary-button"
+        [disabled]="
+          busy() || documentForm.invalid || !!fileError() || (!editing() && !selectedDocument())
+        "
+      >
+        {{ (busy() ? 'finance.saving' : editing() ? 'files.save' : 'files.upload') | translate }}
+      </button>
+    </div>
+  </form>
+</p-dialog>
+@if (photoPreview(); as photo) {
+  <p-dialog
+    [visible]="true"
+    (visibleChange)="!busy() && photoPreview.set(null)"
+    [header]="'files.preview' | translate"
+    [closeAriaLabel]="'finance.cancel' | translate"
+    [modal]="true"
+    [draggable]="false"
+    [closable]="!busy()"
+    [closeOnEscape]="!busy()"
+    [style]="{ width: '900px', maxWidth: '94vw' }"
+  >
+    @if (imageFailed()) {
+      <p class="error-banner">{{ 'files.errors.missingContent' | translate }}</p>
+    } @else {
+      <img
+        class="w-full max-h-[65vh] object-contain"
+        [src]="api.photoUrl(vehicleId(), photo.id)"
+        [alt]="photo.caption || photo.originalFileName"
+        (error)="imageFailed.set(true)"
+      />
+    }
+    <p class="mt-4 font-semibold">{{ 'files.photoTypes.' + photo.type | translate }}</p>
+    @if (photo.caption) {
+      <p>{{ photo.caption }}</p>
+    }
+    <p class="text-sm text-slate-500">{{ photo.uploadedAt | localizedDate }}</p>
+    @if (editable()) {
+      <div class="form-actions">
+        @if (!photo.isPrimary) {
+          <button class="primary-button" [disabled]="busy()" (click)="primary(photo)">
+            {{ 'files.makePrimary' | translate }}
+          </button>
+        }
+        <button
+          class="secondary-button"
+          [disabled]="busy()"
+          (click)="deleting.set({ kind: 'photo', id: photo.id })"
+        >
+          {{ 'files.delete' | translate }}
+        </button>
+      </div>
+    }
+  </p-dialog>
+}
+@if (documentPreview(); as preview) {
+  <p-dialog
+    [visible]="true"
+    (visibleChange)="closeDocumentPreview()"
+    [header]="preview.title"
+    [closeAriaLabel]="'finance.cancel' | translate"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '1000px', maxWidth: '94vw' }"
+  >
+    @if (preview.pdf) {
+      <iframe
+        class="w-full h-[70vh] border-0"
+        [src]="preview.trustedUrl"
+        [title]="preview.title"
+      ></iframe>
+    } @else {
+      <img class="w-full max-h-[70vh] object-contain" [src]="preview.url" [alt]="preview.title" />
+    }
+  </p-dialog>
+}
+@if (deleting(); as item) {
+  <p-dialog
+    [visible]="true"
+    (visibleChange)="!busy() && deleting.set(null)"
+    [header]="'files.delete' | translate"
+    [closeAriaLabel]="'finance.cancel' | translate"
+    [modal]="true"
+    [draggable]="false"
+    [closable]="!busy()"
+    [closeOnEscape]="!busy()"
+    [style]="{ width: '440px', maxWidth: '94vw' }"
+  >
+    <p>
+      {{
+        (item.kind === 'photo' ? 'files.confirmDeletePhoto' : 'files.confirmDeleteDocument')
+          | translate
+      }}
+    </p>
+    @if (error()) {
+      <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p>
+    }
+    <div class="form-actions">
+      <button class="secondary-button" [disabled]="busy()" (click)="deleting.set(null)">
+        {{ 'finance.cancel' | translate }}</button
+      ><button class="primary-button" [disabled]="busy()" (click)="confirmDelete()">
+        {{ (busy() ? 'finance.saving' : 'files.delete') | translate }}
+      </button>
+    </div>
+  </p-dialog>
+}

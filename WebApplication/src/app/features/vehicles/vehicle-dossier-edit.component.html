@@ -1,4 +1,9 @@
 <div class="page-container page-container--form">
+  <p-toast position="top-right">
+    <ng-template #message let-message
+      ><p role="status">{{ message.detail | translate }}</p></ng-template
+    >
+  </p-toast>
   <a class="text-link" [routerLink]="['/vehicles', id]">{{ 'vehicle.dossier.back' | translate }}</a>
   <div class="page-heading">
     <h1>{{ 'vehicle.dossier.editTitle' | translate }}</h1>
@@ -10,7 +15,12 @@
   @if (loading()) {
     <p class="panel p-6" role="status">{{ 'finance.loading' | translate }}</p>
   } @else if (loaded()) {
-    <form [formGroup]="form" (ngSubmit)="save()" [attr.aria-busy]="busy()">
+    <form
+      id="vehicle-dossier-form"
+      [formGroup]="form"
+      (ngSubmit)="save()"
+      [attr.aria-busy]="busy()"
+    >
       @for (group of groups; track group.title) {
         <fieldset class="panel p-6 mb-6" [disabled]="busy()">
           <legend class="form-section-title px-2">{{ group.title | translate }}</legend>
@@ -72,14 +82,20 @@
           </div>
         </fieldset>
       }
-      <div class="flex flex-wrap gap-3 justify-end">
-        <a class="secondary-button" [routerLink]="['/vehicles', id]">{{
-          'vehicle.dossier.cancel' | translate
-        }}</a>
-        <button class="primary-button" type="submit" [disabled]="busy() || form.invalid">
-          {{ (busy() ? 'vehicle.dossier.saving' : 'vehicle.dossier.save') | translate }}
-        </button>
-      </div>
     </form>
+    <app-vehicle-files class="mb-6" [vehicleId]="id" />
+    <div class="flex flex-wrap gap-3 justify-end">
+      <a class="secondary-button" [routerLink]="['/vehicles', id]">{{
+        'vehicle.dossier.cancel' | translate
+      }}</a>
+      <button
+        class="primary-button"
+        type="submit"
+        form="vehicle-dossier-form"
+        [disabled]="busy() || form.invalid"
+      >
+        {{ (busy() ? 'vehicle.dossier.saving' : 'vehicle.dossier.save') | translate }}
+      </button>
+    </div>
   }
 </div>

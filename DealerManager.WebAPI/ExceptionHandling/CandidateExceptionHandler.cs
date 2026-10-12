@@ -17,6 +17,7 @@ namespace DealerManager.WebAPI.ExceptionHandling
                 DealerManager.Application.IService.Identity.TenantAccessException or CandidateNotFoundException or CapitalAccountNotFoundException or VehicleReservationNotFoundException or VehicleNotFoundException => StatusCodes.Status404NotFound,
                 CandidateConflictException or CapitalAccountConflictException or PurchaseCandidateException or VehicleConflictException or DBConcurrencyException => StatusCodes.Status409Conflict,
                 DealerManager.Application.IService.Identity.AuthRequestException auth => auth.StatusCode,
+                VehicleFileException file => file.StatusCode,
                 ValidationException => StatusCodes.Status400BadRequest,
                 _ => 0
             };
@@ -37,6 +38,7 @@ namespace DealerManager.WebAPI.ExceptionHandling
                 Instance = httpContext.Request.Path
             };
             if (exception is PurchaseCandidateException purchase) problem.Extensions["code"] = purchase.Code;
+            if (exception is VehicleFileException fileError) problem.Extensions["code"] = fileError.Code;
             if (exception is VehicleConflictException vehicle) problem.Extensions["code"] = vehicle.Code;
             await httpContext.Response.WriteAsJsonAsync(problem, options: null,
                 contentType: "application/problem+json", cancellationToken: cancellationToken);

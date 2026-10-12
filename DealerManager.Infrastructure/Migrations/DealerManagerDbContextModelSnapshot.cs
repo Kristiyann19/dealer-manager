@@ -492,6 +492,63 @@ namespace DealerManager.Infrastructure.Migrations
                     b.ToTable("VehicleCostPlanItems");
                 });
 
+            modelBuilder.Entity("DealerManager.Domain.Entities.VehicleDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("DocumentDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UploadedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("VehicleDocuments");
+                });
+
             modelBuilder.Entity("DealerManager.Domain.Entities.VehicleExpense", b =>
                 {
                     b.Property<int>("Id")
@@ -575,6 +632,65 @@ namespace DealerManager.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_VehicleListings_PositivePrice", "\"ListingPrice\" > 0");
                         });
+                });
+
+            modelBuilder.Entity("DealerManager.Domain.Entities.VehiclePhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UploadedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId")
+                        .IsUnique()
+                        .HasFilter("\"IsPrimary\" = TRUE");
+
+                    b.HasIndex("VehicleId", "SortOrder");
+
+                    b.ToTable("VehiclePhotos");
                 });
 
             modelBuilder.Entity("DealerManager.Domain.Entities.VehicleReservation", b =>
@@ -983,6 +1099,17 @@ namespace DealerManager.Infrastructure.Migrations
                     b.Navigation("Vehicle");
                 });
 
+            modelBuilder.Entity("DealerManager.Domain.Entities.VehicleDocument", b =>
+                {
+                    b.HasOne("DealerManager.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany("VehicleDocuments")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("DealerManager.Domain.Entities.VehicleExpense", b =>
                 {
                     b.HasOne("DealerManager.Domain.Entities.VehicleCostPlanItem", "CostPlanItem")
@@ -1012,6 +1139,17 @@ namespace DealerManager.Infrastructure.Migrations
                 {
                     b.HasOne("DealerManager.Domain.Entities.Vehicle", "Vehicle")
                         .WithMany("VehicleListings")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("DealerManager.Domain.Entities.VehiclePhoto", b =>
+                {
+                    b.HasOne("DealerManager.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany("VehiclePhotos")
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1158,9 +1296,13 @@ namespace DealerManager.Infrastructure.Migrations
                 {
                     b.Navigation("VehicleCostPlanItems");
 
+                    b.Navigation("VehicleDocuments");
+
                     b.Navigation("VehicleExpenses");
 
                     b.Navigation("VehicleListings");
+
+                    b.Navigation("VehiclePhotos");
 
                     b.Navigation("VehicleSale");
 

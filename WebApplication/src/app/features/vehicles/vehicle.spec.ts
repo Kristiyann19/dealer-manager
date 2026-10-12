@@ -1,3 +1,4 @@
+import { VehicleFilesApiService } from './files/vehicle-files-api.service';
 import { registerLocaleData } from '@angular/common';
 import bgLocale from '@angular/common/locales/bg';
 import { provideHttpClient } from '@angular/common/http';
@@ -5,7 +6,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import en from '../../../assets/i18n/en.json';
 import bg from '../../../assets/i18n/bg.json';
 import { CostCategory } from '../candidates/models/candidate.models';
@@ -93,6 +94,7 @@ describe('Vehicle finances', () => {
     params = new BehaviorSubject(convertToParamMap({ id: '1' }));
     TestBed.configureTestingModule({
       providers: [
+        { provide: VehicleFilesApiService, useValue: { photos: () => of([]), documents: () => of([]) } },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
