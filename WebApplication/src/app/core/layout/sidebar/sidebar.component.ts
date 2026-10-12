@@ -21,6 +21,5 @@ export class SidebarComponent {
     { label: 'nav.customers', path: '/customers', icon: 'users' },
     { label: 'nav.finances', path: '/finances', icon: 'wallet' },
     { label: 'nav.reports', path: '/reports', icon: 'chart-no-axes-combined' },
-    { label: 'nav.tasks', path: '/tasks', icon: 'list-checks' },
   ];
 }

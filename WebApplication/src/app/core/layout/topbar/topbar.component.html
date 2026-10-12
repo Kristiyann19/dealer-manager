@@ -57,16 +57,6 @@
         {{ 'language.en' | translate }}
       </button>
     </div>
-    <button
-      type="button"
-      class="icon-button relative"
-      [attr.aria-label]="'ui.notifications' | translate"
-      [pTooltip]="'ui.notifications' | translate"
-      tooltipPosition="bottom"
-      (click)="dialog.set('notifications')"
-    >
-      <svg lucideIcon="bell" [size]="19" aria-hidden="true"></svg>
-    </button>
     <span class="h-5 w-px bg-slate-200 hidden sm:block"></span>
 
     <button
@@ -84,7 +74,7 @@
 }
 <p-dialog
   [closeAriaLabel]="'ui.close_dialog' | translate"
-  [header]="(dialog() === 'profile' ? 'profile.title' : 'ui.notifications') | translate"
+  [header]="'profile.title' | translate"
   [visible]="dialog() !== null"
   (visibleChange)="dialog.set(null)"
   [modal]="true"
@@ -92,11 +82,6 @@
   [style]="{ width: '420px', maxWidth: '92vw' }"
 >
   @switch (dialog()) {
-    @case ('notifications') {
-      <p class="text-sm text-slate-600">
-        {{ 'ui.you_re_all_caught_up_live_notifications_will_be_available_later' | translate }}
-      </p>
-    }
     @case ('profile') {
       <p class="font-semibold">{{ auth.currentUser()?.email }}</p>
       <p class="mt-1 text-sm text-slate-500">{{ auth.currentUser()?.dealership?.name }}</p>

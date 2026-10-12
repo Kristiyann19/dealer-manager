@@ -92,12 +92,6 @@ export const routes: Routes = [
         data: { title: 'nav.reports', icon: 'chart-no-axes-combined' },
       },
       {
-        path: 'tasks',
-        title: 'nav.tasks',
-        loadComponent: placeholder,
-        data: { title: 'nav.tasks', icon: 'list-checks' },
-      },
-      {
         path: 'settings',
         title: 'nav.settings',
         loadComponent: () =>

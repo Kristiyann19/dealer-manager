@@ -3,7 +3,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
-import { TooltipModule } from 'primeng/tooltip';
 import { WorkspaceService } from '../../services/workspace.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -12,7 +11,7 @@ import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-topbar',
-  imports: [TranslatePipe, LucideDynamicIcon, DialogModule, TooltipModule],
+  imports: [TranslatePipe, LucideDynamicIcon, DialogModule],
   templateUrl: './topbar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,5 +28,5 @@ export class TopbarComponent {
   );
   protected readonly workspace = inject(WorkspaceService);
   readonly toggleMenu = output<void>();
-  protected readonly dialog = signal<'notifications' | 'profile' | null>(null);
+  protected readonly dialog = signal<'profile' | null>(null);
 }
