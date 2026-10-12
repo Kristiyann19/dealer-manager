@@ -30,6 +30,7 @@ public partial class DealerManagerDbContext
         builder.Entity<VehicleCostPlanItem>().HasQueryFilter(p => p.Vehicle.DealershipId == CurrentTenantId);
         builder.Entity<VehicleExpense>().HasQueryFilter(e => e.Vehicle.DealershipId == CurrentTenantId);
         builder.Entity<VehicleListing>().HasQueryFilter(l => l.Vehicle.DealershipId == CurrentTenantId);
+        builder.Entity<VehicleReservation>().HasQueryFilter(r => r.Vehicle.DealershipId == CurrentTenantId);
         builder.Entity<VehicleSale>().HasQueryFilter(s => s.Vehicle.DealershipId == CurrentTenantId);
         builder.Entity<VehicleStatusHistory>().HasQueryFilter(h => h.Vehicle.DealershipId == CurrentTenantId);
 

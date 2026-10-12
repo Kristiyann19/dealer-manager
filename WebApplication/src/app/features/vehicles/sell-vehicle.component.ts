@@ -37,6 +37,8 @@ export class SellVehicleComponent implements OnInit {
   readonly vehicleId = input.required<number>();
   readonly listingPrice = input.required<number | null>();
   readonly totalInvested = input.required<number>();
+  readonly depositAmount = input(0);
+  readonly remaining = computed(() => this.price() === null ? null : this.price()! - this.depositAmount());
   readonly saved = output<void>();
   readonly closed = output<boolean>();
   readonly busy = signal(false);
@@ -64,6 +66,7 @@ export class SellVehicleComponent implements OnInit {
   private readonly api = inject(VehicleApiService);
   private readonly destroyRef = inject(DestroyRef);
   ngOnInit() {
+    this.form.controls.actualSalePrice.addValidators(Validators.min(this.depositAmount()));
     this.form.controls.actualSalePrice.setValue(this.listingPrice());
   }
   close() {

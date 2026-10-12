@@ -48,6 +48,7 @@ export function vehicleError(error: unknown, writing = false): string {
         'activeListingRequired',
         'saleAccountMissing',
         'notReadyForListing',
+        'notListedForReservation', 'activeReservationExists', 'depositExceedsPrice', 'reservationNotActive', 'saleBelowDeposit',
       ].includes(code)
     )
       return 'vehicle.errors.' + code;

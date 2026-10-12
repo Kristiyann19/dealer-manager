@@ -31,6 +31,11 @@ public sealed class VehicleProfile : Profile
             .ForMember(d => d.ImportedFrom, o => o.MapFrom(s => string.IsNullOrWhiteSpace(s.ImportedFrom) ? null : s.ImportedFrom.Trim()))
             .ForMember(d => d.Notes, o => o.MapFrom(s => string.IsNullOrWhiteSpace(s.Notes) ? null : s.Notes.Trim()))
             .MaxDepth(4);
+        CreateMap<VehicleReservation, VehicleReservationDto>()
+            .ForMember(d => d.ReservationId, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.VehicleStatus, o => o.MapFrom(s => s.Vehicle.Status))
+            .ForMember(d => d.CapitalAccountId, o => o.MapFrom(s => s.DepositTransaction.CapitalAccountId))
+            .MaxDepth(4);
         CreateMap<VehicleStatusHistory, VehicleStatusHistoryDto>().MaxDepth(4);
         CreateMap<VehicleListing, VehicleListingDto>()
             .ForMember(d => d.ListingId, o => o.MapFrom(s => s.Id))
@@ -61,6 +66,7 @@ public sealed class VehicleProfile : Profile
             .ForMember(d => d.CurrentListing, o => o.Ignore())
             .ForMember(d => d.ListingPrice, o => o.Ignore())
             .ForMember(d => d.ListedAt, o => o.Ignore())
+            .ForMember(d => d.ActiveReservation, o => o.Ignore())
             .ForMember(d => d.SaleAccount, o => o.Ignore())
             .MaxDepth(4);
         CreateMap<Vehicle, VehicleListItemDto>()

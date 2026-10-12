@@ -10,6 +10,8 @@ export enum TransactionType {
   OwnerWithdrawal = 4,
   Adjustment = 5,
   Other = 6,
+  VehicleDeposit = 7,
+  DepositRefund = 8,
 }
 export interface CapitalAccount {
   id: number;
@@ -48,5 +50,7 @@ export const TRANSACTION_TYPE_KEYS: Record<TransactionType, string> = {
   [TransactionType.VehicleSale]: 'finance.types.sale',
   [TransactionType.OwnerWithdrawal]: 'finance.types.withdrawal',
   [TransactionType.Adjustment]: 'finance.types.adjustment',
+  [TransactionType.VehicleDeposit]: 'finance.types.deposit',
+  [TransactionType.DepositRefund]: 'finance.types.depositRefund',
   [TransactionType.Other]: 'finance.types.other',
 };

@@ -3,6 +3,10 @@ using DealerManager.Application.Dtos.Vehicle;
 namespace DealerManager.Application.IService.Vehicle;
 public interface IVehicleService
 {
+    Task<VehicleReservationDto> ReserveVehicle(int vehicleId, ReserveVehicleRequest request, CancellationToken cancellationToken);
+    Task<VehicleReservationDto> CancelReservation(int vehicleId, int reservationId, CancelReservationRequest request, CancellationToken cancellationToken);
+    Task<VehicleReservationDto?> GetActiveReservation(int vehicleId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<VehicleReservationDto>> GetReservations(int vehicleId, CancellationToken cancellationToken);
     Task<VehicleDetailsDto> UpdateDossier(int id, UpdateVehicleDossierRequest request, CancellationToken cancellationToken);
     Task<VehicleSaleResultDto> SellVehicle(int vehicleId, SellVehicleRequest request, CancellationToken cancellationToken);
     Task<VehicleListingDto> ListVehicle(int vehicleId, ListVehicleRequest request, CancellationToken cancellationToken);
@@ -21,3 +25,5 @@ public interface IVehicleService
     Task<IReadOnlyList<VehicleExpenseDto>> GetExpenses(int vehicleId, CancellationToken cancellationToken);
 }
 public class VehicleNotFoundException(int id) : Exception($"Vehicle {id} was not found.");
+
+public class VehicleReservationNotFoundException(int id) : Exception($"Reservation {id} was not found.");

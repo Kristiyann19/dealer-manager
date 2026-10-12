@@ -103,7 +103,7 @@ public partial class VehicleFinanceTests
         if (problem == "purchaseMissing") (await db.FinancialTransactions.SingleAsync(t => t.Type == TransactionType.VehiclePurchase)).VehicleId = null;
         await db.SaveChangesAsync();
         var response = await client.PostAsJsonAsync($"/api/vehicles/{ids.Vehicle}/sale", new SellVehicleRequest { ActualSalePrice = 6800, CapitalAccountId = problem == "missingAccount" ? 999 : null });
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode); Assert.Empty(await db.VehicleSales.ToListAsync()); Assert.Equal(3, await db.FinancialTransactions.CountAsync());
+        Assert.Equal(problem == "missingAccount" ? HttpStatusCode.NotFound : HttpStatusCode.Conflict, response.StatusCode); Assert.Empty(await db.VehicleSales.ToListAsync()); Assert.Equal(3, await db.FinancialTransactions.CountAsync());
     }
 
     [Theory]

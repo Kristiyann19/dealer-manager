@@ -8,5 +8,7 @@ public enum TransactionType
     VehicleSale = 3,
     OwnerWithdrawal = 4,
     Adjustment = 5,
-    Other = 6
+    Other = 6,
+    VehicleDeposit = 7,
+    DepositRefund = 8
 }

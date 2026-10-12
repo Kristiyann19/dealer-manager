@@ -7,6 +7,21 @@ namespace DealerManager.Controllers;
 [Route("api/vehicles")]
 public class VehiclesController(IVehicleService service) : ControllerBase
 {
+    [HttpPost("{id:int}/reservations")]
+    public async Task<ActionResult<VehicleReservationDto>> Reserve(int id, ReserveVehicleRequest request, CancellationToken cancellationToken)
+        => CreatedAtAction(nameof(GetActiveReservation), new { id }, await service.ReserveVehicle(id, request, cancellationToken));
+    [HttpPost("{id:int}/reservations/{reservationId:int}/cancel")]
+    public Task<VehicleReservationDto> CancelReservation(int id, int reservationId, CancelReservationRequest request, CancellationToken cancellationToken)
+        => service.CancelReservation(id, reservationId, request, cancellationToken);
+    [HttpGet("{id:int}/reservations")]
+    public Task<IReadOnlyList<VehicleReservationDto>> GetReservations(int id, CancellationToken cancellationToken)
+        => service.GetReservations(id, cancellationToken);
+    [HttpGet("{id:int}/reservations/active")]
+    public async Task<ActionResult<VehicleReservationDto>> GetActiveReservation(int id, CancellationToken cancellationToken)
+    {
+        var reservation = await service.GetActiveReservation(id, cancellationToken);
+        return reservation is null ? NoContent() : Ok(reservation);
+    }
     [HttpPut("{id:int}/details")]
     public Task<VehicleDetailsDto> UpdateDossier(int id, UpdateVehicleDossierRequest request, CancellationToken cancellationToken)
         => service.UpdateDossier(id, request, cancellationToken);

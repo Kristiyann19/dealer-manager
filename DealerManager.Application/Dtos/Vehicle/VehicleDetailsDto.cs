@@ -35,5 +35,6 @@ public class VehicleDetailsDto : VehicleFinancialSummaryDto
     public VehicleListingDto? CurrentListing { get; init; }
     public decimal? ListingPrice { get; init; }
     public DateTimeOffset? ListedAt { get; init; }
+    public VehicleReservationDto? ActiveReservation { get; init; }
     public VehiclePaymentAccountDto? SaleAccount { get; init; }
 }

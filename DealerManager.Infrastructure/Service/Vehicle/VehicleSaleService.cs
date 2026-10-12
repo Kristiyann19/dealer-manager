@@ -20,13 +20,23 @@ public partial class VehicleService
                 ?? throw new VehicleNotFoundException(vehicleId);
             if (vehicle.Status == VehicleStatus.Sold || await sales.AnyEntity(s => s.VehicleId == vehicleId, token))
                 throw Conflict("alreadySold", "The vehicle has already been sold.");
-            if (vehicle.Status != VehicleStatus.Listed)
-                throw Conflict("notListedForSale", "Only a Listed vehicle can be sold.");
+            if (vehicle.Status is not (VehicleStatus.Listed or VehicleStatus.Reserved))
+                throw Conflict("notListedForSale", "Only a Listed or Reserved vehicle can be sold.");
             var listing = await listings.GetByProperties(l => l.VehicleId == vehicleId && l.IsActive, token, q => q.AsTracking())
                 ?? throw Conflict("activeListingRequired", "An active listing is required for sale.");
+            var reservation = await reservations.GetByProperties(r => r.VehicleId == vehicleId && r.Status == VehicleReservationStatus.Active,
+                token, q => q.AsTracking().Include(r => r.DepositTransaction));
+            if ((vehicle.Status == VehicleStatus.Reserved) != (reservation != null))
+                throw Conflict("reservationNotActive", "Vehicle status and active reservation do not match.");
+            if (reservation != null && request.ActualSalePrice < reservation.DepositAmount)
+                throw Conflict("saleBelowDeposit", "Sale price cannot be less than the active deposit.");
+            var finalPayment = request.ActualSalePrice - (reservation?.DepositAmount ?? 0m);
             var account = request.CapitalAccountId is { } accountId
-                ? await accounts.GetById(accountId, token) ?? throw Conflict("saleAccountMissing", "The sale account does not exist.")
-                : await PurchaseAccount(vehicleId, token);
+                ? await accounts.GetById(accountId, token) ?? throw new DealerManager.Application.IService.Finance.CapitalAccountNotFoundException(accountId)
+                : reservation != null
+                    ? await accounts.GetById(reservation.DepositTransaction.CapitalAccountId, token)
+                        ?? throw new DealerManager.Application.IService.Finance.CapitalAccountNotFoundException(reservation.DepositTransaction.CapitalAccountId)
+                    : await PurchaseAccount(vehicleId, token);
             if (!account.IsActive) throw Conflict("inactive", "The capital account is inactive.");
             if (!string.Equals(account.Currency.Trim(), "EUR", StringComparison.OrdinalIgnoreCase))
                 throw Conflict("currency", "Vehicle sales require an EUR account.");
@@ -35,26 +45,34 @@ public partial class VehicleService
             var realized = CalculateRealized(invested, request.ActualSalePrice);
             var now = clock.GetUtcNow();
             var soldAt = request.SoldAt?.ToUniversalTime() ?? now;
-            var movement = new FinancialTransaction
+            if (reservation != null && soldAt.UtcDateTime.Date < reservation.ReservedAt.UtcDateTime.Date)
+                throw new ValidationException("Sale cannot precede the reservation.");
+            FinancialTransaction? movement = null;
+            if (finalPayment > 0)
             {
-                CapitalAccountId = account.Id, VehicleId = vehicleId, Type = TransactionType.VehicleSale,
-                Direction = TransactionDirection.In, Amount = request.ActualSalePrice,
-                Description = $"Sale of {vehicle.Make} {vehicle.Model}", OccurredAt = soldAt, CreatedAt = now
-            };
-            await transactions.Create(movement);
-            // Obtain the FK; both saves remain inside the same serializable transaction.
-            await unitOfWork.SaveChanges(token);
+                movement = new FinancialTransaction
+                {
+                    CapitalAccountId = account.Id, VehicleId = vehicleId, Type = TransactionType.VehicleSale,
+                    Direction = TransactionDirection.In, Amount = finalPayment,
+                    Description = $"Sale of {vehicle.Make} {vehicle.Model}", OccurredAt = soldAt, CreatedAt = now
+                };
+                await transactions.Create(movement);
+                // Obtain the FK; both saves remain inside the same serializable transaction.
+                await unitOfWork.SaveChanges(token);
+            }
             var sale = new VehicleSale
             {
                 VehicleId = vehicleId, SalePrice = request.ActualSalePrice, SoldAt = soldAt,
-                FinancialTransactionId = movement.Id, CustomerId = null, Notes = null
+                FinancialTransactionId = movement?.Id, ReservationId = reservation?.Id, CustomerId = null, Notes = null
             };
             await sales.Create(sale);
             listing.IsActive = false;
+            var previousStatus = vehicle.Status;
             vehicle.Status = VehicleStatus.Sold;
+            if (reservation != null) { reservation.Status = VehicleReservationStatus.Completed; reservation.CompletedAt = soldAt; }
             await statusHistory.Create(new VehicleStatusHistory
             {
-                VehicleId = vehicleId, FromStatus = VehicleStatus.Listed, ToStatus = VehicleStatus.Sold,
+                VehicleId = vehicleId, FromStatus = previousStatus, ToStatus = VehicleStatus.Sold,
                 ChangedAt = soldAt, ChangedByUserId = null, Notes = null
             });
             try { await unitOfWork.SaveChanges(token); }

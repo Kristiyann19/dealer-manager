@@ -1,3 +1,4 @@
+#nullable enable
 using DealerManager.Domain.Common;
 
 namespace DealerManager.Domain.Entities;
@@ -11,10 +12,12 @@ public class VehicleSale : Entity
     public string? Notes { get; set; }
 
     /// <summary>
-    /// References the incoming financial transaction recording the sale payment.
+    /// References the final payment, absent when the deposit covers the full sale price.
     /// </summary>
-    public int FinancialTransactionId { get; set; }
+    public int? FinancialTransactionId { get; set; }
 
     public Vehicle Vehicle { get; set; } = null!;
-    public FinancialTransaction FinancialTransaction { get; set; } = null!;
+    public FinancialTransaction? FinancialTransaction { get; set; }
+    public int? ReservationId { get; set; }
+    public VehicleReservation? Reservation { get; set; }
 }

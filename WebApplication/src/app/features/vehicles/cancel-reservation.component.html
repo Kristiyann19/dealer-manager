@@ -1,0 +1,15 @@
+<p-dialog [visible]="true" (visibleChange)="!$event && close()" [header]="'reservation.cancelTitle' | translate" [closeAriaLabel]="'finance.cancel' | translate" [modal]="true" [draggable]="false" [resizable]="false" [closable]="!busy()" [closeOnEscape]="!busy()" [blockScroll]="true" [style]="{ width: '540px', maxWidth: '94vw' }">
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <fieldset class="grid gap-4" [disabled]="busy() || loading()">
+    <dl class="grid grid-cols-2 gap-4"><div><dt class="field-label">{{ 'reservation.customer' | translate }}</dt><dd>{{ reservation().customerName }}</dd></div><div><dt class="field-label">{{ 'reservation.deposit' | translate }}</dt><dd>{{ reservation().depositAmount | localizedCurrency: 'EUR' }}</dd></div></dl>
+    @if (loading()) { <p role="status">{{ 'finance.loading' | translate }}</p> }
+    <div><label class="field-label" for="refund-choice">{{ 'reservation.depositOutcome' | translate }}</label><select id="refund-choice" class="form-input" formControlName="refund"><option [ngValue]="null">{{ 'reservation.chooseOutcome' | translate }}</option><option [ngValue]="true">{{ 'reservation.refunded' | translate }}</option><option [ngValue]="false">{{ 'reservation.retained' | translate }}</option></select></div>
+    @if (refund() === true && balance() !== null) { <div class="rounded-lg bg-slate-50 p-4" aria-live="polite"><span class="field-label">{{ 'reservation.capital' | translate }}</span><strong>{{ balance() | localizedCurrency: 'EUR' }} → {{ balance()! - reservation().depositAmount | localizedCurrency: 'EUR' }}</strong></div> }
+    @if (refund() === false) { <p>{{ 'reservation.capitalUnchanged' | translate }}</p> }
+    @if (insufficient()) { <p class="field-error">{{ 'vehicle.errors.insufficientCapital' | translate }}</p> }
+    <div><label class="field-label" for="cancel-reservation-notes">{{ 'reservation.notes' | translate }}</label><textarea id="cancel-reservation-notes" class="form-input" formControlName="notes" maxlength="2000"></textarea></div>
+  </fieldset>
+  @if (error()) { <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p> }
+  <div class="form-actions"><button type="button" class="secondary-button" [disabled]="busy()" (click)="close()">{{ 'finance.cancel' | translate }}</button><button type="submit" class="primary-button" [disabled]="busy() || loading() || form.invalid || insufficient() || balance() === null">{{ (busy() ? 'finance.saving' : 'reservation.confirmCancel') | translate }}</button></div>
+</form>
+</p-dialog>

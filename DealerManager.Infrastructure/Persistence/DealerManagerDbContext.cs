@@ -29,6 +29,7 @@ namespace DealerManager.Infrastructure.Persistence
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<VehicleCostPlanItem> VehicleCostPlanItems { get; set; }
         public DbSet<VehicleExpense> VehicleExpenses { get; set; }
+        public DbSet<VehicleReservation> VehicleReservations { get; set; }
         public DbSet<VehicleSale> VehicleSales { get; set; }
         public DbSet<VehicleListing> VehicleListings { get; set; }
         public DbSet<VehicleStatusHistory> VehicleStatusHistories { get; set; }

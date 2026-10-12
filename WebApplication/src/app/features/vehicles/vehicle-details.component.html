@@ -28,6 +28,9 @@
           >
         </p>
         <div class="mt-5 flex flex-wrap items-center gap-3">
+          @if (canReserve()) {
+            <button type="button" class="secondary-button min-h-12 px-6 text-base" (click)="reservationDialog.set(true)">{{ 'reservation.action' | translate }}</button>
+          }
           @if (canSell()) {
             <button
               type="button"
@@ -58,6 +61,27 @@
         </div>
       </div>
     </header>
+    @if (vehicle.activeReservation; as reservation) {
+      <section class="panel p-6 mb-6">
+        <h2>{{ 'reservation.panelTitle' | translate }}</h2>
+        <dl class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div><dt class="field-label">{{ 'reservation.customer' | translate }}</dt><dd class="font-semibold">{{ reservation.customerName }}</dd></div>
+          <div><dt class="field-label">{{ 'reservation.phone' | translate }}</dt><dd>{{ reservation.customerPhone || ('common.notProvided' | translate) }}</dd></div>
+          <div><dt class="field-label">{{ 'reservation.deposit' | translate }}</dt><dd class="font-semibold">{{ reservation.depositAmount | localizedCurrency: 'EUR' }}</dd></div>
+          <div><dt class="field-label">{{ 'reservation.reservedAt' | translate }}</dt><dd>{{ reservation.reservedAt | localizedDate }}</dd></div>
+          <div><dt class="field-label">{{ 'reservation.expiresAt' | translate }}</dt><dd>{{ reservation.expiresAt ? (reservation.expiresAt | localizedDate: 'short') : ('common.notProvided' | translate) }}</dd></div>
+          <div><dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt><dd>{{ vehicle.listingPrice | localizedCurrency: 'EUR' }}</dd></div>
+        </dl>
+        @if (reservation.notes) { <p class="mt-4 text-sm">{{ reservation.notes }}</p> }
+        <div class="form-actions"><button type="button" class="secondary-button" (click)="cancellationDialog.set(true)">{{ 'reservation.cancelAction' | translate }}</button><button type="button" class="primary-button" (click)="saleDialog.set(true)">{{ 'vehicle.sale.action' | translate }}</button></div>
+      </section>
+    }
+    @if (reservationDialog()) {
+      <app-reserve-vehicle [vehicleId]="vehicle.id" [vehicleName]="vehicle.make + ' ' + vehicle.model" [listingPrice]="vehicle.currentListing?.listingPrice ?? vehicle.listingPrice ?? 0" (saved)="saved('reservation')" (closed)="reservationDialog.set(false); $event && refreshFinancialData()" />
+    }
+    @if (cancellationDialog() && vehicle.activeReservation) {
+      <app-cancel-reservation [reservation]="vehicle.activeReservation!" (saved)="saved('cancelReservation')" (closed)="cancellationDialog.set(false); $event && refreshFinancialData()" />
+    }
     <section class="panel overflow-hidden" aria-labelledby="finance-summary-title">
       <h2 id="finance-summary-title" class="sr-only">
         {{ 'vehicle.financialSummary' | translate }}
@@ -304,6 +328,7 @@
     </details>
     @if (saleDialog()) {
       <app-sell-vehicle
+        [depositAmount]="vehicle.activeReservation?.depositAmount ?? 0"
         [vehicleId]="vehicle.id"
         [listingPrice]="vehicle.currentListing?.listingPrice ?? null"
         [totalInvested]="vehicle.totalInvested"

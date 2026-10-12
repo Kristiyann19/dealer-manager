@@ -1,3 +1,4 @@
+import { ReserveVehicleComponent } from './reserve-vehicle.component';
 import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import bgLocale from '@angular/common/locales/bg';
@@ -92,6 +93,28 @@ describe('Vehicle inventory and operational status', () => {
       .flush({ capitalAccountId: 1, currency: 'EUR', currentBalance: 5000 });
     http.expectOne('/api/vehicles/1/status-history').flush(history);
   }
+  it('reserves from details, automatically reloads financial data, and opens the deposit-aware sale dialog', async () => {
+    const harness = await RouterTestingHarness.create('/vehicles/1');
+    const page = harness.routeDebugElement!.componentInstance as VehicleDetailsComponent;
+    details({ ...vehicle, status: VehicleStatus.Listed, listingPrice: 12500 }); harness.detectChanges();
+    page.reservationDialog.set(true); harness.detectChanges();
+    http.expectOne('/api/capital-accounts').flush([{ id: 1, name: 'Cash', currency: 'EUR', isActive: true, currentBalance: 20000 }]);
+    const dialog = harness.routeDebugElement!.query(By.directive(ReserveVehicleComponent)).componentInstance as ReserveVehicleComponent;
+    dialog.form.patchValue({ customerName: 'Ivan', depositAmount: 500 }); dialog.submit();
+    http.expectOne('/api/vehicles/1/reservations').flush({ reservationId: 4 });
+    expect(page.loading()).toBe(true);
+    details({ ...vehicle, status: VehicleStatus.Reserved, listingPrice: 12500, activeReservation: {
+      reservationId: 4, vehicleId: 1, customerName: 'Ivan', customerPhone: null, customerEmail: null,
+      depositAmount: 500, reservedAt: vehicle.purchaseDate, expiresAt: null, status: 0, vehicleStatus: VehicleStatus.Reserved,
+      notes: null, cancellationNotes: null, createdAt: vehicle.purchaseDate, completedAt: null, cancelledAt: null,
+      capitalAccountId: 1, depositTransactionId: 3, refundTransactionId: null,
+    } });
+    harness.detectChanges(); expect(page.canReserve()).toBe(false); expect(page.canSell()).toBe(true);
+    expect(harness.routeNativeElement!.textContent).toContain('Ivan');
+    page.saleDialog.set(true); harness.detectChanges();
+    const sale = harness.routeDebugElement!.query(By.directive(SellVehicleComponent)).componentInstance as SellVehicleComponent;
+    expect(sale.depositAmount()).toBe(500); sale.form.controls.actualSalePrice.setValue(12000); expect(sale.remaining()).toBe(11500);
+  });
   it('renders compact inventory with translated status, finances and detail links', () => {
     const fixture = TestBed.createComponent(VehicleListComponent);
     const request = list();

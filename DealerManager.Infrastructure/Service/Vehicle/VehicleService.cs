@@ -27,6 +27,7 @@ public partial class VehicleService(
     IBaseRepository<VehicleStatusHistory, FilterDto<VehicleStatusHistory>, DealerManagerDbContext> statusHistory,
     IBaseRepository<VehicleListing, FilterDto<VehicleListing>, DealerManagerDbContext> listings,
     IBaseRepository<VehicleSale, FilterDto<VehicleSale>, DealerManagerDbContext> sales,
+    IBaseRepository<VehicleReservation, FilterDto<VehicleReservation>, DealerManagerDbContext> reservations,
     ICapitalAccountService finance, ICandidateFinancialCalculator forecastCalculator,
     IUnitOfWork unitOfWork, TimeProvider clock, IMapper mapping) : IVehicleService
 {
@@ -56,20 +57,23 @@ public partial class VehicleService(
             };
         }
         var sale = await sales.GetByProperties(s => s.VehicleId == id, cancellationToken,
-            query => query.Include(s => s.FinancialTransaction).ThenInclude(t => t.CapitalAccount));
+            query => query.Include(s => s.FinancialTransaction!).ThenInclude(t => t.CapitalAccount)
+                .Include(s => s.Reservation!).ThenInclude(r => r.DepositTransaction).ThenInclude(t => t.CapitalAccount));
+        var salePayment = sale?.FinancialTransaction ?? sale?.Reservation?.DepositTransaction;
         var summary = CalculateFinancialSummary(purchasePrice, actualExpenses, plan, snapshot?.ExpectedSellingPrice, sale?.SalePrice, sale?.SoldAt);
         var latestListing = await listings.GetQueryByProperties(l => l.VehicleId == id)
             .OrderByDescending(l => l.Id).ProjectTo<VehicleListingDto>(mapper.ConfigurationProvider).FirstOrDefaultAsync(cancellationToken);
         return mapper.Map(vehicle, new VehicleDetailsDto
         {
+            ActiveReservation = await LoadActiveReservation(id, cancellationToken),
             CurrentListing = await LoadCurrentListing(id, cancellationToken),
             ListingPrice = latestListing?.ListingPrice, ListedAt = latestListing?.ListedAt,
             ActualSalePrice = summary.ActualSalePrice, SoldAt = summary.SoldAt,
             RealizedProfit = summary.RealizedProfit, RealizedROI = summary.RealizedROI,
-            SaleAccount = sale == null ? null : new VehiclePaymentAccountDto {
-                CapitalAccountId = sale.FinancialTransaction.CapitalAccountId,
-                Currency = sale.FinancialTransaction.CapitalAccount.Currency,
-                CurrentBalance = await finance.GetBalance(sale.FinancialTransaction.CapitalAccountId, cancellationToken)
+            SaleAccount = salePayment == null ? null : new VehiclePaymentAccountDto {
+                CapitalAccountId = salePayment.CapitalAccountId,
+                Currency = salePayment.CapitalAccount.Currency,
+                CurrentBalance = await finance.GetBalance(salePayment.CapitalAccountId, cancellationToken)
             },
             ActualPurchasePrice = summary.ActualPurchasePrice, ActualExpenses = summary.ActualExpenses,
             TotalInvested = summary.TotalInvested, RemainingProjectedCosts = summary.RemainingProjectedCosts,

@@ -35,9 +35,15 @@
           formControlName="actualSalePrice"
         />
         @if (form.controls.actualSalePrice.touched && form.controls.actualSalePrice.invalid) {
-          <p class="field-error" role="alert">{{ 'finance.positiveAmount' | translate }}</p>
+          <p class="field-error" role="alert">{{ (depositAmount() > 0 ? 'reservation.saleMinimum' : 'finance.positiveAmount') | translate }}</p>
         }
       </div>
+      @if (depositAmount() > 0) {
+        <dl class="grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4" aria-live="polite">
+          <div><dt class="field-label">{{ 'reservation.deposit' | translate }}</dt><dd class="text-xl font-semibold">{{ depositAmount() | localizedCurrency: 'EUR' }}</dd></div>
+          <div><dt class="field-label">{{ 'reservation.remainingPayment' | translate }}</dt><dd class="text-xl font-semibold">{{ remaining() | localizedCurrency: 'EUR' }}</dd></div>
+        </dl>
+      }
       <div>
         <label class="field-label" for="sale-date">{{
           'vehicle.sale.optionalDate' | translate

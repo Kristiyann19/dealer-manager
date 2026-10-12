@@ -1,5 +1,7 @@
 # SellVehicle
 
+Reservation support extends this original flow; see [Vehicle Reservation + Deposit](vehicle-reservations.md) for Reserved sales, deposit offsets and schema changes.
+
 ## Changed files
 
 - Application: `SellVehicleRequest.cs`, `VehicleSaleResultDto.cs`, `IVehicleService.cs`, financial summary and detail DTOs.

@@ -1,0 +1,33 @@
+<p-dialog [visible]="true" (visibleChange)="!$event && close()" [header]="'reservation.title' | translate" [closeAriaLabel]="'finance.cancel' | translate" [modal]="true" [draggable]="false" [resizable]="false" [closable]="!busy()" [closeOnEscape]="!busy()" [blockScroll]="true" [style]="{ width: '620px', maxWidth: '94vw' }">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset class="grid gap-4" [disabled]="busy() || loading()">
+      <dl class="grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4">
+        <div><dt class="field-label">{{ 'ui.vehicle' | translate }}</dt><dd class="font-semibold">{{ vehicleName() }}</dd></div>
+        <div><dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt><dd class="font-semibold">{{ listingPrice() | localizedCurrency: 'EUR' }}</dd></div>
+      </dl>
+      @if (loading()) { <p role="status">{{ 'finance.loading' | translate }}</p> }
+      <div><label class="field-label" for="reserve-name">{{ 'reservation.customerName' | translate }}</label><input id="reserve-name" class="form-input" formControlName="customerName" maxlength="200" />
+        @if (form.controls.customerName.touched && form.controls.customerName.invalid) { <p class="field-error">{{ 'reservation.nameRequired' | translate }}</p> }
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="field-label" for="reserve-phone">{{ 'reservation.phone' | translate }}</label><input id="reserve-phone" type="tel" class="form-input" formControlName="customerPhone" maxlength="50" /></div>
+        <div><label class="field-label" for="reserve-email">{{ 'reservation.email' | translate }}</label><input id="reserve-email" type="email" class="form-input" formControlName="customerEmail" maxlength="254" />
+          @if (form.controls.customerEmail.touched && form.controls.customerEmail.invalid) { <p class="field-error">{{ 'reservation.invalidEmail' | translate }}</p> }
+        </div>
+        <div><label class="field-label" for="reserve-deposit">{{ 'reservation.depositEUR' | translate }}</label><input id="reserve-deposit" type="number" step="any" class="form-input" formControlName="depositAmount" />
+          @if (form.controls.depositAmount.touched && form.controls.depositAmount.invalid) { <p class="field-error">{{ 'reservation.invalidDeposit' | translate }}</p> }
+        </div>
+        <div><label class="field-label" for="reserve-expiry">{{ 'reservation.expiresAt' | translate }}</label><input id="reserve-expiry" type="datetime-local" class="form-input" formControlName="expiresAt" />
+          @if (form.controls.expiresAt.touched && form.controls.expiresAt.invalid) { <p class="field-error">{{ 'reservation.invalidExpiry' | translate }}</p> }
+        </div>
+      </div>
+      <div><label class="field-label" for="reserve-account">{{ 'reservation.account' | translate }}</label><select id="reserve-account" class="form-input" formControlName="capitalAccountId"><option [ngValue]="null">{{ 'reservation.chooseAccount' | translate }}</option>@for (account of accounts(); track account.id) { <option [ngValue]="account.id">{{ account.name }} · {{ account.currentBalance | localizedCurrency: account.currency }}</option> }</select>
+        @if (!loading() && !accounts().length) { <p class="field-error">{{ 'reservation.noAccounts' | translate }}</p> }
+      </div>
+      <div><label class="field-label" for="reserve-notes">{{ 'reservation.notes' | translate }}</label><textarea id="reserve-notes" class="form-input" formControlName="notes" maxlength="2000"></textarea></div>
+      <div class="rounded-lg bg-slate-50 p-4" aria-live="polite"><span class="field-label">{{ 'reservation.remainingPreview' | translate }}</span><strong>{{ remaining() | localizedCurrency: 'EUR' }}</strong><p class="mt-2 text-xs text-slate-500">{{ 'reservation.previewHint' | translate }}</p></div>
+    </fieldset>
+    @if (error()) { <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p> }
+    <div class="form-actions"><button type="button" class="secondary-button" [disabled]="busy()" (click)="close()">{{ 'finance.cancel' | translate }}</button><button type="submit" class="primary-button" [disabled]="busy() || loading() || form.invalid">{{ (busy() ? 'finance.saving' : 'reservation.confirm') | translate }}</button></div>
+  </form>
+</p-dialog>

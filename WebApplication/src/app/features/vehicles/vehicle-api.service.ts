@@ -1,3 +1,4 @@
+import { VehicleReservation, ReserveVehicleRequest } from './reservation.models';
 import { VehicleDossier } from './vehicle-dossier.models';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -33,6 +34,18 @@ export class VehicleApiService {
     if (status !== null) params['Status'] = status;
     if (agedStock) params['AgedStock'] = 'true';
     return this.http.get<VehicleListResult>(`${this.base}/vehicles`, { params });
+  }
+  reserve(id: number, request: ReserveVehicleRequest) {
+    return this.http.post<VehicleReservation>(`${this.base}/vehicles/${id}/reservations`, request);
+  }
+  cancelReservation(id: number, reservationId: number, refundDeposit: boolean, notes: string | null) {
+    return this.http.post<VehicleReservation>(`${this.base}/vehicles/${id}/reservations/${reservationId}/cancel`, { refundDeposit, notes });
+  }
+  reservations(id: number) {
+    return this.http.get<VehicleReservation[]>(`${this.base}/vehicles/${id}/reservations`);
+  }
+  activeReservation(id: number) {
+    return this.http.get<VehicleReservation | null>(`${this.base}/vehicles/${id}/reservations/active`);
   }
   changeStatus(id: number, status: VehicleStatus, notes: string | null) {
     return this.http.post<VehicleStatusHistory>(`${this.base}/vehicles/${id}/status`, {

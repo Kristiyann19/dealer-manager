@@ -1,3 +1,4 @@
+import { VehicleReservation } from './reservation.models';
 import { VehicleDossier } from './vehicle-dossier.models';
 import { CandidateEstimate, CostCategory } from '../candidates/models/candidate.models';
 
@@ -25,6 +26,7 @@ export interface OriginalForecast {
   originalExpectedROI: number;
 }
 export interface VehicleDetails extends VehicleFinancialSummary, Partial<VehicleDossier> {
+  activeReservation?: VehicleReservation | null;
   id: number;
   make: string;
   model: string;

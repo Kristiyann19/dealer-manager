@@ -1,3 +1,5 @@
+import { ReserveVehicleComponent } from './reserve-vehicle.component';
+import { CancelReservationComponent } from './cancel-reservation.component';
 import { afterNextRender } from '@angular/core';
 import { VehicleDossierComponent } from './vehicle-dossier.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
@@ -33,6 +35,7 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
 @Component({
   selector: 'app-vehicle-details',
   imports: [
+    ReserveVehicleComponent, CancelReservationComponent,
     VehicleDossierComponent,
     TranslatePipe,
     ToastModule,
@@ -76,7 +79,10 @@ export class VehicleDetailsComponent {
   readonly changingStatus = signal(false);
   readonly listingDialog = signal(false);
   readonly saleDialog = signal(false);
-  readonly canSell = computed(() => this.vehicle()?.status === VehicleStatus.Listed);
+  readonly reservationDialog = signal(false);
+  readonly cancellationDialog = signal(false);
+  readonly canReserve = computed(() => this.vehicle()?.status === VehicleStatus.Listed);
+  readonly canSell = computed(() => this.vehicle()?.status === VehicleStatus.Listed || (this.vehicle()?.status === VehicleStatus.Reserved && !!this.vehicle()?.activeReservation));
   readonly canList = computed(() => this.vehicle()?.status === VehicleStatus.ReadyForSale);
   readonly canChangeStatus = computed(
     () => this.vehicle() !== null && this.vehicle()!.status < VehicleStatus.Listed,
@@ -117,6 +123,8 @@ export class VehicleDetailsComponent {
               this.changingStatus.set(false);
               this.listingDialog.set(false);
               this.saleDialog.set(false);
+              this.reservationDialog.set(false);
+              this.cancellationDialog.set(false);
               this.expenses.set([]);
               this.paymentAccount.set(null);
               const id = Number(params.get('id'));
@@ -162,9 +170,9 @@ export class VehicleDetailsComponent {
     if (this.vehicle()?.status === 9) return;
     this.expenseDialog.set({ plan });
   }
-  saved(kind: 'plan' | 'expense' | 'status' | 'listing' | 'sale') {
+  saved(kind: 'plan' | 'expense' | 'status' | 'listing' | 'sale' | 'reservation' | 'cancelReservation') {
     this.notice.set(
-      kind === 'sale'
+      kind === 'reservation' ? 'reservation.success' : kind === 'cancelReservation' ? 'reservation.cancelSuccess' : kind === 'sale'
         ? 'vehicle.sale.success'
         : kind === 'listing'
           ? 'vehicle.listing.success'

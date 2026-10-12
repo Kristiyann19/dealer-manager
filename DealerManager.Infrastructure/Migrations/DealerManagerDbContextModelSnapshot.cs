@@ -577,6 +577,83 @@ namespace DealerManager.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DealerManager.Domain.Entities.VehicleReservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CancellationNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerEmail")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("DepositAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("DepositTransactionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int?>("RefundTransactionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ReservedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepositTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("RefundTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("VehicleId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 0");
+
+                    b.ToTable("VehicleReservations", t =>
+                        {
+                            t.HasCheckConstraint("CK_VehicleReservations_PositiveDeposit", "\"DepositAmount\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("DealerManager.Domain.Entities.VehicleSale", b =>
                 {
                     b.Property<int>("Id")
@@ -588,11 +665,14 @@ namespace DealerManager.Infrastructure.Migrations
                     b.Property<int?>("CustomerId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("FinancialTransactionId")
+                    b.Property<int?>("FinancialTransactionId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
+
+                    b.Property<int?>("ReservationId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("numeric");
@@ -606,6 +686,8 @@ namespace DealerManager.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FinancialTransactionId");
+
+                    b.HasIndex("ReservationId");
 
                     b.HasIndex("VehicleId")
                         .IsUnique();
@@ -937,13 +1019,41 @@ namespace DealerManager.Infrastructure.Migrations
                     b.Navigation("Vehicle");
                 });
 
+            modelBuilder.Entity("DealerManager.Domain.Entities.VehicleReservation", b =>
+                {
+                    b.HasOne("DealerManager.Domain.Entities.FinancialTransaction", "DepositTransaction")
+                        .WithMany()
+                        .HasForeignKey("DepositTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DealerManager.Domain.Entities.FinancialTransaction", "RefundTransaction")
+                        .WithMany()
+                        .HasForeignKey("RefundTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DealerManager.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DepositTransaction");
+
+                    b.Navigation("RefundTransaction");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("DealerManager.Domain.Entities.VehicleSale", b =>
                 {
                     b.HasOne("DealerManager.Domain.Entities.FinancialTransaction", "FinancialTransaction")
                         .WithMany()
-                        .HasForeignKey("FinancialTransactionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("FinancialTransactionId");
+
+                    b.HasOne("DealerManager.Domain.Entities.VehicleReservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId");
 
                     b.HasOne("DealerManager.Domain.Entities.Vehicle", "Vehicle")
                         .WithOne("VehicleSale")
@@ -952,6 +1062,8 @@ namespace DealerManager.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("FinancialTransaction");
+
+                    b.Navigation("Reservation");
 
                     b.Navigation("Vehicle");
                 });
