@@ -78,7 +78,6 @@ public partial class VehicleFinanceTests
     [InlineData("ambiguousAccount", "purchaseAccountMissing")]
     [InlineData("cancelled", "cancelledPlan")]
     [InlineData("zero", "invalidPlanAmount")]
-    [InlineData("partial", "partialPayment")]
     [InlineData("wrongPlan", "planMismatch")]
     [InlineData("changedAmount", "paymentChanged")]
     [InlineData("changedAccount", "paymentChanged")]
@@ -88,7 +87,6 @@ public partial class VehicleFinanceTests
     {
         using var factory = new FinanceApiFactory(); using var client = factory.CreateInitializedClient(); var ids = await Seed(factory);
         var request = new ConfirmVehiclePaymentRequest { ExpectedAmount = 1000, ExpectedCapitalAccountId = ids.Account };
-        if (scenario == "partial") await SeedHistoricalExpense(factory, ids, 200, ids.Transport);
         using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<DealerManagerDbContext>();
         if (scenario == "balance") (await db.FinancialTransactions.SingleAsync(t => t.Type == TransactionType.CapitalContribution)).Amount = 6400;
         if (scenario == "missingPurchase") db.FinancialTransactions.Remove(await db.FinancialTransactions.SingleAsync(t => t.Type == TransactionType.VehiclePurchase));

@@ -26,6 +26,10 @@ export function vehicleError(error: unknown, writing = false): string {
     if (
       typeof code === 'string' &&
       [
+        'expenseNotFound',
+        'expenseAlreadyReversed',
+        'expensePaymentMismatch',
+        'planCategoryLocked',
         'planMismatch',
         'sold',
         'inactive',
@@ -48,7 +52,11 @@ export function vehicleError(error: unknown, writing = false): string {
         'activeListingRequired',
         'saleAccountMissing',
         'notReadyForListing',
-        'notListedForReservation', 'activeReservationExists', 'depositExceedsPrice', 'reservationNotActive', 'saleBelowDeposit',
+        'notListedForReservation',
+        'activeReservationExists',
+        'depositExceedsPrice',
+        'reservationNotActive',
+        'saleBelowDeposit',
       ].includes(code)
     )
       return 'vehicle.errors.' + code;

@@ -20,7 +20,7 @@ internal static class FinancialQueries
     public static IQueryable<decimal> RemainingCosts(IQueryable<VehicleCostPlanItem> plans) => plans
         .Select(i => new VehicleCostPlanItemDto {
             CurrentEstimatedAmount = i.CurrentEstimatedAmount, CommittedAmount = i.CommittedAmount,
-            IsCancelled = i.IsCancelled, ActualPaid = i.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
+            IsCancelled = i.IsCancelled, ActualPaid = i.VehicleExpenses.Where(e => !e.IsReversed).Sum(e => (decimal?)e.Amount) ?? 0m
         }).Select(CostPlanCalculation.RemainingExpression);
 
     public static IQueryable<VehicleInvestment> Investments(IQueryable<DealerManager.Domain.Entities.Vehicle> vehicles,
@@ -28,7 +28,7 @@ internal static class FinancialQueries
             VehicleId = v.Id,
             Purchase = transactions.Where(t => t.VehicleId == v.Id && t.Type == TransactionType.VehiclePurchase
                 && t.Direction == TransactionDirection.Out).Sum(t => (decimal?)t.Amount) ?? 0m,
-            Expenses = v.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
+            Expenses = v.VehicleExpenses.Where(e => !e.IsReversed).Sum(e => (decimal?)e.Amount) ?? 0m
         }).Select(v => new VehicleInvestment {
             VehicleId = v.VehicleId, ActualPurchasePrice = v.Purchase, ActualExpenses = v.Expenses,
             TotalInvested = v.Purchase + v.Expenses

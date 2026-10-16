@@ -1,3 +1,4 @@
+import { CorrectExpenseComponent } from './correct-expense.component';
 import { ReserveVehicleComponent } from './reserve-vehicle.component';
 import { CancelReservationComponent } from './cancel-reservation.component';
 import { afterNextRender } from '@angular/core';
@@ -35,6 +36,7 @@ import { ConfirmPaymentComponent } from './confirm-payment.component';
 @Component({
   selector: 'app-vehicle-details',
   imports: [
+    CorrectExpenseComponent,
     ReserveVehicleComponent,
     CancelReservationComponent,
     VehicleDossierComponent,
@@ -73,6 +75,7 @@ export class VehicleDetailsComponent {
   );
   readonly plan = signal<VehicleCostPlanItem[]>([]);
   readonly pendingPlan = computed(() => this.plan().filter((item) => item.remainingProjected > 0));
+  readonly correction = signal<{ expense: VehicleExpense; reverseOnly: boolean } | null>(null);
   readonly expenses = signal<VehicleExpense[]>([]);
   readonly paymentAccount = signal<VehiclePaymentAccount | null>(null);
   readonly editing = signal<VehicleCostPlanItem | null>(null);
@@ -131,6 +134,7 @@ export class VehicleDetailsComponent {
               this.saleDialog.set(false);
               this.reservationDialog.set(false);
               this.cancellationDialog.set(false);
+              this.correction.set(null);
               this.expenses.set([]);
               this.paymentAccount.set(null);
               const id = Number(params.get('id'));
@@ -197,6 +201,15 @@ export class VehicleDetailsComponent {
     this.messages.clear();
     this.messages.add({ severity: 'success', detail: this.notice(), life: 5000 });
     this.refreshFinancialData();
+  }
+  expenseCorrected() {
+    this.messages.clear();
+    this.messages.add({ severity: 'success', detail: 'vehicle.corrections.saved', life: 5000 });
+    this.refreshFinancialData();
+  }
+  correctionClosed(needsReconciliation: boolean) {
+    this.correction.set(null);
+    if (needsReconciliation) this.refreshFinancialData();
   }
   paymentClosed(needsReconciliation: boolean) {
     this.expenseDialog.set(null);

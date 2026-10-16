@@ -7,6 +7,13 @@ namespace DealerManager.Controllers;
 [Route("api/vehicles")]
 public class VehiclesController(IVehicleService service) : ControllerBase
 {
+    [HttpPost("{id:int}/expenses/{expenseId:int}/reverse")]
+    public Task<VehicleExpenseDto> ReverseExpense(int id, int expenseId, ReverseVehicleExpenseRequest request, CancellationToken cancellationToken)
+        => service.ReverseExpense(id, expenseId, request, cancellationToken);
+    [HttpPost("{id:int}/expenses/{expenseId:int}/correct")]
+    public Task<VehicleExpenseDto> CorrectExpense(int id, int expenseId, CorrectVehicleExpenseRequest request, CancellationToken cancellationToken)
+        => service.CorrectExpense(id, expenseId, request, cancellationToken);
+
     [HttpPost("{id:int}/reservations")]
     public async Task<ActionResult<VehicleReservationDto>> Reserve(int id, ReserveVehicleRequest request, CancellationToken cancellationToken)
         => CreatedAtAction(nameof(GetActiveReservation), new { id }, await service.ReserveVehicle(id, request, cancellationToken));

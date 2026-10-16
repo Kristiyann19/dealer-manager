@@ -13,6 +13,7 @@ import { CostCategory } from '../candidates/models/candidate.models';
 import { VehicleDetailsComponent } from './vehicle-details.component';
 import { EditCostPlanComponent } from './edit-cost-plan.component';
 import { AddExpenseComponent } from './add-expense.component';
+import { CorrectExpenseComponent } from './correct-expense.component';
 import { ConfirmPaymentComponent } from './confirm-payment.component';
 import { VehicleCostPlanItem, VehicleDetails, VehicleExpense } from './vehicle.models';
 
@@ -94,7 +95,10 @@ describe('Vehicle finances', () => {
     params = new BehaviorSubject(convertToParamMap({ id: '1' }));
     TestBed.configureTestingModule({
       providers: [
-        { provide: VehicleFilesApiService, useValue: { photos: () => of([]), documents: () => of([]) } },
+        {
+          provide: VehicleFilesApiService,
+          useValue: { photos: () => of([]), documents: () => of([]) },
+        },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -123,6 +127,87 @@ describe('Vehicle finances', () => {
       .expectOne('/api/vehicles/1/payment-account')
       .flush({ ...account, currentBalance: balance });
   }
+  it('requires a reason, retains planned category and submits a correction only once', () => {
+    const fixture = TestBed.createComponent(CorrectExpenseComponent);
+    fixture.componentRef.setInput('vehicleId', 1);
+    fixture.componentRef.setInput('expense', expense);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    expect(page.form.invalid).toBe(true);
+    expect(page.form.controls.category.disabled).toBe(true);
+    page.submit();
+    http.expectNone('/api/vehicles/1/expenses/1/correct');
+    page.form.controls.reason.setValue(' Wrong amount ');
+    page.form.controls.amount.setValue(800);
+    expect(page.balanceChange()).toBe(150);
+    const saved = vi.spyOn(page.saved, 'emit');
+    page.submit();
+    page.submit();
+    const request = http.expectOne('/api/vehicles/1/expenses/1/correct');
+    expect(request.request.body).toMatchObject({
+      amount: 800,
+      reason: 'Wrong amount',
+      costPlanItemId: 4,
+      capitalAccountId: 1,
+    });
+    expect(page.busy()).toBe(true);
+    request.flush({ ...expense, isReversed: true, replacementExpenseId: 2 });
+    expect(saved).toHaveBeenCalledOnce();
+    expect(page.busy()).toBe(false);
+  });
+
+  it('reverses only with a reason and retains the form when a request fails', () => {
+    const fixture = TestBed.createComponent(CorrectExpenseComponent);
+    fixture.componentRef.setInput('vehicleId', 1);
+    fixture.componentRef.setInput('expense', expense);
+    fixture.componentRef.setInput('reverseOnly', true);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    page.form.controls.reason.setValue('   ');
+    expect(page.form.invalid).toBe(true);
+    page.form.controls.reason.setValue('Duplicate');
+    expect(page.balanceChange()).toBe(950);
+    expect(fixture.nativeElement.querySelector('#correction-amount')).toBeNull();
+    page.submit();
+    const request = http.expectOne('/api/vehicles/1/expenses/1/reverse');
+    expect(request.request.body).toEqual({ reason: 'Duplicate' });
+    request.flush({ code: 'expenseAlreadyReversed' }, { status: 409, statusText: 'Conflict' });
+    expect(page.form.controls.reason.value).toBe('Duplicate');
+    expect(page.error()).toBe('vehicle.errors.expenseAlreadyReversed');
+    const closed = vi.spyOn(page.closed, 'emit');
+    page.close();
+    expect(closed).toHaveBeenCalledWith(true);
+  });
+
+  it('refreshes financial sections after correction and keeps reversed audit visible without actions', () => {
+    const fixture = TestBed.createComponent(VehicleDetailsComponent);
+    load(details, [plan], [expense]);
+    fixture.detectChanges();
+    fixture.componentInstance.correction.set({ expense, reverseOnly: false });
+    fixture.componentInstance.expenseCorrected();
+    expect(fixture.componentInstance.loading()).toBe(true);
+    load(
+      { ...details, totalInvested: 6300 },
+      [plan],
+      [
+        {
+          ...expense,
+          isReversed: true,
+          reversalReason: 'Duplicate',
+          reversedAt: expense.paidAt,
+          reversalTransactionId: 9,
+          reversedByUserId: 1,
+        },
+      ],
+    );
+    fixture.detectChanges();
+    expect(fixture.componentInstance.loading()).toBe(false);
+    expect(fixture.componentInstance.correction()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Duplicate');
+    expect(fixture.nativeElement.textContent).toContain(en.vehicle.corrections.reversed);
+    expect(button(fixture, en.vehicle.corrections.edit)).toBeUndefined();
+  });
+
   it('displays server summary, read-only forecast and expense history in both languages', () => {
     const fixture = TestBed.createComponent(VehicleDetailsComponent);
     load(details, [plan], [expense]);

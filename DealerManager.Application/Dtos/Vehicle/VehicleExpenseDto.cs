@@ -4,6 +4,12 @@ namespace DealerManager.Application.Dtos.Vehicle;
 
 public class VehicleExpenseDto
 {
+    public bool IsReversed { get; init; }
+    public DateTimeOffset? ReversedAt { get; init; }
+    public string? ReversalReason { get; init; }
+    public int? ReversedByUserId { get; init; }
+    public int? ReversalTransactionId { get; init; }
+    public int? ReplacementExpenseId { get; init; }
     public int Id { get; init; }
     public CostCategory Category { get; init; }
     public string Description { get; init; } = string.Empty;

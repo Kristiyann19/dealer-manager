@@ -17,6 +17,16 @@ public class VehicleExpense : Entity
     public int FinancialTransactionId { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
+    // The original payment is retained; corrections append a reversal and optionally a replacement.
+    public bool IsReversed { get; set; }
+    public DateTimeOffset? ReversedAt { get; set; }
+    public string? ReversalReason { get; set; }
+    public int? ReversedByUserId { get; set; }
+    public int? ReversalTransactionId { get; set; }
+    public int? ReplacementExpenseId { get; set; }
+    public FinancialTransaction? ReversalTransaction { get; set; }
+    public VehicleExpense? ReplacementExpense { get; set; }
+
     public Vehicle Vehicle { get; set; } = null!;
     public VehicleCostPlanItem? CostPlanItem { get; set; }
     public FinancialTransaction FinancialTransaction { get; set; } = null!;

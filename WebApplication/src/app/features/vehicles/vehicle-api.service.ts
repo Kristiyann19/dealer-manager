@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../configuration/api.config';
 import {
   AddVehicleExpenseRequest,
+  CorrectVehicleExpenseRequest,
   UpdateVehicleCostPlanItemRequest,
   VehicleCostPlanItem,
   VehicleDetails,
@@ -25,7 +26,13 @@ export type { VehicleDetails } from './vehicle.models';
 export class VehicleApiService {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL).replace(/\/$/, '');
-  list(textFilter: string, status: VehicleStatus | null, offset: number, limit: number, agedStock = false) {
+  list(
+    textFilter: string,
+    status: VehicleStatus | null,
+    offset: number,
+    limit: number,
+    agedStock = false,
+  ) {
     const params: Record<string, string | number> = {
       TextFilter: textFilter,
       Offset: offset,
@@ -38,14 +45,24 @@ export class VehicleApiService {
   reserve(id: number, request: ReserveVehicleRequest) {
     return this.http.post<VehicleReservation>(`${this.base}/vehicles/${id}/reservations`, request);
   }
-  cancelReservation(id: number, reservationId: number, refundDeposit: boolean, notes: string | null) {
-    return this.http.post<VehicleReservation>(`${this.base}/vehicles/${id}/reservations/${reservationId}/cancel`, { refundDeposit, notes });
+  cancelReservation(
+    id: number,
+    reservationId: number,
+    refundDeposit: boolean,
+    notes: string | null,
+  ) {
+    return this.http.post<VehicleReservation>(
+      `${this.base}/vehicles/${id}/reservations/${reservationId}/cancel`,
+      { refundDeposit, notes },
+    );
   }
   reservations(id: number) {
     return this.http.get<VehicleReservation[]>(`${this.base}/vehicles/${id}/reservations`);
   }
   activeReservation(id: number) {
-    return this.http.get<VehicleReservation | null>(`${this.base}/vehicles/${id}/reservations/active`);
+    return this.http.get<VehicleReservation | null>(
+      `${this.base}/vehicles/${id}/reservations/active`,
+    );
   }
   changeStatus(id: number, status: VehicleStatus, notes: string | null) {
     return this.http.post<VehicleStatusHistory>(`${this.base}/vehicles/${id}/status`, {
@@ -102,6 +119,18 @@ export class VehicleApiService {
   }
   expenses(id: number) {
     return this.http.get<VehicleExpense[]>(`${this.base}/vehicles/${id}/expenses`);
+  }
+  reverseExpense(id: number, expenseId: number, reason: string) {
+    return this.http.post<VehicleExpense>(
+      `${this.base}/vehicles/${id}/expenses/${expenseId}/reverse`,
+      { reason },
+    );
+  }
+  correctExpense(id: number, expenseId: number, request: CorrectVehicleExpenseRequest) {
+    return this.http.post<VehicleExpense>(
+      `${this.base}/vehicles/${id}/expenses/${expenseId}/correct`,
+      request,
+    );
   }
   addExpense(id: number, request: AddVehicleExpenseRequest) {
     return this.http.post<VehicleExpense>(`${this.base}/vehicles/${id}/expenses`, request);

@@ -43,7 +43,7 @@ public sealed class VehicleProfile : Profile
             .ForMember(d => d.ListingId, o => o.MapFrom(s => s.Id))
             .ForMember(d => d.Status, o => o.MapFrom(s => s.Vehicle.Status)).MaxDepth(4);
         CreateMap<VehicleCostPlanItem, VehicleCostPlanItemDto>()
-            .ForMember(d => d.ActualPaid, o => o.MapFrom(s => s.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m))
+            .ForMember(d => d.ActualPaid, o => o.MapFrom(s => s.VehicleExpenses.Where(e => !e.IsReversed).Sum(e => (decimal?)e.Amount) ?? 0m))
             .MaxDepth(4);
         CreateMap<VehicleExpense, VehicleExpenseDto>()
             .ForMember(d => d.CostPlanDescription, o => o.MapFrom(s => s.CostPlanItem == null ? null : s.CostPlanItem.Description))

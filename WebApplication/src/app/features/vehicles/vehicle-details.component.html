@@ -29,7 +29,13 @@
         </p>
         <div class="mt-5 flex flex-wrap items-center gap-3">
           @if (canReserve()) {
-            <button type="button" class="secondary-button min-h-12 px-6 text-base" (click)="reservationDialog.set(true)">{{ 'reservation.action' | translate }}</button>
+            <button
+              type="button"
+              class="secondary-button min-h-12 px-6 text-base"
+              (click)="reservationDialog.set(true)"
+            >
+              {{ 'reservation.action' | translate }}
+            </button>
           }
           @if (canSell()) {
             <button
@@ -65,22 +71,66 @@
       <section class="panel p-6 mb-6">
         <h2>{{ 'reservation.panelTitle' | translate }}</h2>
         <dl class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <div><dt class="field-label">{{ 'reservation.customer' | translate }}</dt><dd class="font-semibold">{{ reservation.customerName }}</dd></div>
-          <div><dt class="field-label">{{ 'reservation.phone' | translate }}</dt><dd>{{ reservation.customerPhone || ('common.notProvided' | translate) }}</dd></div>
-          <div><dt class="field-label">{{ 'reservation.deposit' | translate }}</dt><dd class="font-semibold">{{ reservation.depositAmount | localizedCurrency: 'EUR' }}</dd></div>
-          <div><dt class="field-label">{{ 'reservation.reservedAt' | translate }}</dt><dd>{{ reservation.reservedAt | localizedDate }}</dd></div>
-          <div><dt class="field-label">{{ 'reservation.expiresAt' | translate }}</dt><dd>{{ reservation.expiresAt ? (reservation.expiresAt | localizedDate: 'short') : ('common.notProvided' | translate) }}</dd></div>
-          <div><dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt><dd>{{ vehicle.listingPrice | localizedCurrency: 'EUR' }}</dd></div>
+          <div>
+            <dt class="field-label">{{ 'reservation.customer' | translate }}</dt>
+            <dd class="font-semibold">{{ reservation.customerName }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'reservation.phone' | translate }}</dt>
+            <dd>{{ reservation.customerPhone || ('common.notProvided' | translate) }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'reservation.deposit' | translate }}</dt>
+            <dd class="font-semibold">
+              {{ reservation.depositAmount | localizedCurrency: 'EUR' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'reservation.reservedAt' | translate }}</dt>
+            <dd>{{ reservation.reservedAt | localizedDate }}</dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'reservation.expiresAt' | translate }}</dt>
+            <dd>
+              {{
+                reservation.expiresAt
+                  ? (reservation.expiresAt | localizedDate: 'short')
+                  : ('common.notProvided' | translate)
+              }}
+            </dd>
+          </div>
+          <div>
+            <dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt>
+            <dd>{{ vehicle.listingPrice | localizedCurrency: 'EUR' }}</dd>
+          </div>
         </dl>
-        @if (reservation.notes) { <p class="mt-4 text-sm">{{ reservation.notes }}</p> }
-        <div class="form-actions"><button type="button" class="secondary-button" (click)="cancellationDialog.set(true)">{{ 'reservation.cancelAction' | translate }}</button><button type="button" class="primary-button" (click)="saleDialog.set(true)">{{ 'vehicle.sale.action' | translate }}</button></div>
+        @if (reservation.notes) {
+          <p class="mt-4 text-sm">{{ reservation.notes }}</p>
+        }
+        <div class="form-actions">
+          <button type="button" class="secondary-button" (click)="cancellationDialog.set(true)">
+            {{ 'reservation.cancelAction' | translate }}</button
+          ><button type="button" class="primary-button" (click)="saleDialog.set(true)">
+            {{ 'vehicle.sale.action' | translate }}
+          </button>
+        </div>
       </section>
     }
     @if (reservationDialog()) {
-      <app-reserve-vehicle [vehicleId]="vehicle.id" [vehicleName]="vehicle.make + ' ' + vehicle.model" [listingPrice]="vehicle.currentListing?.listingPrice ?? vehicle.listingPrice ?? 0" (saved)="saved('reservation')" (closed)="reservationDialog.set(false); $event && refreshFinancialData()" />
+      <app-reserve-vehicle
+        [vehicleId]="vehicle.id"
+        [vehicleName]="vehicle.make + ' ' + vehicle.model"
+        [listingPrice]="vehicle.currentListing?.listingPrice ?? vehicle.listingPrice ?? 0"
+        (saved)="saved('reservation')"
+        (closed)="reservationDialog.set(false); $event && refreshFinancialData()"
+      />
     }
     @if (cancellationDialog() && vehicle.activeReservation) {
-      <app-cancel-reservation [reservation]="vehicle.activeReservation!" (saved)="saved('cancelReservation')" (closed)="cancellationDialog.set(false); $event && refreshFinancialData()" />
+      <app-cancel-reservation
+        [reservation]="vehicle.activeReservation!"
+        (saved)="saved('cancelReservation')"
+        (closed)="cancellationDialog.set(false); $event && refreshFinancialData()"
+      />
     }
     <section class="panel overflow-hidden" aria-labelledby="finance-summary-title">
       <h2 id="finance-summary-title" class="sr-only">
@@ -174,11 +224,15 @@
         <dl class="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
           <div>
             <dt class="field-label">{{ 'vehicle.sale.price' | translate }}</dt>
-            <dd class="text-xl font-semibold">{{ vehicle.actualSalePrice | localizedCurrency: 'EUR' }}</dd>
+            <dd class="text-xl font-semibold">
+              {{ vehicle.actualSalePrice | localizedCurrency: 'EUR' }}
+            </dd>
           </div>
           <div>
             <dt class="field-label">{{ 'vehicle.listing.price' | translate }}</dt>
-            <dd class="text-xl font-semibold">{{ vehicle.listingPrice | localizedCurrency: 'EUR' }}</dd>
+            <dd class="text-xl font-semibold">
+              {{ vehicle.listingPrice | localizedCurrency: 'EUR' }}
+            </dd>
           </div>
           <div>
             <dt class="field-label">{{ 'vehicle.expectedSellingPrice' | translate }}</dt>
@@ -281,6 +335,7 @@
                 <th scope="col">{{ 'finance.description' | translate }}</th>
                 <th scope="col">{{ 'finance.amount' | translate }}</th>
                 <th scope="col">{{ 'vehicle.paidFrom' | translate }}</th>
+                <th scope="col">{{ 'vehicle.corrections.actions' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -288,11 +343,73 @@
                 <tr>
                   <td class="whitespace-nowrap">{{ expense.paidAt | localizedDate }}</td>
                   <td>{{ 'cost.' + expense.category | translate }}</td>
-                  <td>{{ expense.description }}</td>
-                  <td class="whitespace-nowrap font-semibold tabular-nums">
+                  <td>
+                    <span [class.line-through]="expense.isReversed">{{ expense.description }}</span>
+                    @if (expense.isReversed) {
+                      <p class="text-sm font-semibold mt-1">
+                        {{
+                          (expense.replacementExpenseId
+                            ? 'vehicle.corrections.corrected'
+                            : 'vehicle.corrections.reversed'
+                          ) | translate
+                        }}
+                      </p>
+                      <p class="text-xs text-slate-500">{{ expense.reversalReason }}</p>
+                      <p class="text-xs text-slate-500">
+                        {{ expense.reversedAt | localizedDate: 'medium' }}
+                      </p>
+                      @if (expense.reversedByUserId) {
+                        <p class="text-xs text-slate-500">
+                          {{
+                            'vehicle.corrections.byUser'
+                              | translate: { id: expense.reversedByUserId }
+                          }}
+                        </p>
+                      }
+                      <p class="text-xs text-slate-500">
+                        {{
+                          'vehicle.corrections.reversalReference'
+                            | translate: { id: expense.reversalTransactionId }
+                        }}
+                      </p>
+                      @if (expense.replacementExpenseId) {
+                        <p class="text-xs text-slate-500">
+                          {{
+                            'vehicle.corrections.replacement'
+                              | translate: { id: expense.replacementExpenseId }
+                          }}
+                        </p>
+                      }
+                    }
+                    <p class="text-xs text-slate-500">
+                      {{ 'vehicle.corrections.expenseReference' | translate: { id: expense.id } }}
+                    </p>
+                  </td>
+                  <td
+                    class="whitespace-nowrap font-semibold tabular-nums"
+                    [class.line-through]="expense.isReversed"
+                  >
                     {{ expense.amount | localizedCurrency: expense.currency }}
                   </td>
                   <td>{{ expense.capitalAccountName }}</td>
+                  <td>
+                    @if (!expense.isReversed) {
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          class="secondary-button whitespace-nowrap"
+                          (click)="correction.set({ expense, reverseOnly: false })"
+                        >
+                          {{ 'vehicle.corrections.edit' | translate }}
+                        </button>
+                        <button
+                          class="secondary-button destructive-button whitespace-nowrap"
+                          (click)="correction.set({ expense, reverseOnly: true })"
+                        >
+                          {{ 'vehicle.corrections.reverse' | translate }}
+                        </button>
+                      </div>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
@@ -441,3 +558,15 @@
     }
   }
 </div>
+
+@if (correction(); as action) {
+  @if (vehicle(); as current) {
+    <app-correct-expense
+      [vehicleId]="current.id"
+      [expense]="action.expense"
+      [reverseOnly]="action.reverseOnly"
+      (saved)="expenseCorrected()"
+      (closed)="correctionClosed($event)"
+    />
+  }
+}

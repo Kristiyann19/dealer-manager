@@ -588,7 +588,11 @@
       "saleBelowDeposit": "The sale price cannot be less than the deposit.",
       "notListedForSale": "Only a listed or reserved vehicle can be sold.",
       "activeListingRequired": "An active listing is required for sale.",
-      "saleAccountMissing": "The sale account could not be found."
+      "saleAccountMissing": "The sale account could not be found.",
+      "expenseNotFound": "The expense was not found for this vehicle.",
+      "expenseAlreadyReversed": "This expense has already been reversed or corrected. Close the dialog to refresh the data.",
+      "expensePaymentMismatch": "The expense does not match its original payment and cannot be corrected automatically.",
+      "planCategoryLocked": "A planned expense must retain its category during correction."
     },
     "originalEstimatedEUR": "Pre-purchase estimate (EUR)",
     "paymentFor": "Cost",
@@ -755,6 +759,26 @@
           "Other": "Other"
         }
       }
+    },
+    "corrections": {
+      "title": "Correct expense",
+      "reverseTitle": "Reverse expense",
+      "edit": "Correct",
+      "reverse": "Reverse",
+      "save": "Save correction",
+      "reason": "Reason *",
+      "reasonRequired": "Enter a reason (up to 1000 characters).",
+      "help": "The original entry stays in the history. A reversal transaction and a replacement expense will be recorded.",
+      "reverseHelp": "The amount will be returned to the original capital account. Use for an incorrect/duplicate expense or a fully refunded payment. The original entry is retained.",
+      "balanceChange": "Capital change in “{{account}}”: {{amount}}",
+      "saved": "The correction was saved and financial data refreshed.",
+      "actions": "Actions",
+      "corrected": "Corrected",
+      "reversed": "Reversed",
+      "byUser": "Performed by user #{{id}}",
+      "reversalReference": "Reversal transaction #{{id}}",
+      "replacement": "Replaced by expense #{{id}}",
+      "expenseReference": "Expense #{{id}}"
     }
   },
   "settings": {

@@ -579,8 +579,28 @@ namespace DealerManager.Infrastructure.Migrations
                     b.Property<int>("FinancialTransactionId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsReversed")
+                        .IsConcurrencyToken()
+                        .HasColumnType("boolean");
+
                     b.Property<DateTimeOffset>("PaidAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ReplacementExpenseId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReversalReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("ReversalTransactionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("ReversedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ReversedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Supplier")
                         .HasColumnType("text");
@@ -594,9 +614,18 @@ namespace DealerManager.Infrastructure.Migrations
 
                     b.HasIndex("FinancialTransactionId");
 
+                    b.HasIndex("ReplacementExpenseId")
+                        .IsUnique();
+
+                    b.HasIndex("ReversalTransactionId")
+                        .IsUnique();
+
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("VehicleExpenses");
+                    b.ToTable("VehicleExpenses", t =>
+                        {
+                            t.HasCheckConstraint("CK_VehicleExpenses_ReversalAudit", "(NOT \"IsReversed\" AND \"ReversedAt\" IS NULL AND \"ReversalTransactionId\" IS NULL AND \"ReplacementExpenseId\" IS NULL) OR (\"IsReversed\" AND \"ReversedAt\" IS NOT NULL AND \"ReversalTransactionId\" IS NOT NULL AND \"ReversalReason\" IS NOT NULL AND length(trim(\"ReversalReason\")) > 0)");
+                        });
                 });
 
             modelBuilder.Entity("DealerManager.Domain.Entities.VehicleListing", b =>
@@ -1122,6 +1151,16 @@ namespace DealerManager.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("DealerManager.Domain.Entities.VehicleExpense", "ReplacementExpense")
+                        .WithMany()
+                        .HasForeignKey("ReplacementExpenseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DealerManager.Domain.Entities.FinancialTransaction", "ReversalTransaction")
+                        .WithMany()
+                        .HasForeignKey("ReversalTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("DealerManager.Domain.Entities.Vehicle", "Vehicle")
                         .WithMany("VehicleExpenses")
                         .HasForeignKey("VehicleId")
@@ -1131,6 +1170,10 @@ namespace DealerManager.Infrastructure.Migrations
                     b.Navigation("CostPlanItem");
 
                     b.Navigation("FinancialTransaction");
+
+                    b.Navigation("ReplacementExpense");
+
+                    b.Navigation("ReversalTransaction");
 
                     b.Navigation("Vehicle");
                 });

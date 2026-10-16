@@ -29,7 +29,8 @@ public partial class VehicleService(
     IBaseRepository<VehicleSale, FilterDto<VehicleSale>, DealerManagerDbContext> sales,
     IBaseRepository<VehicleReservation, FilterDto<VehicleReservation>, DealerManagerDbContext> reservations,
     ICapitalAccountService finance, ICandidateFinancialCalculator forecastCalculator,
-    IUnitOfWork unitOfWork, TimeProvider clock, IMapper mapping) : IVehicleService
+    IUnitOfWork unitOfWork, TimeProvider clock, IMapper mapping,
+    DealerManager.Application.IService.Identity.ICurrentUserContext currentUser) : IVehicleService
 {
     private readonly IMapper mapper = mapping;
 
@@ -142,7 +143,7 @@ public partial class VehicleService(
         var account = await GetPaymentAccount(vehicleId, cancellationToken);
         var item = await PayablePlan(vehicleId, itemId, cancellationToken);
         return new() { CapitalAccountId = account.CapitalAccountId, Currency = account.Currency,
-            CurrentBalance = account.CurrentBalance, Category = item.Category, Amount = Target(item) };
+            CurrentBalance = account.CurrentBalance, Category = item.Category, Amount = Target(item) - item.ActualPaid };
     }
 
     public Task<VehicleExpenseDto> ConfirmPayment(int vehicleId, int itemId, ConfirmVehiclePaymentRequest request, CancellationToken cancellationToken)
@@ -153,7 +154,7 @@ public partial class VehicleService(
             await RequirePayableVehicle(vehicleId, token);
             var item = await PayablePlan(vehicleId, itemId, token);
             var account = await PurchaseAccount(vehicleId, token);
-            var amount = Target(item);
+            var amount = Target(item) - item.ActualPaid;
             if (request.ExpectedAmount != amount || request.ExpectedCapitalAccountId != account.Id)
                 throw Conflict("paymentChanged", "The payment has changed. Review a fresh preview before confirming.");
             return await RecordExpense(vehicleId, account.Id, item.Id, item.Category, item.Description, amount,
@@ -206,7 +207,6 @@ public partial class VehicleService(
         if (item.IsCancelled) throw Conflict("cancelledPlan", "A cancelled forecast cannot be paid.");
         if (Target(item) <= 0) throw Conflict("invalidPlanAmount", "Set a positive current forecast before confirming payment.");
         if (item.ActualPaid >= Target(item)) throw Conflict("alreadyPaid", "This forecast has already been paid.");
-        if (item.ActualPaid > 0) throw Conflict("partialPayment", "This forecast has historical partial payments and cannot be confirmed in full.");
         return item;
     }
 

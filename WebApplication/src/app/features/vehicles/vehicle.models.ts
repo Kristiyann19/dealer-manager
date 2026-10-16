@@ -59,6 +59,12 @@ export interface UpdateVehicleCostPlanItemRequest {
   isCancelled: boolean;
 }
 export interface VehicleExpense {
+  isReversed?: boolean;
+  reversedAt?: string | null;
+  reversalReason?: string | null;
+  reversedByUserId?: number | null;
+  reversalTransactionId?: number | null;
+  replacementExpenseId?: number | null;
   id: number;
   category: CostCategory;
   description: string;
@@ -160,4 +166,13 @@ export interface VehicleSaleResult {
   realizedProfit: number;
   realizedROI: number;
   status: VehicleStatus;
+}
+
+export interface CorrectVehicleExpenseRequest extends Omit<
+  AddVehicleExpenseRequest,
+  'costPlanItemId'
+> {
+  costPlanItemId: number | null;
+  capitalAccountId: number;
+  reason: string;
 }

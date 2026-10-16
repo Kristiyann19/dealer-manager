@@ -3,6 +3,8 @@ using DealerManager.Application.Dtos.Vehicle;
 namespace DealerManager.Application.IService.Vehicle;
 public interface IVehicleService
 {
+    Task<VehicleExpenseDto> ReverseExpense(int vehicleId, int expenseId, ReverseVehicleExpenseRequest request, CancellationToken cancellationToken);
+    Task<VehicleExpenseDto> CorrectExpense(int vehicleId, int expenseId, CorrectVehicleExpenseRequest request, CancellationToken cancellationToken);
     Task<VehicleReservationDto> ReserveVehicle(int vehicleId, ReserveVehicleRequest request, CancellationToken cancellationToken);
     Task<VehicleReservationDto> CancelReservation(int vehicleId, int reservationId, CancelReservationRequest request, CancellationToken cancellationToken);
     Task<VehicleReservationDto?> GetActiveReservation(int vehicleId, CancellationToken cancellationToken);

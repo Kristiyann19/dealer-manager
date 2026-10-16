@@ -85,7 +85,7 @@ public sealed class DashboardService(DealerManagerDbContext db, TimeProvider clo
         var latestPlans = await db.VehicleCostPlanItems.AsNoTracking().Where(p => ids.Contains(p.VehicleId))
             .Select(p => new { p.VehicleId, Plan = new DealerManager.Application.Dtos.Vehicle.VehicleCostPlanItemDto {
                 CurrentEstimatedAmount = p.CurrentEstimatedAmount, CommittedAmount = p.CommittedAmount,
-                IsCancelled = p.IsCancelled, ActualPaid = p.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
+                IsCancelled = p.IsCancelled, ActualPaid = p.VehicleExpenses.Where(e => !e.IsReversed).Sum(e => (decimal?)e.Amount) ?? 0m
             } }).ToListAsync(cancellationToken);
         var activeRows = latest.Select(v => new DashboardVehicleDto {
             Id = v.Id, Make = v.Make, Model = v.Model, Year = v.Year, Status = v.Status,
@@ -101,10 +101,9 @@ public sealed class DashboardService(DealerManagerDbContext db, TimeProvider clo
             var start = monthStart.AddMonths(offset);
             var end = start.AddMonths(1);
             var spending = await movements.Where(t => t.OccurredAt >= start && t.OccurredAt < end
-                    && t.Direction == TransactionDirection.Out
                     && (t.Type == TransactionType.VehiclePurchase || t.Type == TransactionType.VehicleExpense)
                     && t.CapitalAccount.Currency.Trim().ToUpper() == "EUR")
-                .SumAsync(t => (decimal?)t.Amount, cancellationToken) ?? 0m;
+                .SumAsync(t => (decimal?)(t.Direction == TransactionDirection.Out ? t.Amount : -t.Amount), cancellationToken) ?? 0m;
             var sold = await (from sale in db.VehicleSales.AsNoTracking()
                               join investment in investments on sale.VehicleId equals investment.VehicleId
                               where sale.SoldAt >= start && sale.SoldAt < end

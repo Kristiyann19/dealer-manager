@@ -66,7 +66,7 @@ public partial class VehicleService
         var costPlans = await plans.GetQueryByProperties(i => ids.Contains(i.VehicleId))
             .Select(i => new { i.VehicleId, Plan = new VehicleCostPlanItemDto {
                 CurrentEstimatedAmount = i.CurrentEstimatedAmount, CommittedAmount = i.CommittedAmount,
-                IsCancelled = i.IsCancelled, ActualPaid = i.VehicleExpenses.Sum(e => (decimal?)e.Amount) ?? 0m
+                IsCancelled = i.IsCancelled, ActualPaid = i.VehicleExpenses.Where(e => !e.IsReversed).Sum(e => (decimal?)e.Amount) ?? 0m
             } }).ToListAsync(cancellationToken);
         var plansByVehicle = costPlans.ToLookup(i => i.VehicleId, i => i.Plan);
         var listingPrices = await listings.GetQueryByProperties(l => ids.Contains(l.VehicleId)
