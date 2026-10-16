@@ -1,13 +1,16 @@
 @if (error()) {
   <p class="error-banner" role="alert">{{ error() | translate }}</p>
 }
-<section [class]="embedded() ? 'border-t border-slate-200 pt-6' : 'panel p-6'">
+<fieldset [class]="embedded() ? 'min-w-0 border-t border-slate-200 pt-6' : 'panel min-w-0 p-6'">
+  @if (!embedded()) {
+    <legend class="form-section-title px-2">{{ 'files.photos' | translate }}</legend>
+  }
   <div
-    class="flex flex-wrap justify-between items-center gap-3"
+    class="flex flex-wrap justify-end items-center gap-3"
     [class.mb-5]="!embedded() || photosExpanded()"
   >
-    <h2 [class.w-full]="embedded()">
-      @if (embedded()) {
+    @if (embedded()) {
+      <h2 class="w-full">
         <button
           type="button"
           class="disclosure-toggle"
@@ -30,10 +33,8 @@
           </svg>
           <span>{{ 'files.photos' | translate }}</span>
         </button>
-      } @else {
-        {{ 'files.photos' | translate }}
-      }
-    </h2>
+      </h2>
+    }
     @if (editable()) {
       <button class="primary-button" [disabled]="busy() || loading()" (click)="openPhotos()">
         {{ 'files.addPhotos' | translate }}
@@ -47,14 +48,6 @@
       } @else if (!photos().length) {
         <div class="py-8 text-center text-slate-500">
           <p>{{ 'files.noPhotos' | translate }}</p>
-          @if (editable()) {
-            <p class="mt-2 text-sm">{{ 'files.photoHint' | translate }}</p>
-          }
-          @if (editable()) {
-            <button class="secondary-button mt-4" [disabled]="busy()" (click)="openPhotos()">
-              {{ 'files.addPhotos' | translate }}
-            </button>
-          }
         </div>
       } @else {
         <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -95,14 +88,17 @@
       }
     }
   </div>
-</section>
-<section [class]="embedded() ? 'border-t border-slate-200 pt-6' : 'panel p-6'">
+</fieldset>
+<fieldset [class]="embedded() ? 'min-w-0 border-t border-slate-200 pt-6' : 'panel min-w-0 p-6'">
+  @if (!embedded()) {
+    <legend class="form-section-title px-2">{{ 'files.documents' | translate }}</legend>
+  }
   <div
-    class="flex flex-wrap justify-between items-center gap-3"
+    class="flex flex-wrap justify-end items-center gap-3"
     [class.mb-5]="!embedded() || documentsExpanded()"
   >
-    <h2 [class.w-full]="embedded()">
-      @if (embedded()) {
+    @if (embedded()) {
+      <h2 class="w-full">
         <button
           type="button"
           class="disclosure-toggle"
@@ -125,10 +121,8 @@
           </svg>
           <span>{{ 'files.documents' | translate }}</span>
         </button>
-      } @else {
-        {{ 'files.documents' | translate }}
-      }
-    </h2>
+      </h2>
+    }
     @if (editable()) {
       <button class="primary-button" [disabled]="busy() || loading()" (click)="openDocument()">
         {{ 'files.uploadDocument' | translate }}
@@ -191,7 +185,7 @@
       }
     }
   </div>
-</section>
+</fieldset>
 <p-dialog
   [visible]="photoDialog()"
   (visibleChange)="!busy() && photoDialog.set($event)"
