@@ -8,6 +8,7 @@ public sealed class CandidateProfile : Profile
 {
     public CandidateProfile()
     {
+        CreateMap<CandidateAuctionDetails, CandidateAuctionDetailsDto>();
         CreateMap<CandidateEstimateItem, CandidateEstimateItemDto>().MaxDepth(4);
         CreateMap<CandidateEstimate, CandidateEstimateDto>()
             .ForMember(d => d.Items, o => o.MapFrom(s => s.CandidateEstimateItems.OrderBy(i => i.Id)))

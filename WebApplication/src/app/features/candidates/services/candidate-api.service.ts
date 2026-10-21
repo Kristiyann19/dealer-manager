@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../../configuration/api.config';
 import { PurchaseCandidateRequest, PurchaseCandidateResult } from '../models/purchase.models';
 import {
+  CandidateAcquisitionType,
+  CandidateAuctionDetails,
   CandidateDetails,
   CandidateEstimate,
   CandidateListResult,
@@ -15,9 +17,19 @@ export class CandidateApiService {
   private readonly http = inject(HttpClient);
   private readonly url = `${inject(API_BASE_URL).replace(/\/$/, '')}/candidates`;
 
-  list(textFilter: string, offset: number, limit: number) {
+  list(
+    textFilter: string,
+    offset: number,
+    limit: number,
+    acquisitionType: CandidateAcquisitionType | null = null,
+  ) {
     return this.http.get<CandidateListResult>(this.url, {
-      params: { TextFilter: textFilter, Offset: offset, Limit: limit },
+      params: {
+        TextFilter: textFilter,
+        Offset: offset,
+        Limit: limit,
+        ...(acquisitionType === null ? {} : { AcquisitionType: acquisitionType }),
+      },
     });
   }
   details(id: number) {
@@ -25,6 +37,9 @@ export class CandidateApiService {
   }
   create(request: CreateCandidateRequest) {
     return this.http.post<CandidateDetails>(this.url, request);
+  }
+  updateAuctionDetails(id: number, request: CandidateAuctionDetails) {
+    return this.http.put<CandidateDetails>(`${this.url}/${id}/auction-details`, request);
   }
   createEstimate(request: CreateEstimateRequest) {
     return this.http.post<CandidateEstimate>(`${this.url}/estimates`, request);

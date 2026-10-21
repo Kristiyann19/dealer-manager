@@ -7,22 +7,20 @@
     }
     <fieldset [disabled]="busy()">
       <section class="pb-6 border-b border-slate-200">
-          <h3 class="font-semibold mb-3">{{
-            'candidate.editor.price' | translate
-          }}</h3>
-          <div class="flex w-full max-w-[280px] items-center gap-3">
-            <input
-              id="estimate-price"
-              class="form-input"
-              type="number"
-              min="0"
-              step="0.01"
-              formControlName="expectedSellingPrice"
-              aria-required="true"
-              aria-describedby="estimate-price-error"
-            />
-            <span class="text-slate-600" aria-hidden="true">€</span>
-          </div>
+        <h3 class="font-semibold mb-3">{{ 'candidate.editor.price' | translate }}</h3>
+        <div class="flex w-full max-w-[280px] items-center gap-3">
+          <input
+            id="estimate-price"
+            class="form-input"
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="expectedSellingPrice"
+            aria-required="true"
+            aria-describedby="estimate-price-error"
+          />
+          <span class="text-slate-600" aria-hidden="true">€</span>
+        </div>
         <app-field-error
           id="estimate-price-error"
           [control]="form.controls.expectedSellingPrice"
@@ -44,10 +42,7 @@
         <div formArrayName="items">
           @for (item of items.controls; track item; let i = $index) {
             <div [formGroupName]="i" class="estimate-cost-row">
-              <div
-                [id]="'estimate-editor-' + i"
-                class="estimate-cost-editor"
-              >
+              <div [id]="'estimate-editor-' + i" class="estimate-cost-editor">
                 <div>
                   <label class="field-label" [for]="'category-' + i">{{
                     'ui.category' | translate
@@ -72,7 +67,12 @@
                           type="button"
                           class="help-tooltip-trigger"
                           aria-describedby="purchase-cost-help"
-                          [attr.aria-label]="'candidate.negotiatedPurchaseHelp' | translate"
+                          [attr.aria-label]="
+                            (candidate().acquisitionType === 1
+                              ? 'auction.scenarioHelp'
+                              : 'candidate.negotiatedPurchaseHelp'
+                            ) | translate
+                          "
                         >
                           <svg
                             viewBox="0 0 20 20"
@@ -86,7 +86,10 @@
                           </svg>
                         </button>
                         <span id="purchase-cost-help" class="help-tooltip-content" role="tooltip">{{
-                          'candidate.negotiatedPurchaseHelp' | translate
+                          (candidate().acquisitionType === 1
+                            ? 'auction.scenarioHelp'
+                            : 'candidate.negotiatedPurchaseHelp'
+                          ) | translate
                         }}</span>
                       </span>
                     }

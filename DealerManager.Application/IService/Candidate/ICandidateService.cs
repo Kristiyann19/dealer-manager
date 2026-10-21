@@ -5,6 +5,7 @@ namespace DealerManager.Application.IService.Candidate
 {
     public interface ICandidateService
     {
+        Task<CandidateDetailsDto> UpdateAuctionDetails(int id, CandidateAuctionDetailsDto request, CancellationToken cancellationToken);
         Task<CandidateDetailsDto> CreateCandidate(CreateCandidateRequest request, CancellationToken cancellationToken);
         Task<CandidateListResultDto> GetCandidates(CandidateFilterDto filter, CancellationToken cancellationToken);
         Task<CandidateDetailsDto> GetCandidateDetails(int id, CancellationToken cancellationToken);

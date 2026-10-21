@@ -255,7 +255,7 @@
     "rejected": "Candidate rejected. The evaluation history has been preserved.",
     "askingPrice": "Candidate price (EUR)",
     "askingPriceRequired": "Candidate price (EUR) *",
-    "askingPriceHelp": "The price quoted by the seller or intermediary for this vehicle.",
+    "askingPriceHelp": "The current price requested by the seller or intermediary. Update it through the Purchase item in a later estimate.",
     "askingPriceValidation": "Enter a candidate price of zero or more.",
     "sellingPricePending": "Enter in an estimate",
     "estimatePurchaseHelp": "The asking price is prefilled as a Purchase cost. Enter the expected selling price and add other costs. The purchase price is counted only through this cost item."
@@ -497,7 +497,8 @@
       "insufficientCapital": "Insufficient available capital.",
       "conflict": "Data has changed. Close this dialog to load the current candidate.",
       "notFound": "The candidate or account was not found. Close this dialog to load the current state.",
-      "uncertain": "We could not confirm the purchase. Close this dialog to check the current candidate before trying again."
+      "uncertain": "We could not confirm the purchase. Close this dialog to check the current candidate before trying again.",
+      "auctionPurchasePending": "You can prepare estimates and a bidding limit. Auction completion and purchasing auction vehicles will be added in the next step."
     }
   },
   "vehicle": {
@@ -932,6 +933,41 @@
       "5": "Inspection report",
       "6": "Registration document",
       "7": "Sale contract"
+    }
+  },
+  "auction": {
+    "acquisitionType": "Acquisition method",
+    "types": {
+      "0": "Direct / through an intermediary",
+      "1": "Auction"
+    },
+    "allTypes": "All methods",
+    "title": "Auction details",
+    "platform": "Platform / organizer *",
+    "lotNumber": "Lot number *",
+    "listingUrl": "Lot URL",
+    "country": "Vehicle country",
+    "endsAt": "Auction ends",
+    "endsAtHelp": "Time is displayed in your local time zone.",
+    "observedBid": "Observed bid (EUR)",
+    "observedBidHelp": "The latest price you see in the auction, excluding additional fees. This is not the final purchase price.",
+    "maxBid": "My bidding limit (EUR)",
+    "maxBidHelp": "Manually chosen maximum for the car alone, excluding fees and transport. It is not calculated from the estimate.",
+    "currencyHelp": "All amounts here are in EUR. Add auction fees, transport and other costs as separate estimate items.",
+    "phaseHelp": "You can prepare estimates and a bidding limit. Auction completion and purchasing auction vehicles will be added in the next step.",
+    "overLimit": "The observed bid exceeds your bidding limit.",
+    "edit": "Edit auction details",
+    "save": "Save details",
+    "saved": "Auction details saved.",
+    "openLot": "Open lot",
+    "scenarioBid": "Bid in latest estimate (EUR)",
+    "scenarioHelp": "Hypothetical bid for this scenario. Saving does not change the observed bid or personal limit and does not represent a purchase.",
+    "validation": {
+      "required": "Complete this field within its maximum length.",
+      "url": "Enter a valid HTTP/HTTPS URL of up to 2000 characters.",
+      "length": "Enter up to 100 characters.",
+      "amount": "Enter an amount from 0 to 9,999,999,999,999 with up to 2 decimal places.",
+      "maxAmount": "Enter a positive limit up to 9,999,999,999,999 with up to 2 decimal places."
     }
   }
 }

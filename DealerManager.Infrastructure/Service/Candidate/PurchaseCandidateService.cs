@@ -30,6 +30,8 @@ public class PurchaseCandidateService(
             var candidate = await candidates.GetById(candidateId, token, query => query.AsTracking()
                 .Include(c => c.CandidateEstimates).ThenInclude(e => e.CandidateEstimateItems))
                 ?? throw new CandidateNotFoundException(candidateId);
+            if (candidate.AcquisitionType == CandidateAcquisitionType.Auction)
+                throw Conflict("auctionPurchasePending", "Auction purchase requires a confirmed auction outcome, which is not supported yet.");
             if (candidate.Status != CandidateStatus.Approved)
                 throw Conflict("status", "Only an approved candidate can be purchased.");
             if (await vehicles.AnyEntity(v => v.SourceCandidateId == candidateId, token))

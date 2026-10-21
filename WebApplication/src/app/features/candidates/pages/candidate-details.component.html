@@ -22,6 +22,9 @@
       <div>
         <h1>{{ candidate.make }} {{ candidate.model }}</h1>
         <div class="flex flex-wrap items-center gap-3 mt-3">
+          <span class="text-sm text-slate-600">{{
+            'auction.types.' + (candidate.acquisitionType ?? 0) | translate
+          }}</span>
           <app-candidate-status [status]="candidate.status" /><span
             class="text-sm text-slate-600"
             >{{
@@ -32,7 +35,11 @@
         </div>
       </div>
       <div class="page-actions">
-        @if (candidate.status === statuses.Approved && !showEstimate()) {
+        @if (
+          candidate.status === statuses.Approved &&
+          candidate.acquisitionType !== 1 &&
+          !showEstimate()
+        ) {
           <button
             class="primary-button"
             [disabled]="busy()"
@@ -167,6 +174,9 @@
         </div>
       </p-dialog>
     }
+    @if (candidate.acquisitionType === 1) {
+      <app-candidate-auction [candidate]="candidate" (saved)="auctionSaved()" />
+    }
     <section class="financial-summary" [attr.aria-label]="'ui.current_expectation' | translate">
       <dl class="metrics-grid">
         <div class="metric-card">
@@ -180,12 +190,19 @@
           </dd>
         </div>
         <div class="metric-card">
-          <dt>{{ 'candidate.askingPrice' | translate }}</dt>
-          <dd [class.metric-pending]="candidate.askingPrice === null">
+          <dt>
             {{
-              candidate.askingPrice === null
+              (candidate.acquisitionType === 1 ? 'auction.scenarioBid' : 'candidate.askingPrice')
+                | translate
+            }}
+          </dt>
+          @let purchasePrice =
+            candidate.acquisitionType === 1 ? scenarioBid() : candidate.askingPrice;
+          <dd [class.metric-pending]="purchasePrice === null">
+            {{
+              purchasePrice === null
                 ? ('common.notProvided' | translate)
-                : (candidate.askingPrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
+                : (purchasePrice | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
             }}
             <span class="mt-2 block text-sm font-normal text-slate-500">
               {{ 'ui.estimated_total_cost' | translate }}:

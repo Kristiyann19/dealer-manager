@@ -103,6 +103,9 @@ namespace DealerManager.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AcquisitionType")
+                        .HasColumnType("integer");
+
                     b.Property<decimal?>("AskingPrice")
                         .HasColumnType("numeric");
 
@@ -156,6 +159,59 @@ namespace DealerManager.Infrastructure.Migrations
                     b.HasIndex("DealershipId");
 
                     b.ToTable("Candidates");
+                });
+
+            modelBuilder.Entity("DealerManager.Domain.Entities.CandidateAuctionDetails", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CandidateId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("EndsAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ListingUrl")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("LotNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal?>("MaxBid")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("ObservedBid")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidateId")
+                        .IsUnique();
+
+                    b.ToTable("CandidateAuctionDetails", t =>
+                        {
+                            t.HasCheckConstraint("CK_CandidateAuctionDetails_MaxBid", "\"MaxBid\" IS NULL OR \"MaxBid\" > 0");
+
+                            t.HasCheckConstraint("CK_CandidateAuctionDetails_ObservedBid", "\"ObservedBid\" IS NULL OR \"ObservedBid\" >= 0");
+                        });
                 });
 
             modelBuilder.Entity("DealerManager.Domain.Entities.CandidateEstimate", b =>
@@ -1034,6 +1090,17 @@ namespace DealerManager.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DealerManager.Domain.Entities.CandidateAuctionDetails", b =>
+                {
+                    b.HasOne("DealerManager.Domain.Entities.Candidate", "Candidate")
+                        .WithOne("AuctionDetails")
+                        .HasForeignKey("DealerManager.Domain.Entities.CandidateAuctionDetails", "CandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Candidate");
+                });
+
             modelBuilder.Entity("DealerManager.Domain.Entities.CandidateEstimate", b =>
                 {
                     b.HasOne("DealerManager.Domain.Entities.Candidate", "Candidate")
@@ -1313,6 +1380,8 @@ namespace DealerManager.Infrastructure.Migrations
 
             modelBuilder.Entity("DealerManager.Domain.Entities.Candidate", b =>
                 {
+                    b.Navigation("AuctionDetails");
+
                     b.Navigation("CandidateEstimates");
 
                     b.Navigation("CandidatePhotos");

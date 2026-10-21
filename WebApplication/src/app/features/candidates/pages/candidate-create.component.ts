@@ -1,3 +1,6 @@
+import { AuctionFieldsComponent } from '../components/auction-fields.component';
+import { createAuctionForm, auctionRequest } from '../components/auction-form';
+import { CandidateAcquisitionType } from '../models/candidate.models';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +13,13 @@ import { apiError, integer, optionalText, requiredText } from '../components/can
 
 @Component({
   selector: 'app-candidate-create',
-  imports: [TranslatePipe, ReactiveFormsModule, RouterLink, FieldErrorComponent],
+  imports: [
+    AuctionFieldsComponent,
+    TranslatePipe,
+    ReactiveFormsModule,
+    RouterLink,
+    FieldErrorComponent,
+  ],
   templateUrl: './candidate-create.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -22,7 +31,10 @@ export class CandidateCreateComponent {
   protected readonly maxYear = new Date().getUTCFullYear() + 1;
   protected readonly busy = signal(false);
   protected readonly error = signal('');
+  protected readonly acquisitionTypes = CandidateAcquisitionType;
   protected readonly form = this.fb.group({
+    acquisitionType: this.fb.nonNullable.control(CandidateAcquisitionType.DirectPurchase),
+    auctionDetails: createAuctionForm(this.fb),
     make: this.fb.nonNullable.control('', requiredText),
     model: this.fb.nonNullable.control('', requiredText),
     year: this.fb.control<number | null>(null, [
@@ -41,6 +53,21 @@ export class CandidateCreateComponent {
   });
   protected readonly fields = this.form.controls;
 
+  constructor() {
+    this.fields.auctionDetails.disable();
+    this.fields.acquisitionType.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((type) => {
+        if (type === CandidateAcquisitionType.Auction) {
+          this.fields.askingPrice.disable();
+          this.fields.auctionDetails.enable();
+        } else {
+          this.fields.askingPrice.enable();
+          this.fields.auctionDetails.disable();
+        }
+      });
+  }
+
   protected submit() {
     if (this.busy()) return;
     this.form.markAllAsTouched();
@@ -53,7 +80,12 @@ export class CandidateCreateComponent {
         ...value,
         make: value.make.trim(),
         model: value.model.trim(),
-        askingPrice: value.askingPrice!,
+        askingPrice:
+          value.acquisitionType === CandidateAcquisitionType.Auction ? null : value.askingPrice!,
+        auctionDetails:
+          value.acquisitionType === CandidateAcquisitionType.Auction
+            ? auctionRequest(this.fields.auctionDetails)
+            : null,
         notes: optionalText(value.notes),
         vin: optionalText(value.vin)?.toUpperCase() ?? null,
       })

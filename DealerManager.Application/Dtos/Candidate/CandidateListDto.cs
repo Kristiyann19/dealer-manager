@@ -6,6 +6,7 @@ namespace DealerManager.Application.Dtos.Candidate
     public class CandidateListDto
     {
         public int Id { get; init; }
+        public CandidateAcquisitionType AcquisitionType { get; init; }
         public string Make { get; init; } = string.Empty;
         public string Model { get; init; } = string.Empty;
         public int? Year { get; init; }

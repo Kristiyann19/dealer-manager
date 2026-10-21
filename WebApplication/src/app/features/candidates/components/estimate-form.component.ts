@@ -19,6 +19,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import {
+  CandidateAcquisitionType,
   CandidateDetails,
   CandidateEstimate,
   COST_CATEGORIES,
@@ -95,7 +96,9 @@ export class EstimateFormComponent implements OnInit {
     this.items.at(0).patchValue({
       category: CostCategory.Purchase,
       description: this.translate.instant('cost.0'),
-      estimatedAmount: candidate.askingPrice,
+      estimatedAmount: candidate.acquisitionType === CandidateAcquisitionType.Auction
+        ? candidate.latestEstimate?.items.find(item => item.category === CostCategory.Purchase)?.estimatedAmount ?? null
+        : candidate.askingPrice,
     });
     this.items.at(0).controls.category.disable();
     this.items.at(0).controls.description.disable();

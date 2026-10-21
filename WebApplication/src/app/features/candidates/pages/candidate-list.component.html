@@ -15,6 +15,14 @@
           [formControl]="search"
           [placeholder]="'ui.make_model_or_vin' | translate"
       /></label>
+      <label class="block w-full sm:max-w-xs">
+        <span class="field-label">{{ 'auction.acquisitionType' | translate }}</span>
+        <select class="form-input" [formControl]="acquisitionType">
+          <option [ngValue]="null">{{ 'auction.allTypes' | translate }}</option>
+          <option [ngValue]="0">{{ 'auction.types.0' | translate }}</option>
+          <option [ngValue]="1">{{ 'auction.types.1' | translate }}</option>
+        </select>
+      </label>
       <a routerLink="/candidates/new" class="primary-button shrink-0 whitespace-nowrap">{{
         'ui.new_candidate_3' | translate
       }}</a>
@@ -68,6 +76,9 @@
                         [routerLink]="['/candidates', candidate.id]"
                         >{{ candidate.make }} {{ candidate.model }}</a
                       >
+                      <p class="text-xs text-slate-500 mt-1">
+                        {{ 'auction.types.' + (candidate.acquisitionType ?? 0) | translate }}
+                      </p>
                       <p class="text-xs text-slate-500 mt-1">
                         {{ candidate.year ?? ('common.yearUnknown' | translate) }} ·
                         {{
@@ -139,6 +150,14 @@
                 {{ 'ui.clear_search' | translate }}
               </button>
             } @else if (offset() === 0) {
+              <label class="block w-full sm:max-w-xs">
+                <span class="field-label">{{ 'auction.acquisitionType' | translate }}</span>
+                <select class="form-input" [formControl]="acquisitionType">
+                  <option [ngValue]="null">{{ 'auction.allTypes' | translate }}</option>
+                  <option [ngValue]="0">{{ 'auction.types.0' | translate }}</option>
+                  <option [ngValue]="1">{{ 'auction.types.1' | translate }}</option>
+                </select>
+              </label>
               <a routerLink="/candidates/new" class="primary-button mt-5">{{
                 'ui.create_first_candidate' | translate
               }}</a>
@@ -150,12 +169,20 @@
   </section>
   @if (state(); as current) {
     @if (current.status === 'ready') {
-      <app-pagination [offset]="offset()" [pageSize]="limit" [total]="current.data.totalCount" (pageChange)="goToPage($event)">
-        <span >{{
-          'ui.value_value_of_value_candidates_eur' | translate: {
-            p0: current.data.items.length ? offset() + 1 : 0,
-            p1: end(current.data.totalCount), p2: current.data.totalCount
-          }
+      <app-pagination
+        [offset]="offset()"
+        [pageSize]="limit"
+        [total]="current.data.totalCount"
+        (pageChange)="goToPage($event)"
+      >
+        <span>{{
+          'ui.value_value_of_value_candidates_eur'
+            | translate
+              : {
+                  p0: current.data.items.length ? offset() + 1 : 0,
+                  p1: end(current.data.totalCount),
+                  p2: current.data.totalCount,
+                }
         }}</span>
       </app-pagination>
     }

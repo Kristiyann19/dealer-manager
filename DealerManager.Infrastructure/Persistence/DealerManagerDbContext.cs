@@ -14,6 +14,7 @@ namespace DealerManager.Infrastructure.Persistence
         private int? CurrentTenantId => currentUser?.IsAuthenticated == true ? currentUser.DealershipId : null;
 
         #region Candidate
+        public DbSet<CandidateAuctionDetails> CandidateAuctionDetails { get; set; }
         public DbSet<Candidate> Candidates { get; set; }
         public DbSet<CandidateEstimate> CandidateEstimates { get; set; }
         public DbSet<CandidateEstimateItem> CandidateEstimateItems { get; set; }

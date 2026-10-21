@@ -1,4 +1,18 @@
 // Numeric values match DealerManager.Domain.Enums and the API JSON contract.
+export enum CandidateAcquisitionType {
+  DirectPurchase = 0,
+  Auction = 1,
+}
+export interface CandidateAuctionDetails {
+  platform: string;
+  lotNumber: string;
+  listingUrl: string | null;
+  country: string | null;
+  endsAt: string | null;
+  observedBid: number | null;
+  maxBid: number | null;
+}
+
 export enum CandidateStatus {
   UnderReview = 0,
   Approved = 1,
@@ -45,15 +59,18 @@ export const COST_CATEGORIES = [
 ].map((label, value) => ({ label: 'cost.' + value, value: value as CostCategory }));
 
 export interface CreateCandidateRequest {
+  acquisitionType?: CandidateAcquisitionType;
+  auctionDetails?: CandidateAuctionDetails | null;
   vin?: string | null;
   make: string;
   model: string;
   year: number | null;
   mileage: number | null;
-  askingPrice: number;
+  askingPrice: number | null;
   notes: string | null;
 }
 export interface CandidateListItem {
+  acquisitionType?: CandidateAcquisitionType;
   id: number;
   make: string;
   model: string;
@@ -72,6 +89,7 @@ export interface CandidateListResult {
   totalCount: number;
 }
 export interface CandidateDetails extends CandidateListItem {
+  auctionDetails?: CandidateAuctionDetails | null;
   vehicleId: number | null;
   vin: string | null;
   source: string | null;

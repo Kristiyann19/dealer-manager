@@ -32,6 +32,10 @@ namespace DealerManager.Controllers
         public Task<CandidateDetailsDto> GetCandidateDetails(int id, CancellationToken cancellationToken)
             => candidateService.GetCandidateDetails(id, cancellationToken);
 
+        [HttpPut("{id:int}/auction-details")]
+        public Task<CandidateDetailsDto> UpdateAuctionDetails(int id, CandidateAuctionDetailsDto request, CancellationToken cancellationToken)
+            => candidateService.UpdateAuctionDetails(id, request, cancellationToken);
+
         [HttpPost("estimates")]
         public async Task<ActionResult<CandidateEstimateDto>> CreateCandidateEstimate(CreateCandidateEstimateRequest request, CancellationToken cancellationToken)
         {

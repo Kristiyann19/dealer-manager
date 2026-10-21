@@ -67,7 +67,10 @@ function input(fixture: ComponentFixture<unknown>, selector: string, value: stri
 function button(fixture: ComponentFixture<unknown>, text: string): HTMLButtonElement {
   return Array.from(
     fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
-  ).find((element) => element.getAttribute('aria-label') === text || element.textContent?.trim() === text)!;
+  ).find(
+    (element) =>
+      element.getAttribute('aria-label') === text || element.textContent?.trim() === text,
+  )!;
 }
 function submit(fixture: ComponentFixture<unknown>) {
   fixture.nativeElement
@@ -98,17 +101,159 @@ describe('Candidate module HTTP workflows', () => {
   });
   afterEach(() => http.verify());
 
+  it('switches acquisition methods, validates auction fields and sends no asking price for an auction', () => {
+    const fixture = TestBed.createComponent(CandidateCreateComponent);
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    fixture.detectChanges();
+    input(fixture, '#make', 'BMW');
+    input(fixture, '#model', '320d');
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('#acquisition-type');
+    select.selectedIndex = 1;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#asking-price')).toBeNull();
+    submit(fixture);
+    http.expectNone('/api/candidates');
+    input(fixture, '#auction-platform', ' BCA ');
+    input(fixture, '#auction-lotNumber', '123');
+    input(fixture, '#auction-maxBid', '0');
+    submit(fixture);
+    http.expectNone('/api/candidates');
+    input(fixture, '#auction-maxBid', '7500');
+    input(fixture, '#auction-listingUrl', 'javascript:alert(1)');
+    submit(fixture);
+    http.expectNone('/api/candidates');
+    input(fixture, '#auction-listingUrl', 'https://example.test/lot/123');
+    submit(fixture);
+    submit(fixture); // One request while saving.
+    const request = http.expectOne('/api/candidates');
+    expect(request.request.body.acquisitionType).toBe(1);
+    expect(request.request.body.askingPrice).toBeNull();
+    expect(request.request.body.auctionDetails).toMatchObject({
+      platform: 'BCA',
+      lotNumber: '123',
+      maxBid: 7500,
+      observedBid: null,
+    });
+    request.flush({ ...candidate, acquisitionType: 1 });
+    expect(router.navigate).toHaveBeenCalledWith(['/candidates', 12]);
+  });
+
+  it('restores direct-price validation when switching back from an auction', () => {
+    const fixture = TestBed.createComponent(CandidateCreateComponent);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fixture.detectChanges();
+    input(fixture, '#make', 'BMW');
+    input(fixture, '#model', '320d');
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('#acquisition-type');
+    select.selectedIndex = 1;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    input(fixture, '#auction-platform', 'BCA');
+    select.selectedIndex = 0;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#auction-platform')).toBeNull();
+    submit(fixture);
+    http.expectNone('/api/candidates');
+    input(fixture, '#asking-price', '4000');
+    submit(fixture);
+    const request = http.expectOne('/api/candidates');
+    expect(request.request.body).toMatchObject({
+      acquisitionType: 0,
+      askingPrice: 4000,
+      auctionDetails: null,
+    });
+    request.flush(candidate);
+  });
+
+  it('edits auction data, refetches details and prevents purchasing an approved auction', () => {
+    const auction = {
+      platform: 'BCA',
+      lotNumber: '123',
+      listingUrl: null,
+      country: 'DE',
+      endsAt: null,
+      observedBid: 8000,
+      maxBid: 7500,
+    };
+    const data = {
+      ...candidate,
+      status: CandidateStatus.Approved,
+      acquisitionType: 1,
+      askingPrice: null,
+      auctionDetails: auction,
+    };
+    const fixture = TestBed.createComponent(CandidateDetailsComponent);
+    http.expectOne('/api/candidates/12').flush(data);
+    fixture.detectChanges();
+    expect(button(fixture, en.purchase.action)).toBeUndefined();
+    expect(fixture.nativeElement.textContent).toContain(en.auction.overLimit);
+    button(fixture, en.auction.edit).click();
+    fixture.detectChanges();
+    input(fixture, '#auction-maxBid', '8500');
+    submit(fixture);
+    const request = http.expectOne('/api/candidates/12/auction-details');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body.maxBid).toBe(8500);
+    request.flush({ ...data, auctionDetails: { ...auction, maxBid: 8500 } });
+    const reload = http.expectOne('/api/candidates/12');
+    reload.flush({ ...data, auctionDetails: { ...auction, maxBid: 8500 } });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(en.auction.saved);
+    expect(fixture.nativeElement.textContent).not.toContain(en.auction.overLimit);
+  });
+
+  it('starts an auction estimate from the latest scenario without treating the bid limit as a purchase', () => {
+    const fixture = TestBed.createComponent(EstimateFormComponent);
+    fixture.componentRef.setInput('candidate', {
+      ...candidate,
+      acquisitionType: 1,
+      askingPrice: null,
+      latestEstimate: estimate,
+      auctionDetails: {
+        platform: 'BCA',
+        lotNumber: '123',
+        listingUrl: null,
+        country: null,
+        endsAt: null,
+        observedBid: 8000,
+        maxBid: 9000,
+      },
+    });
+    fixture.detectChanges();
+    const amounts = fixture.nativeElement.querySelectorAll(
+      'input[formControlName="estimatedAmount"]',
+    );
+    expect(amounts[0].value).toBe('3000');
+    expect(fixture.nativeElement.textContent).toContain(en.auction.scenarioHelp);
+    expect(fixture.nativeElement.textContent).not.toContain(en.candidate.negotiatedPurchaseHelp);
+  });
+
+  it('filters candidates by acquisition type with server pagination', () => {
+    const fixture = TestBed.createComponent(CandidateListComponent);
+    http.expectOne((r) => r.url === '/api/candidates').flush({ items: [], totalCount: 0 });
+    fixture.detectChanges();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('select');
+    select.selectedIndex = 2;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const request = http.expectOne((r) => r.url === '/api/candidates');
+    expect(request.request.params.get('AcquisitionType')).toBe('1');
+    expect(request.request.params.get('Offset')).toBe('0');
+    request.flush({ items: [], totalCount: 0 });
+  });
+
   it('shows one compact vehicle row and expands remaining candidate data without refetching', () => {
     const fixture = TestBed.createComponent(CandidateDetailsComponent);
-    http
-      .expectOne('/api/candidates/12')
-      .flush({
-        ...candidate,
-        vin: 'VIN123',
-        source: 'Broker',
-        location: 'Sofia',
-        notes: 'Vehicle notes',
-      });
+    http.expectOne('/api/candidates/12').flush({
+      ...candidate,
+      vin: 'VIN123',
+      source: 'Broker',
+      location: 'Sofia',
+      notes: 'Vehicle notes',
+    });
     fixture.detectChanges();
     const section: HTMLElement = fixture.nativeElement.querySelector(
       'section[aria-label="' + en.ui.vehicle_details + '"]',
@@ -153,6 +298,8 @@ describe('Candidate module HTTP workflows', () => {
     const request = http.expectOne('/api/candidates');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
+      acquisitionType: 0,
+      auctionDetails: null,
       make: 'BMW',
       model: '320d',
       year: null,
@@ -367,6 +514,7 @@ describe('Candidate module HTTP workflows', () => {
       fixture.nativeElement.querySelectorAll('[formControlName]') as NodeListOf<Element>,
     ).map((element) => element.getAttribute('formControlName'));
     expect(controls.sort()).toEqual([
+      'acquisitionType',
       'askingPrice',
       'make',
       'mileage',
@@ -572,9 +720,9 @@ describe('Candidate module HTTP workflows', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('could not be found');
     params.next(convertToParamMap({ id: '13' }));
-    http.expectOne('/api/candidates/13').flush({ ...candidate, id: 13 });
+    http.expectOne('/api/candidates/13').flush({ ...candidate, id: 13, model: 'X5' });
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('CANDIDATE #13');
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('BMW X5');
   });
   it('paginates on the server and distinguishes missing estimates from zero', () => {
     const fixture = TestBed.createComponent(CandidateListComponent);

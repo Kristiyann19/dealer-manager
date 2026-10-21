@@ -1,4 +1,5 @@
- using DealerManager.Domain.Common;
+#nullable enable
+using DealerManager.Domain.Common;
 using DealerManager.Domain.Enums;
 
 namespace DealerManager.Domain.Entities;
@@ -6,6 +7,8 @@ namespace DealerManager.Domain.Entities;
 public class Candidate : Entity, ITenantEntity
 {
     public int DealershipId { get; set; }
+    public CandidateAcquisitionType AcquisitionType { get; set; }
+    public CandidateAuctionDetails? AuctionDetails { get; set; }
     public CandidateStatus Status { get; set; }
     public string Make { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
@@ -14,7 +17,7 @@ public class Candidate : Entity, ITenantEntity
     public string? Vin { get; set; }
     public string? Source { get; set; }
     public string? Location { get; set; }
-    // Current seller/intermediary price, updated when an estimate is saved.
+    // Current seller/intermediary price for direct purchases, updated when an estimate is saved.
     // Previous negotiated prices remain in their estimate versions; null for legacy records.
     public decimal? AskingPrice { get; set; }
     // Legacy cache. The latest CandidateEstimate is the source of the expected selling price.

@@ -46,6 +46,7 @@ export class CandidateListComponent {
   private readonly api = inject(CandidateApiService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly search = new FormControl('', { nonNullable: true });
+  protected readonly acquisitionType = new FormControl<number | null>(null);
   protected readonly query = signal('');
   protected readonly offset = signal(0);
   protected readonly limit = 15;
@@ -53,7 +54,7 @@ export class CandidateListComponent {
   protected readonly state = toSignal(
     this.reload.pipe(
       switchMap(() =>
-        this.api.list(this.query(), this.offset(), this.limit).pipe(
+        this.api.list(this.query(), this.offset(), this.limit, this.acquisitionType.value).pipe(
           map((data) => ({ status: 'ready', data }) as ListState),
           catchError((error) => of<ListState>({ status: 'error', message: apiError(error) })),
           startWith<ListState>({ status: 'loading' }),
@@ -64,6 +65,10 @@ export class CandidateListComponent {
   );
 
   constructor() {
+    this.acquisitionType.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.offset.set(0);
+      this.refresh();
+    });
     this.search.valueChanges
       .pipe(
         map((value) => value.trim()),

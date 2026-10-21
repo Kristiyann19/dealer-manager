@@ -24,6 +24,7 @@ public partial class DealerManagerDbContext
         builder.Entity<Vehicle>().HasQueryFilter(v => v.DealershipId == CurrentTenantId);
         builder.Entity<CapitalAccount>().HasQueryFilter(a => a.DealershipId == CurrentTenantId);
         builder.Entity<FinancialTransaction>().HasQueryFilter(t => t.DealershipId == CurrentTenantId);
+        builder.Entity<CandidateAuctionDetails>().HasQueryFilter(a => a.Candidate.DealershipId == CurrentTenantId);
         builder.Entity<CandidatePhoto>().HasQueryFilter(p => p.Candidate.DealershipId == CurrentTenantId);
         builder.Entity<CandidateEstimate>().HasQueryFilter(e => e.Candidate.DealershipId == CurrentTenantId);
         builder.Entity<CandidateEstimateItem>().HasQueryFilter(i => i.CandidateEstimate.Candidate.DealershipId == CurrentTenantId);

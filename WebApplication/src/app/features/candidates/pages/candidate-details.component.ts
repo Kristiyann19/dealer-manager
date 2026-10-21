@@ -1,3 +1,4 @@
+import { CandidateAuctionComponent } from '../components/candidate-auction.component';
 import {
   LocalizedDatePipe,
   LocalizedNumberPipe,
@@ -44,6 +45,7 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-candidate-details',
   imports: [
+    CandidateAuctionComponent,
     TranslatePipe,
     RouterLink,
     ReactiveFormsModule,
@@ -93,6 +95,11 @@ export class CandidateDetailsComponent {
       null
     );
   });
+  protected readonly scenarioBid = computed(
+    () =>
+      this.candidate()?.latestEstimate?.items.find((i) => i.category === 0)?.estimatedAmount ??
+      null,
+  );
   protected readonly statuses = CandidateStatus;
   protected readonly categories = COST_CATEGORIES;
   protected readonly canEvaluate = computed(() => {
@@ -147,12 +154,22 @@ export class CandidateDetailsComponent {
     this.notice.set('');
     this.showEstimate.set(true);
   }
+  protected auctionSaved() {
+    this.messages.clear();
+    this.messages.add({ severity: 'success', detail: 'auction.saved', life: 5000 });
+    this.refreshCandidate();
+  }
   protected estimateSaved(estimate: CandidateEstimate) {
     this.selectedVersion.set(estimate.id);
     this.savedVersion.set(estimate.version);
     this.notice.set('');
     this.messages.clear();
-    this.messages.add({ severity: 'success', detail: 'candidate.versionSaved', data: { version: estimate.version }, life: 5000 });
+    this.messages.add({
+      severity: 'success',
+      detail: 'candidate.versionSaved',
+      data: { version: estimate.version },
+      life: 5000,
+    });
     this.refreshCandidate();
   }
   protected openDecision(decision: 'approve' | 'reject') {

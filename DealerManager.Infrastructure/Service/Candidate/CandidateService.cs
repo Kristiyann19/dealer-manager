@@ -41,6 +41,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
         public async Task<CandidateDetailsDto> CreateCandidate(CreateCandidateRequest request, CancellationToken cancellationToken)
         {
             Validate(request);
+            if (request.AuctionDetails != null) Validate(request.AuctionDetails);
             var now = timeProvider.GetUtcNow();
             if (request.Year is { } year && (year < 1886 || year > now.Year + 1))
                 throw new ValidationException($"Year must be between 1886 and {now.Year + 1}.");
@@ -48,6 +49,8 @@ namespace DealerManager.Infrastructure.Service.Candidate
             cancellationToken.ThrowIfCancellationRequested();
             var candidate = new CandidateEntity
             {
+                AcquisitionType = request.AcquisitionType,
+                AuctionDetails = request.AuctionDetails == null ? null : ApplyAuctionDetails(new CandidateAuctionDetails(), request.AuctionDetails),
                 Make = request.Make.Trim(),
                 Model = request.Model.Trim(),
                 Year = request.Year,
@@ -145,7 +148,8 @@ namespace DealerManager.Infrastructure.Service.Candidate
                 // BaseRepository.Create traverses the new graph before tracking it.
                 await estimates.Create(estimate);
                 // The current negotiated price and its estimate are committed together.
-                candidate.AskingPrice = purchasePrice;
+                if (candidate.AcquisitionType == CandidateAcquisitionType.DirectPurchase)
+                    candidate.AskingPrice = purchasePrice;
                 candidate.ExpectedSellingPrice = request.ExpectedSellingPrice;
                 candidates.SetEntryModified(candidate);
                 await unitOfWork.SaveChanges(token);
@@ -215,6 +219,7 @@ namespace DealerManager.Infrastructure.Service.Candidate
         {
             return await candidates.GetById(id, cancellationToken, query =>
                 (tracking ? query.AsTracking() : query)
+                    .Include(candidate => candidate.AuctionDetails)
                     .Include(candidate => candidate.Vehicle)
                     .Include(candidate => candidate.CandidateEstimates)
                     .ThenInclude(estimate => estimate.CandidateEstimateItems))
@@ -254,6 +259,34 @@ namespace DealerManager.Infrastructure.Service.Candidate
                 FinancialAnalysis = calculator.Calculate(estimate.ExpectedSellingPrice,
                     estimate.CandidateEstimateItems.Select(item => item.EstimatedAmount))
             });
+        }
+
+        public Task<CandidateDetailsDto> UpdateAuctionDetails(int id, CandidateAuctionDetailsDto request, CancellationToken cancellationToken)
+        {
+            Validate(request);
+            return unitOfWork.ExecuteInTransaction(async token =>
+            {
+                var candidate = await LoadCandidate(id, token, tracking: true);
+                if (candidate.AcquisitionType != CandidateAcquisitionType.Auction || candidate.AuctionDetails == null)
+                    throw new CandidateConflictException("This candidate is not an auction candidate.");
+                if (candidate.Status is CandidateStatus.Purchased or CandidateStatus.Rejected)
+                    throw new CandidateConflictException("A closed candidate cannot be edited.");
+                ApplyAuctionDetails(candidate.AuctionDetails, request);
+                await unitOfWork.SaveChanges(token);
+                return ToDetails(candidate);
+            }, cancellationToken);
+        }
+
+        private static CandidateAuctionDetails ApplyAuctionDetails(CandidateAuctionDetails target, CandidateAuctionDetailsDto request)
+        {
+            target.Platform = request.Platform.Trim();
+            target.LotNumber = request.LotNumber.Trim();
+            target.ListingUrl = Normalize(request.ListingUrl);
+            target.Country = Normalize(request.Country);
+            target.EndsAt = request.EndsAt?.ToUniversalTime();
+            target.ObservedBid = request.ObservedBid;
+            target.MaxBid = request.MaxBid;
+            return target;
         }
 
         private static void Validate(object? request)

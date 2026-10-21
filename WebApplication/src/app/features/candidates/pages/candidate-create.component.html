@@ -16,6 +16,21 @@
     }
     <fieldset [disabled]="busy()">
       <legend class="form-section-title mb-4">{{ 'ui.vehicle_details' | translate }}</legend>
+      <div class="mb-6">
+        <label class="field-label" for="acquisition-type">{{
+          'auction.acquisitionType' | translate
+        }}</label>
+        <select
+          id="acquisition-type"
+          class="form-input sm:max-w-sm"
+          formControlName="acquisitionType"
+        >
+          <option [ngValue]="acquisitionTypes.DirectPurchase">
+            {{ 'auction.types.0' | translate }}
+          </option>
+          <option [ngValue]="acquisitionTypes.Auction">{{ 'auction.types.1' | translate }}</option>
+        </select>
+      </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <label class="field-label" for="make">{{ 'ui.make' | translate }}</label
@@ -89,29 +104,37 @@
           }}</label
           ><input id="vin" class="form-input" formControlName="vin" maxlength="32" />
         </div>
-        <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <label class="field-label" for="asking-price">{{
-            'candidate.askingPriceRequired' | translate
-          }}</label
-          ><input
-            id="asking-price"
-            class="form-input sm:max-w-sm"
-            type="number"
-            min="0"
-            step="1"
-            formControlName="askingPrice"
-            aria-required="true"
-            aria-describedby="price-help price-error"
-            [attr.aria-invalid]="fields.askingPrice.touched && fields.askingPrice.invalid"
-          /><app-field-error
-            id="price-error"
-            [control]="fields.askingPrice"
-            [message]="'candidate.askingPriceValidation' | translate"
-          />
-          <p id="price-help" class="form-help mt-2">
-            {{ 'candidate.askingPriceHelp' | translate }}
-          </p>
-        </div>
+        @if (fields.acquisitionType.value === acquisitionTypes.DirectPurchase) {
+          <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <label class="field-label" for="asking-price">{{
+              'candidate.askingPriceRequired' | translate
+            }}</label
+            ><input
+              id="asking-price"
+              class="form-input sm:max-w-sm"
+              type="number"
+              min="0"
+              step="1"
+              formControlName="askingPrice"
+              aria-required="true"
+              aria-describedby="price-help price-error"
+              [attr.aria-invalid]="fields.askingPrice.touched && fields.askingPrice.invalid"
+            /><app-field-error
+              id="price-error"
+              [control]="fields.askingPrice"
+              [message]="'candidate.askingPriceValidation' | translate"
+            />
+            <p id="price-help" class="form-help mt-2">
+              {{ 'candidate.askingPriceHelp' | translate }}
+            </p>
+          </div>
+        } @else {
+          <section class="sm:col-span-2 border-t border-slate-200 pt-5">
+            <h2 class="form-section-title mb-4">{{ 'auction.title' | translate }}</h2>
+            <app-auction-fields [form]="fields.auctionDetails" />
+            <p class="info-banner mt-4">{{ 'auction.phaseHelp' | translate }}</p>
+          </section>
+        }
         <div class="sm:col-span-2">
           <label class="field-label" for="notes">{{ 'ui.notes' | translate }}</label
           ><textarea

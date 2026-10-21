@@ -1,0 +1,136 @@
+<div [formGroup]="form()" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+  <div>
+    <label class="field-label" for="auction-platform">{{ 'auction.platform' | translate }}</label>
+    <input
+      id="auction-platform"
+      class="form-input"
+      type="text"
+      formControlName="platform"
+      aria-required="true"
+      maxlength="120"
+      [attr.aria-invalid]="form().controls.platform.touched && form().controls.platform.invalid"
+      aria-describedby="auction-platform-help"
+    />
+    <app-field-error
+      id="auction-platform-help"
+      [control]="form().controls.platform"
+      [message]="'auction.validation.required' | translate"
+    />
+  </div>
+  <div>
+    <label class="field-label" for="auction-lotNumber">{{ 'auction.lotNumber' | translate }}</label>
+    <input
+      id="auction-lotNumber"
+      class="form-input"
+      type="text"
+      formControlName="lotNumber"
+      aria-required="true"
+      maxlength="100"
+      [attr.aria-invalid]="form().controls.lotNumber.touched && form().controls.lotNumber.invalid"
+      aria-describedby="auction-lotNumber-help"
+    />
+    <app-field-error
+      id="auction-lotNumber-help"
+      [control]="form().controls.lotNumber"
+      [message]="'auction.validation.required' | translate"
+    />
+  </div>
+  <div>
+    <label class="field-label" for="auction-listingUrl">{{
+      'auction.listingUrl' | translate
+    }}</label>
+    <input
+      id="auction-listingUrl"
+      class="form-input"
+      type="url"
+      formControlName="listingUrl"
+      maxlength="2000"
+      [attr.aria-invalid]="form().controls.listingUrl.touched && form().controls.listingUrl.invalid"
+      aria-describedby="auction-listingUrl-help"
+    />
+    <app-field-error
+      id="auction-listingUrl-help"
+      [control]="form().controls.listingUrl"
+      [message]="'auction.validation.url' | translate"
+    />
+  </div>
+  <div>
+    <label class="field-label" for="auction-country">{{ 'auction.country' | translate }}</label>
+    <input
+      id="auction-country"
+      class="form-input"
+      type="text"
+      formControlName="country"
+      maxlength="100"
+      [attr.aria-invalid]="form().controls.country.touched && form().controls.country.invalid"
+      aria-describedby="auction-country-help"
+    />
+    <app-field-error
+      id="auction-country-help"
+      [control]="form().controls.country"
+      [message]="'auction.validation.length' | translate"
+    />
+  </div>
+  <div>
+    <label class="field-label" for="auction-endsAt">{{ 'auction.endsAt' | translate }}</label>
+    <input
+      id="auction-endsAt"
+      class="form-input"
+      type="datetime-local"
+      formControlName="endsAt"
+      [attr.aria-invalid]="form().controls.endsAt.touched && form().controls.endsAt.invalid"
+      aria-describedby="auction-endsAt-help"
+    />
+    <p id="auction-endsAt-help" class="form-help mt-2">{{ 'auction.endsAtHelp' | translate }}</p>
+  </div>
+  <div>
+    <label class="field-label" for="auction-observedBid">{{
+      'auction.observedBid' | translate
+    }}</label>
+    <input
+      id="auction-observedBid"
+      class="form-input"
+      type="number"
+      formControlName="observedBid"
+      step="0.01"
+      min="0"
+      [attr.aria-invalid]="
+        form().controls.observedBid.touched && form().controls.observedBid.invalid
+      "
+      aria-describedby="auction-observedBid-help"
+    />
+    <app-field-error
+      id="auction-observedBid-help"
+      [control]="form().controls.observedBid"
+      [message]="'auction.validation.amount' | translate"
+    />
+    <p class="form-help mt-2">{{ 'auction.observedBidHelp' | translate }}</p>
+  </div>
+  <div>
+    <label class="field-label" for="auction-maxBid">{{ 'auction.maxBid' | translate }}</label>
+    <input
+      id="auction-maxBid"
+      class="form-input"
+      type="number"
+      formControlName="maxBid"
+      step="0.01"
+      min="0.01"
+      [attr.aria-invalid]="form().controls.maxBid.touched && form().controls.maxBid.invalid"
+      aria-describedby="auction-maxBid-help"
+    />
+    <app-field-error
+      id="auction-maxBid-help"
+      [control]="form().controls.maxBid"
+      [message]="'auction.validation.maxAmount' | translate"
+    />
+    <p class="form-help mt-2">{{ 'auction.maxBidHelp' | translate }}</p>
+  </div>
+</div>
+<p class="form-help mt-4">{{ 'auction.currencyHelp' | translate }}</p>
+@if (
+  form().controls.observedBid.value !== null &&
+  form().controls.maxBid.value !== null &&
+  form().controls.observedBid.value! > form().controls.maxBid.value!
+) {
+  <p class="info-banner mt-3" role="status">{{ 'auction.overLimit' | translate }}</p>
+}

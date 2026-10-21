@@ -1,0 +1,92 @@
+@if (candidate().auctionDetails; as auction) {
+  <section class="panel p-6 mb-6" [attr.aria-label]="'auction.title' | translate">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <h2 class="form-section-title">{{ 'auction.title' | translate }}</h2>
+      @if (!editing() && (candidate().status === 0 || candidate().status === 1)) {
+        <button type="button" class="secondary-button" (click)="edit()">
+          {{ 'auction.edit' | translate }}
+        </button>
+      }
+    </div>
+    @if (editing()) {
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset [disabled]="busy()">
+          <app-auction-fields [form]="form" />
+          @if (error()) {
+            <p class="error-banner mt-4" role="alert">{{ error() | translate }}</p>
+          }
+          <div class="form-actions">
+            <button type="button" class="secondary-button" (click)="editing.set(false)">
+              {{ 'ui.cancel' | translate }}
+            </button>
+            <button type="submit" class="primary-button" [disabled]="busy() || form.invalid">
+              {{ (busy() ? 'common.saving' : 'auction.save') | translate }}
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    } @else {
+      <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div>
+          <dt class="field-label">{{ 'auction.platform' | translate }}</dt>
+          <dd>{{ auction.platform }}</dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'auction.lotNumber' | translate }}</dt>
+          <dd>{{ auction.lotNumber }}</dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'auction.country' | translate }}</dt>
+          <dd>{{ auction.country || ('common.notProvided' | translate) }}</dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'auction.endsAt' | translate }}</dt>
+          <dd>
+            {{
+              auction.endsAt
+                ? (auction.endsAt | localizedDate: 'dd MMM y, HH:mm')
+                : ('common.notProvided' | translate)
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'auction.observedBid' | translate }}</dt>
+          <dd>
+            {{
+              auction.observedBid === null
+                ? ('common.notProvided' | translate)
+                : (auction.observedBid | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt class="field-label">{{ 'auction.maxBid' | translate }}</dt>
+          <dd>
+            {{
+              auction.maxBid === null
+                ? ('common.notProvided' | translate)
+                : (auction.maxBid | localizedCurrency: 'EUR' : 'symbol' : '1.2-2')
+            }}
+          </dd>
+        </div>
+      </dl>
+      @if (auction.listingUrl) {
+        <a
+          class="text-link inline-block mt-4"
+          [href]="auction.listingUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ 'auction.openLot' | translate }}</a
+        >
+      }
+      @if (
+        auction.observedBid !== null &&
+        auction.maxBid !== null &&
+        auction.observedBid > auction.maxBid
+      ) {
+        <p class="info-banner mt-4">{{ 'auction.overLimit' | translate }}</p>
+      }
+    }
+    <p class="form-help mt-4">{{ 'auction.phaseHelp' | translate }}</p>
+  </section>
+}

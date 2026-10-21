@@ -3,6 +3,7 @@ namespace DealerManager.Application.Dtos.Candidate
 {
     public class CandidateDetailsDto : CandidateListDto
     {
+        public CandidateAuctionDetailsDto? AuctionDetails { get; init; }
         public int? VehicleId { get; init; }
         public string? Vin { get; init; }
         public string? Source { get; init; }
